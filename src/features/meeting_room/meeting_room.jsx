@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getRooms } from "../../api/rooms_api";
 import RoomsList from "./room_list";
+import AddRoomModal from "./add_meeting_room";
 
 const MeetingRooms = () => {
     const [search, setSearch] = useState("");
@@ -22,7 +23,9 @@ const MeetingRooms = () => {
     }, []);
 
 
-
+  const handleAddRoom = () => {
+    
+  }
   
   return (
     <div>
@@ -41,6 +44,13 @@ const MeetingRooms = () => {
 
 
       <RoomsList rooms={rooms} />
+
+
+      <AddRoomModal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+        onSave={handleAddRoom}
+        />
     </div>
   );
 };

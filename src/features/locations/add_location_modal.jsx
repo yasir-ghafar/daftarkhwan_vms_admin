@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import './add_modal.css';
+//import './add_modal.css';
 
 const AddLocationModal = ({ isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({
