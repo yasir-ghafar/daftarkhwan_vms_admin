@@ -1,0 +1,134 @@
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  min-height: calc(100vh - 120px);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.loader {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  margin-top: 12px;
+  font-size: 16px;
+  color: #555;
+}
+
+.error-popup {
+  background-color: #ffcccc;
+  color: #a94442;
+  border: 1px solid #ebccd1;
+  padding: 12px 16px;
+  margin: 20px auto;
+  width: 90%;
+  max-width: 600px;
+  border-radius: 6px;
+  text-align: center;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+  font-weight: 500;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.locations-modal-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.locations-modal-overlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.locations-modal-header {
+  font-size: 22px;
+  font-weight: 600;
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.locations-location-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.locations-location-form input {
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+}
+
+.locations-location-form input:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.locations-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.locations-modal-actions .btn-cancel,
+.locations-modal-actions .btn-save {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.locations-modal-actions .btn-cancel {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.locations-modal-actions .btn-save {
+  background-color: #2ecc71;
+  color: white;
+}
+
+
+.locations-modal-content {
+  background-color: #fff;
+  padding: 30px 25px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.edit-icon {
+  cursor: pointer;
+}

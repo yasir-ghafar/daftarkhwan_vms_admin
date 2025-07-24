@@ -10,12 +10,14 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault(); // ✅ prevent reload
 
+    navigate("/home");
     try {
       console.log(`Email: ${email} and Password: ${password}`);
       const data = await login(email, password);
       console.log("Login Response:", data);
       navigate("/home");
     } catch (error) {
+      console.log(error);
       alert("Login Failed. Please check credentials");
     }
   };

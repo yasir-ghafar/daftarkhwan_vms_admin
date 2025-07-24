@@ -22,7 +22,7 @@ const LocationList = ({locations}) => {
                     <td>{loc.city}</td>
                     <td>{loc.contactNumber}</td>
                     <td>{loc.email}</td>
-                    <td>✏️</td>
+                    <td className="edit-icon">✏️</td>
                   </tr>
                 );
               })}
