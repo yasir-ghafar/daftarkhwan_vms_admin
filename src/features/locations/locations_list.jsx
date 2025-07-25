@@ -12,6 +12,7 @@ const LocationList = ({locations}) => {
             <th>Contacts</th>
             <th>Email</th>
             <th>Actions</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -23,6 +24,7 @@ const LocationList = ({locations}) => {
                     <td>{loc.contactNumber}</td>
                     <td>{loc.email}</td>
                     <td className="edit-icon">✏️</td>
+                    <td className="edit-icon">🗑️</td>
                   </tr>
                 );
               })}

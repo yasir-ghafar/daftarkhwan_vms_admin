@@ -12,12 +12,13 @@ const Locations = () => {
   const [error, setError] = useState(null); // Added error state
 
   const handleAddLocation = async (newLocation) => {
-    try {
-      const data = await addNewLocation(newLocation);
-      console.log(data);
-    } catch (error) {
-      alert("Unable to create Location");
-    }
+    console.log(newLocation);
+    // try {
+    //   const data = await addNewLocation(newLocation);
+    //   console.log(data);
+    // } catch (error) {
+    //   alert("Unable to create Location");
+    // }
   };
 
   useEffect(() => {
@@ -52,9 +53,12 @@ const Locations = () => {
       />
 
       {loading && (
-        <div className="loading-container">
-          <div className="loader"></div>
-          <p className="loading-text">Loading...</p>
+        <div className="loading-overlay">
+          
+          <div className="loading-dialog">
+            <div className="loader"></div>
+            <p> Loading please wait....</p>
+          </div>
         </div>
       )}
 

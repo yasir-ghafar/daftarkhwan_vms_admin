@@ -20,6 +20,7 @@ const RoomsList = ({rooms}) => {
                     <td>{room.LocationId}</td>
                     <td>Active</td>
                     <td>✏️</td>
+                    <td>🗑️</td>
                   </tr>
                 );
             })}
