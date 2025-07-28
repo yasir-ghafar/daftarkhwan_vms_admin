@@ -16,15 +16,38 @@
 
 .location-form {
   background-color: #fff;
-  padding: 24px 20px;
+  padding: 20px 16px;
   border-radius: 12px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
   width: 100%;
-  max-width: 400px; /* make it narrower */
+  max-width: 1200px; /* make it narrower */
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
+  align-items: stretch;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-column {
+  flex: 0 1 calc((100% - 48px) / 3);
+  min-width: 250px;
+  max-width: calc((100% - 48px) / 3);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-sizing: border-box;
 }
 
 
@@ -40,15 +63,25 @@
   font-size: 14px;
 }
 
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #34495e;
+  font-size: 14px;
+}
+
 .location-form input,
 .location-form select,
 .location-form textarea {
-  padding: 10px 14px;
+  padding: 6px 12px;
   border: 1px solid #ccc;
   border-radius: 8px;
   font-size: 14px;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
+  height: 40px;
+  box-sizing: border-box;
 }
 
 .location-form input:focus,
@@ -65,8 +98,9 @@
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 8px;
+  gap: 8px;
+  margin-top: 12px;
+  width: 100%;
 }
 
 .modal-actions button {

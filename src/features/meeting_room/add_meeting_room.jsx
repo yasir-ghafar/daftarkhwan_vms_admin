@@ -1,8 +1,9 @@
 import './add_meeting_room.css';
 import React, { useState } from "react";
+import Select from 'react-select';
 
 const amenitiesOptions = [
-  "Projector", "Whiteboard", "Video Conferencing", "AC", "WiFi"
+  "Projector", "Whiteboard", "Video Conferencing", "AC", "WiFi", "Blackboard","Markers","Tea"
 ];
 
 const locations = ["New York", "London", "Berlin", "Tokyo"];
@@ -32,10 +33,6 @@ const AddRoomModal = ({ isOpen, onClose, onSave }) => {
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleMultiSelectChange = (e) => {
-    const selected = Array.from(e.target.selectedOptions, option => option.value);
-    setForm(prev => ({ ...prev, amenities: selected }));
-  };
 
   const handleDayToggle = (day) => {
     setForm(prev => ({
@@ -66,154 +63,193 @@ const AddRoomModal = ({ isOpen, onClose, onSave }) => {
   return (
     <div className="modal-overlay">
       <form onSubmit={handleSubmit} className="location-form">
-        <h3 style={{ marginBottom: '12px', color: '#2c3e50' }}>Create Meeting Room</h3>
-        <div className="form-group">
-          <label>Room Name:</label>
-          <input
-            type="text"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            required
-          />
-        </div>
+        <h3 style={{ marginBottom: '12px', color: '#2c3e50', width: "100%" }}>Create Meeting Room</h3>
 
-        <div className="form-group">
-          <label>Location:</label>
-          <select
-            name="location"
-            value={form.location}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select Location</option>
-            {locations.map(loc => (
-              <option key={loc} value={loc}>{loc}</option>
-            ))}
-          </select>
-        </div>
+        <div className="form-row">
+          <div className="form-column">
+            <div className="form-group">
+              <label>Room Name:</label>
+              <input
+                type="text"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
 
-        <div className="form-group">
-          <label>Credits/Slot:</label>
-          <input
-            type="number"
-            name="creditsPerSlot"
-            value={form.creditsPerSlot}
-            onChange={handleChange}
-            min="0"
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Price per 1 Credit:</label>
-          <input
-            type="number"
-            name="pricePerCredit"
-            value={form.pricePerCredit}
-            onChange={handleChange}
-            min="0"
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Seating Capacity:</label>
-          <input
-            type="number"
-            name="seatingCapacity"
-            value={form.seatingCapacity}
-            onChange={handleChange}
-            min="1"
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Upload Image:</label>
-          <input type="file" accept="image/*" onChange={handleImageChange} />
-          {imagePreview && (
-            <img
-              src={imagePreview}
-              alt="Preview"
-              style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "6px", marginTop: "8px" }}
-            />
-          )}
-        </div>
-
-        <div className="form-group">
-          <label>Opening Time:</label>
-          <input
-            type="time"
-            name="openingTime"
-            value={form.openingTime}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Closing Time:</label>
-          <input
-            type="time"
-            name="closingTime"
-            value={form.closingTime}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        
-        <div className="form-group">
-          <label>Amenities:</label>
-          <select
-            name="amenities"
-            multiple={true}
-            value={form.amenities}
-            onChange={(e) => setForm(prev => ({ ...prev, amenities: e.target.value }))}
-            required
-          >
-            <option value="">Select Amenity</option>
-            {amenitiesOptions.map(option => (
-              <option key={option} value={option}>{option}</option>
-            ))}
-          </select>
-        </div>
-
-
-
-        <div className="form-group">
-          <label>Floor:</label>
-          <select
-            name="floor"
-            value={form.floor}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select Floor</option>
-            {floors.map(f => (
-              <option key={f} value={f}>{f}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="form-group available-days">
-          <label>Available Days:</label>
-          <div className="day-boxes">
-            {weekdays.map(day => (
-              <div
-                key={day}
-                className={`day-box ${form.availableDays.includes(day) ? 'selected' : ''}`}
-                onClick={() => handleDayToggle(day)}
+          <div className="form-column">
+            <div className="form-group">
+              <label>Location:</label>
+              <select
+                name="location"
+                value={form.location}
+                onChange={handleChange}
+                required
               >
-                {day}
-              </div>
-            ))}
+                <option value="">Select Location</option>
+                {locations.map(loc => (
+                  <option key={loc} value={loc}>{loc}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
-        <div className="modal-actions">
-          <button type="button" onClick={onClose} className="cancel-btn">Cancel</button>
-          <button type="submit" className="save-btn">Save</button>
+        <div className="form-row">
+          <div className="form-column">
+            <div className="form-group">
+              <label>Credits/Slot:</label>
+              <input
+                type="number"
+                name="creditsPerSlot"
+                value={form.creditsPerSlot}
+                onChange={handleChange}
+                min="0"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-column">
+            <div className="form-group">
+              <label>Price per 1 Credit:</label>
+              <input
+                type="number"
+                name="pricePerCredit"
+                value={form.pricePerCredit}
+                onChange={handleChange}
+                min="0"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-column">
+            <div className="form-group">
+              <label>Seating Capacity:</label>
+              <input
+                type="number"
+                name="seatingCapacity"
+                value={form.seatingCapacity}
+                onChange={handleChange}
+                min="1"
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-column">
+            <div className="form-group">
+              <label>Upload Image:</label>
+              <input type="file" accept="image/*" onChange={handleImageChange} />
+              {imagePreview && (
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "6px", marginTop: "8px" }}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-column">
+            <div className="form-group">
+              <label>Opening Time:</label>
+              <input
+                type="time"
+                name="openingTime"
+                value={form.openingTime}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-column">
+            <div className="form-group">
+              <label>Closing Time:</label>
+              <input
+                type="time"
+                name="closingTime"
+                value={form.closingTime}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-column">
+            <div className="form-group">
+              <label>Amenities:</label>
+              <Select
+                options={amenitiesOptions.map(option => ({ value: option, label: option }))}
+                isMulti
+                name="amenities"
+                className="basic-multi-select"
+                classNamePrefix="select"
+                value={amenitiesOptions
+                  .filter(option => form.amenities.includes(option))
+                  .map(option => ({ value: option, label: option }))}
+                onChange={(selectedOptions) =>
+                  setForm(prev => ({
+                    ...prev,
+                    amenities: selectedOptions.map(option => option.value)
+                  }))
+                }
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-column">
+            <div className="form-group">
+              <label>Floor:</label>
+              <select
+                name="floor"
+                value={form.floor}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select Floor</option>
+                {floors.map(f => (
+                  <option key={f} value={f}>{f}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="form-column">
+            <div className="form-group available-days">
+              <label>Available Days:</label>
+              <div className="day-boxes">
+                {weekdays.map(day => (
+                  <div
+                    key={day}
+                    className={`day-box ${form.availableDays.includes(day) ? 'selected' : ''}`}
+                    onClick={() => handleDayToggle(day)}
+                  >
+                    {day}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="modal-actions">
+            <button type="button" onClick={onClose} className="cancel-btn">Cancel</button>
+            <button type="submit" className="save-btn">Save</button>
+          </div>
         </div>
       </form>
     </div>
