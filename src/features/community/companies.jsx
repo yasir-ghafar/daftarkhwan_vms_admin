@@ -22,7 +22,7 @@ const Companies = ({isOpen, onClose, onSave}) => {
         })
         .catch((err) => {
             console.error("Error fetching locations:", err);
-            setError("Failed to load locations."); // Set error message
+            setError("Failed to loaxd locations."); // Set error message
             setLoading(false);
         })
     }, [])

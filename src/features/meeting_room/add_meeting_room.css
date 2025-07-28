@@ -1,0 +1,119 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  z-index: 1000;
+  overflow: auto;
+}
+
+
+.location-form {
+  background-color: #fff;
+  padding: 24px 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  width: 100%;
+  max-width: 400px; /* make it narrower */
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+
+.location-form select[multiple] {
+  min-height: 100px;
+  resize: vertical;
+}
+
+
+.location-form label {
+  font-weight: 600;
+  color: #34495e;
+  font-size: 14px;
+}
+
+.location-form input,
+.location-form select,
+.location-form textarea {
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.location-form input:focus,
+.location-form select:focus,
+.location-form textarea:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.location-form input[type="file"] {
+  padding: 4px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.modal-actions button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.modal-actions button.save-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.modal-actions button.save-btn:hover {
+  background-color: #0069d9;
+}
+
+.modal-actions button.cancel-btn {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.modal-actions button.cancel-btn:hover {
+  background-color: #ccc;
+}
+
+/* Optional: day-box styling refinement */
+.day-boxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.day-box {
+  padding: 5px 10px;
+  border: 1px solid #bbb;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.day-box.selected {
+  background-color: #007bff;
+  color: #fff;
+  border-color: #007bff;
+}
