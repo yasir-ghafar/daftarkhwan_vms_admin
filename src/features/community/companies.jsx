@@ -1,46 +1,42 @@
 import React, { useEffect, useState } from "react";
-import { getCompanies, addCompany } from "../../api/company_api";
+import { getCompanies, createCompany } from "../../api/company_api";
 import CompaniesList from "./companies_list";
 import CompanyModal from "./add_company";
 
+const Companies = () => {
+  const [search, setSearch] = useState("");
+  const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isModalOpen, setModalOpen] = useState(false);
 
-const Companies = ({isOpen, onClose, onSave}) => {
-    const [search, setSearch] = useState("");
-    const [companies, setCompanies] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [isModalOpen, setModalOpen] = useState(false);
+  useEffect(() => {
+    getCompanies()
+      .then((data) => {
+        console.log(data.data);
+        setCompanies(data.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching locations:", err);
+        setError("Failed to loaxd locations."); // Set error message
+        setLoading(false);
+      });
+  }, []);
 
+  const handleAddCompany = async (newCompany) => {
+    console.log(newCompany);
+    try {
+      const data = await createCompany(newLocation);
+      console.log(data);
+    } catch (error) {
+      alert("Unable to create Company");
+    }
+  };
 
-    useEffect(() => {
-        getCompanies()
-        .then((data) => {
-            console.log(data.data);
-            setCompanies(data.data);
-            setLoading(false);
-
-        })
-        .catch((err) => {
-            console.error("Error fetching locations:", err);
-            setError("Failed to loaxd locations."); // Set error message
-            setLoading(false);
-        })
-    }, [])
-
-
-    const handleAddCompany = async (newCompany) => {
-      console.log(newCompany);
-      try {
-            const data = await addCompany(newLocation);
-            console.log(data);
-          } catch (error) {
-            alert("Unable to create Company");
-          }
-    };
-     
-    return (
-        <>
-           <div className="top-bar">
+  return (
+    <>
+      <div className="top-bar">
         <h2>Company</h2>
         <button className="add-btn" onClick={() => setModalOpen(true)}>
           Add New
@@ -57,7 +53,6 @@ const Companies = ({isOpen, onClose, onSave}) => {
 
       {loading && (
         <div className="loading-overlay">
-          
           <div className="loading-dialog">
             <div className="loader"></div>
             <p> Loading please wait....</p>
@@ -71,20 +66,15 @@ const Companies = ({isOpen, onClose, onSave}) => {
         </div>
       )}
 
-      {!loading && !error && (
-        <CompaniesList companies={companies}/>
-      )}
+      {!loading && !error && <CompaniesList companies={companies} />}
 
-      <CompanyModal 
+      <CompanyModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
         onSave={handleAddCompany}
       />
-
-
-        </>
-    )
-}
-
+    </>
+  );
+};
 
 export default Companies;

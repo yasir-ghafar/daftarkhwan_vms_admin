@@ -167,6 +167,7 @@ const AddRoomModal = ({ isOpen, onClose, onSave }) => {
           <label>Amenities:</label>
           <select
             name="amenities"
+            multiple={true}
             value={form.amenities}
             onChange={(e) => setForm(prev => ({ ...prev, amenities: e.target.value }))}
             required

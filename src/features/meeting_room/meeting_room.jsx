@@ -4,18 +4,13 @@ import RoomsList from "./room_list";
 import AddRoomModal from "./add_meeting_room";
 
 const MeetingRooms = () => {
-<<<<<<< HEAD
+
     const [search, setSearch] = useState("");
     const [rooms, setRooms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setModalOpen] = useState(false);
     const [error, setError] = useState(null);
-=======
-  const [search, setSearch] = useState("");
-  const [rooms, setRooms] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [isModalOpen, setModalOpen] = useState(false);
->>>>>>> 239db3e69ac16b877009d497637ba65d737ed03c
+
 
   useEffect(() => {
     getRooms()
@@ -39,7 +34,7 @@ const MeetingRooms = () => {
   return (
     <div>
       <div className="top-bar">
-        <h2>Locations</h2>
+        <h2>Meeting Rooms</h2>
         <button className="add-btn" onClick={() => setModalOpen(true)}>Add New</button>
       </div>
 
