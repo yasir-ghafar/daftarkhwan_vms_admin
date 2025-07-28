@@ -8,6 +8,7 @@ const MeetingRooms = () => {
     const [rooms, setRooms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setModalOpen] = useState(false);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         getRooms()
@@ -30,7 +31,7 @@ const MeetingRooms = () => {
   return (
     <div>
       <div className="top-bar">
-          <h2>Locations</h2>
+          <h2>Meeting Rooms</h2>
           <button className="add-btn" onClick={() => setModalOpen(true)}>Add New</button>
         </div>
 
@@ -42,8 +43,27 @@ const MeetingRooms = () => {
           className="search-input"
         />
 
+        {loading && (
+        <div className="loading-overlay">
+          
+          <div className="loading-dialog">
+            <div className="loader"></div>
+            <p> Loading please wait....</p>
+          </div>
+        </div>
+      )}
 
-      <RoomsList rooms={rooms} />
+
+      {error && (
+        <div className="error-popup">
+          <p>{error}</p>
+        </div>
+      )}
+
+
+      {!loading && !error && (
+        <RoomsList rooms={rooms} />
+      )}
 
 
       <AddRoomModal

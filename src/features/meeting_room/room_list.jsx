@@ -10,6 +10,7 @@ const RoomsList = ({rooms}) => {
             <th>Location</th>
             <th>Status</th>
             <th>Actions</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -17,7 +18,7 @@ const RoomsList = ({rooms}) => {
                 return (
                   <tr key={index}>
                     <td>{room.name}</td>
-                    <td>{room.LocationId}</td>
+                    <td>{room.locationName}</td>
                     <td>Active</td>
                     <td>✏️</td>
                     <td>🗑️</td>

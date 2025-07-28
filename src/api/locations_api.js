@@ -9,6 +9,12 @@ export const getLocations = async () => {
 
 export const addNewLocation = async (data) => {
     console.log(data);
-    //const response = await daftarkhwanApi.post("/locations", data);
-    //return response.data;
+    const response = await daftarkhwanApi.post("/locations", data);
+    return response.data;
+}
+
+
+export const deleteLocation = async (id) => {
+    const response = await daftarkhwanApi.delete(`/locations/delete/${id}`);
+    return response;
 }

@@ -205,10 +205,12 @@ form button:hover {
 
 .modal-content {
   background: #fff;
-  padding: 30px;
-  width: 400px;
-  border-radius: 10px;
-  box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+  padding: 24px;
+  border-radius: 8px;
+  width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .modal-content h2 {
@@ -234,25 +236,30 @@ form button:hover {
   margin-top: 10px;
 }
 
-.btn-cancel {
-  background: #ccc;
-  color: #333;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
+.btn-cancel,
+.btn-next,
 .btn-save {
-  background: #3366ff;
-  color: white;
+  padding: 10px 16px;
   border: none;
-  padding: 8px 14px;
-  border-radius: 4px;
+  border-radius: 20px;
   cursor: pointer;
+  font-weight: bold;
 }
 
+.btn-cancel {
+  background-color: #ccc;
+}
 
+.btn-next,
+.btn-save {
+  background-color: #2563eb;
+  color: white;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 /* Loading overlay */
 
@@ -297,4 +304,51 @@ form button:hover {
 
 .loading-text {
   margin: 0;
+}
+
+
+/* Tabs css */
+
+.tab-header {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.tab-button {
+  padding: 8px 16px;
+  border: none;
+  background-color: #f1f1f1;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.tab-button.active {
+  background-color: #2563eb;
+  color: white;
+}
+
+.tab-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: flex;
+  gap: 20px;
+}
+
+.form-row label {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
 }

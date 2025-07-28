@@ -1,7 +1,7 @@
 import "./locations.css";
 import React, { useEffect, useState } from "react";
 import LocationList from "./locations_list";
-import { getLocations, addNewLocation } from "../../api/locations_api";
+import { getLocations, addNewLocation, deleteLocation } from "../../api/locations_api";
 import AddLocationModal from "./add_location_modal";
 
 const Locations = () => {
@@ -13,12 +13,12 @@ const Locations = () => {
 
   const handleAddLocation = async (newLocation) => {
     console.log(newLocation);
-    // try {
-    //   const data = await addNewLocation(newLocation);
-    //   console.log(data);
-    // } catch (error) {
-    //   alert("Unable to create Location");
-    // }
+    try {
+      const data = await addNewLocation(newLocation);
+      console.log(data);
+    } catch (error) {
+      alert("Unable to create Location");
+    }
   };
 
   useEffect(() => {
@@ -34,6 +34,21 @@ const Locations = () => {
         setLoading(false);
       });
   }, []);
+
+
+  const handleDelteClick = async (id) => {
+    try {
+      
+      await deleteLocation(id)
+      .then((response) =>{
+        console.log(response);
+        setLocations((locations) => locations.filter((loc) => loc.id !==id));
+      });
+    } catch(error) {
+      console.error("Failed to delete location:", error);
+      alert("Error deleting location");
+    }
+  }
 
   return (
     <>
@@ -69,7 +84,7 @@ const Locations = () => {
       )}
 
       {!loading && !error && (
-        <LocationList locations={locations} />
+        <LocationList locations={locations} onDelete={handleDelteClick} />
       )}
 
       <AddLocationModal

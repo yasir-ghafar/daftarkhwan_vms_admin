@@ -1,6 +1,13 @@
 import React from "react";
 
-const LocationList = ({locations}) => {
+const LocationList = ({locations, onDelete}) => {
+
+  const handleDelteClick = (locationId) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this location?");
+    if (confirmDelete) {
+      onDelete(locationId);
+    }
+  }
 
   return (
     <div className="table-container">
@@ -24,7 +31,10 @@ const LocationList = ({locations}) => {
                     <td>{loc.contactNumber}</td>
                     <td>{loc.email}</td>
                     <td className="edit-icon">✏️</td>
-                    <td className="edit-icon">🗑️</td>
+                    <td className="edit-icon"
+                    onClick={() => handleDelteClick(loc.id)}>
+                      🗑️
+                      </td>
                   </tr>
                 );
               })}

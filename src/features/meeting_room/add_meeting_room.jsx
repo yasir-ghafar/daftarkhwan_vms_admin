@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+//import './meeting_room.css';
+
 const amenitiesOptions = [
   "Projector",
   "Whiteboard",
@@ -73,7 +75,7 @@ const AddRoomModal = ({ isOpen, onClose, onSave }) => {
     <div>
       <div className="modal-overlay">
         <h2>Create Meeting Room</h2>
-        <form onSubmit={handleSubmit} className="location-form">
+        <form onSubmit={handleSubmit} className="room-form">
           <label>
             Room Name:
             <input
