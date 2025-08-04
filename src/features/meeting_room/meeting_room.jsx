@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getRooms } from "../../api/rooms_api";
+import { getLocations } from "../../api/locations_api";
 import RoomsList from "./room_list";
 import AddRoomModal from "./add_meeting_room";
 import DeleteDialog from "../../components/DeleteDialog";
@@ -15,7 +16,6 @@ const MeetingRooms = () => {
     const [error, setError] = useState(null);
     const [selectedRoom, setSelectedRoom] = useState(null);
     const [deleteMesssage, setDeleteMessage] = useState('');
-
 
   useEffect(() => {
     getRooms()
@@ -37,7 +37,22 @@ const MeetingRooms = () => {
     // TODO: also send to backend if needed
   };
 
-  
+  const openAddNewRoom = async () => {
+    setLoading(true);
+    try {
+      await getLocations()
+      .then((data) => {
+        console.log(data.data);
+        setLocations(data.data);
+        setLoading(false);
+        setModalOpen(true);
+      })
+    } catch(err) {
+        console.error('Error Fetching Meeting Rooms:', err);
+        setLoading(false);
+    }
+  }
+
 
   const handleDelete = (room) => {
 
@@ -63,7 +78,7 @@ const MeetingRooms = () => {
     <div>
       <div className="top-bar">
         <h2>Meeting Rooms</h2>
-        <button className="add-btn" onClick={() => setModalOpen(true)}>Add New</button>
+        <button className="add-btn" onClick={openAddNewRoom}>Add New</button>
       </div>
 
       <input
@@ -107,6 +122,7 @@ const MeetingRooms = () => {
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
         onSave={handleAddRoom}
+        locations={locations}
       />
     </div>
   );

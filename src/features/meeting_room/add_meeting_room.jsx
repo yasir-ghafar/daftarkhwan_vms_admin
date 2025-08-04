@@ -6,11 +6,11 @@ const amenitiesOptions = [
   "Projector", "Whiteboard", "Video Conferencing", "AC", "WiFi", "Blackboard","Markers","Tea"
 ];
 
-const locations = ["New York", "London", "Berlin", "Tokyo"];
+//const locations = ["New York", "London", "Berlin", "Tokyo"];
 const floors = ["1st Floor", "2nd Floor", "3rd Floor", "4th Floor"];
 const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-const AddRoomModal = ({ isOpen, onClose, onSave }) => {
+const AddRoomModal = ({ isOpen, onClose, onSave, locations }) => {
   const [imagePreview, setImagePreview] = useState(null);
   const [form, setForm] = useState({
     name: "",
@@ -90,7 +90,7 @@ const AddRoomModal = ({ isOpen, onClose, onSave }) => {
               >
                 <option value="">Select Location</option>
                 {locations.map(loc => (
-                  <option key={loc} value={loc}>{loc}</option>
+                  <option key={loc.id} value={loc.id}>{loc.name}</option>
                 ))}
               </select>
             </div>
