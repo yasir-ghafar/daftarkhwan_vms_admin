@@ -22,6 +22,7 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations }) => {
     openingTime: "",
     closingTime: "",
     floor: "",
+    status: "active",
     availableDays: [],
     amenities: [],
   });
@@ -53,13 +54,22 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations }) => {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Creating Meeting Room:", form);
-    onSave(form);
-    onClose();
+const handleSubmit = (e) => {
+  e.preventDefault();
+  const bookingObject = {
+    customerId: form.customerId,
+    companyId: form.companyId,
+    roomId: form.meetingRoom,
+    locationId: form.location,
+    date: form.date,
+    startTime: form.startTime,
+    endTime: form.endTime
   };
 
+  console.log("🧠 BookingForm log:", bookingObject); // 👈 This hits immediately
+
+  if (onSave) onSave(bookingObject);
+};
   return (
     <div className="modal-overlay">
       <form onSubmit={handleSubmit} className="location-form">
@@ -226,6 +236,16 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations }) => {
               </select>
             </div>
           </div>
+
+                <select
+              name="status"
+              value={form.status}
+              onChange={handleChange}
+              required
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
 
           <div className="form-column">
             <div className="form-group available-days">
