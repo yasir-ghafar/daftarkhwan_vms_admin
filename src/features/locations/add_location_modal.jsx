@@ -10,6 +10,8 @@ const AddLocationModal = ({ isOpen, onClose, onSave, editData }) => {
     address: "",
     city: "",
     status: "active",
+    lat: "",
+    lng: ""
   };
 
   const [formData, setFormData] = useState(initialState);
@@ -99,6 +101,8 @@ const AddLocationModal = ({ isOpen, onClose, onSave, editData }) => {
               { key: "legalBusinessName", label: "Legal Business Name" },
               { key: "address", label: "Address" },
               { key: "city", label: "City" },
+              { key: "lat", label: "Latitude"},
+              { key: "lng", label: "Longitude"},
             ].map(({ key, label }) => (
               <input
                 key={key}

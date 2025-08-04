@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getRooms } from "../../api/rooms_api";
+import { getRooms, addNewRoom } from "../../api/rooms_api";
 import { getLocations } from "../../api/locations_api";
 import RoomsList from "./room_list";
 import AddRoomModal from "./add_meeting_room";
@@ -30,11 +30,19 @@ const MeetingRooms = () => {
       });
   }, []);
 
-  const handleAddRoom = (newRoom) => {
+  const handleAddRoom = async (newRoom) => {
     console.log('New Room Object:', newRoom);
-    // Example: add to list
-    //setRooms(prevRooms => [...prevRooms, newRoom]);
-    // TODO: also send to backend if needed
+      setLoading(true);
+    try {
+      const data = await addNewRoom(newRoom);
+      setLoading(false);
+        console.log.data(data.data)
+        setRooms((prev) => [...prev, data.data]);
+    } catch(err) {
+      setError("Failed to Create Meeting Room.");
+      setLoading(false);
+    }
+
   };
 
   const openAddNewRoom = async () => {

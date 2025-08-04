@@ -28,6 +28,7 @@ const Locations = () => {
   }, []);
 
   const handleAddLocation = async (locationData) => {
+    console.log(`Location Data: ${locationData.lat} and ${locationData.lng}`);
     try {
       if (editLocation) {
         // TODO: add updateLocation API here if available

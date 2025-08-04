@@ -28,7 +28,7 @@ const RoomsList = ({ rooms, onDelete, onEdit }) => {
             return (
               <tr key={index}>
                 <td>{room.name}</td>
-                <td>{room.locationName}</td>
+                <td>{room.location.name}</td>
                 <td>Active</td>
                 <td>
                   <span

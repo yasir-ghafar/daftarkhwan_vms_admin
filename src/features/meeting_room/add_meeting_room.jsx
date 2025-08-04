@@ -14,7 +14,7 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations }) => {
   const [imagePreview, setImagePreview] = useState(null);
   const [form, setForm] = useState({
     name: "",
-    location: "",
+    locationId: "",
     creditsPerSlot: "",
     pricePerCredit: "",
     seatingCapacity: "",
@@ -83,8 +83,8 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations }) => {
             <div className="form-group">
               <label>Location:</label>
               <select
-                name="location"
-                value={form.location}
+                name="locationId"
+                value={form.locationId}
                 onChange={handleChange}
                 required
               >

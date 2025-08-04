@@ -9,6 +9,6 @@ export const getRooms = async () => {
 
 export const addNewRoom = async (data) => {
     console.log(data);
-    const response = await daftarkhwanApi.post('', data);
+    const response = await daftarkhwanApi.post('/meeting-rooms', data);
     return response.data;
 }
