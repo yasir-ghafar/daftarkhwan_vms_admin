@@ -13,6 +13,10 @@ export const addNewLocation = async (data) => {
     return response.data;
 }
 
+export const updateLocation = async (data) => {
+    const response = await daftarkhwanApi.put(`/locations/${data.id}`, data);
+    return response.data;
+}
 
 export const deleteLocation = async (id) => {
     const response = await daftarkhwanApi.delete(`/locations/delete/${id}`);

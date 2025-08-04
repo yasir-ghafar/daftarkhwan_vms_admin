@@ -1,7 +1,7 @@
 import "./locations.css";
 import React, { useEffect, useState } from "react";
 import LocationList from "./locations_list";
-import { getLocations, addNewLocation, deleteLocation } from "../../api/locations_api";
+import { getLocations, addNewLocation, deleteLocation, updateLocation } from "../../api/locations_api";
 import AddLocationModal from "./add_location_modal";
 
 const Locations = () => {
@@ -9,52 +9,64 @@ const Locations = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); // Added error state
+  const [error, setError] = useState(null);
+  const [editLocation, setEditLocation] = useState(null); // 🆕
 
-  const handleAddLocation = async (newLocation) => {
-    console.log(newLocation);
-    try {
-      const data = await addNewLocation(newLocation);
-      console.log(data);
-    } catch (error) {
-      alert("Unable to create Location");
+  const fetchLocations = async () => {
+    try { 
+      const data = await getLocations();
+      setLocations(data.data);
+      setLoading(false);
+    } catch (err) {
+      setError("Failed to load locations.");
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    getLocations()
-      .then((data) => {
-        console.log(data.data);
-        setLocations(data.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching locations:", err);
-        setError("Failed to load locations."); // Set error message
-        setLoading(false);
-      });
+    fetchLocations();
   }, []);
 
-
-  const handleDelteClick = async (id) => {
+  const handleAddLocation = async (locationData) => {
     try {
-      
-      await deleteLocation(id)
-      .then((response) =>{
-        console.log(response);
-        setLocations((locations) => locations.filter((loc) => loc.id !==id));
-      });
-    } catch(error) {
-      console.error("Failed to delete location:", error);
+      if (editLocation) {
+        // TODO: add updateLocation API here if available
+        setEditLocation(null);
+        //const data = await updateLocation(editLocation);
+        console.log(editLocation)
+      } else {
+        const data = await addNewLocation(locationData);
+        setLocations((prev) => [...prev, data.data]); // assuming backend returns newly added location
+      }
+    } catch (error) {
+      alert("Unable to save location");
+    } finally {
+      setModalOpen(false);
+    }
+  };
+
+  const handleDeleteClick = async (id) => {
+    try {
+      await deleteLocation(id);
+      setLocations((prev) => prev.filter((loc) => loc.id !== id));
+    } catch (error) {
       alert("Error deleting location");
     }
-  }
+  };
+
+  const handleEditClick = (location) => {
+    setEditLocation(location);
+    setModalOpen(true);
+  };
 
   return (
     <>
       <div className="top-bar">
         <h2>Locations</h2>
-        <button className="add-btn" onClick={() => setModalOpen(true)}>
+        <button className="add-btn" onClick={() => {
+          setEditLocation(null);
+          setModalOpen(true);
+        }}>
           Add New
         </button>
       </div>
@@ -69,7 +81,6 @@ const Locations = () => {
 
       {loading && (
         <div className="loading-overlay">
-          
           <div className="loading-dialog">
             <div className="loader"></div>
             <p> Loading please wait....</p>
@@ -77,23 +88,25 @@ const Locations = () => {
         </div>
       )}
 
-      {error && (
-        <div className="error-popup">
-          <p>{error}</p>
-        </div>
-      )}
+      {error && <div className="error-popup"><p>{error}</p></div>}
 
       {!loading && !error && (
-        <LocationList locations={locations} onDelete={handleDelteClick} />
+        <LocationList
+          locations={locations}
+          onDelete={handleDeleteClick}
+          onEdit={handleEditClick} // 🆕 Pass edit handler
+        />
       )}
 
       <AddLocationModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
         onSave={handleAddLocation}
+        editData={editLocation} // 🆕
       />
     </>
   );
 };
+
 
 export default Locations;

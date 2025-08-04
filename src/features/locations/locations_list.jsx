@@ -1,12 +1,16 @@
 import React from "react";
 
-const LocationList = ({locations, onDelete}) => {
+const LocationList = ({locations, onDelete, onEdit}) => {
 
   const handleDelteClick = (locationId) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this location?");
     if (confirmDelete) {
       onDelete(locationId);
     }
+  }
+
+  const handleEditclick = (location) => {
+    onEdit(location);
   }
 
   return (
@@ -30,7 +34,8 @@ const LocationList = ({locations, onDelete}) => {
                     <td>{loc.city}</td>
                     <td>{loc.contactNumber}</td>
                     <td>{loc.email}</td>
-                    <td className="edit-icon">✏️</td>
+                    <td className="edit-icon"
+                    onClick={() => handleEditclick(loc)} >✏️</td>
                     <td className="edit-icon"
                     onClick={() => handleDelteClick(loc.id)}>
                       🗑️

@@ -1,28 +1,59 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 //import './add_modal.css';
 
-const AddLocationModal = ({ isOpen, onClose, onSave }) => {
-  const [formData, setFormData] = useState({
+const AddLocationModal = ({ isOpen, onClose, onSave, editData }) => {
+  const initialState = {
     name: "",
     contactNumber: "",
     email: "",
     legalBusinessName: "",
     address: "",
-    state: "",
     city: "",
-  });
+    status: "active",
+  };
 
+  const [formData, setFormData] = useState(initialState);
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
 
+  // Populate form data on edit
+  useEffect(() => {
+    if (editData) {
+      setFormData({
+        name: editData.name || "",
+        contactNumber: editData.contactNumber || "",
+        email: editData.email || "",
+        legalBusinessName: editData.legalBusinessName || "",
+        address: editData.address || "",
+        city: editData.city || "",
+        status: editData.status || "active",
+      });
+      setPreview(editData.imageUrl || null);
+    } else {
+      setFormData(initialState);
+      setImage(null);
+      setPreview(null);
+    }
+  }, [editData]);
+
+  // Clean up preview URL
+  useEffect(() => {
+    return () => {
+      if (preview && preview.startsWith("blob:")) {
+        URL.revokeObjectURL(preview);
+      }
+    };
+  }, [preview]);
+
   const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
     }));
   };
 
-  const handleImageChnage = (e) => {
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setImage(file);
@@ -31,61 +62,67 @@ const AddLocationModal = ({ isOpen, onClose, onSave }) => {
   };
 
   const handleSubmit = (e) => {
-     e.preventDefault();
-    
+    e.preventDefault();
+
     const data = new FormData();
-  Object.entries(formData).forEach(([key, value]) => {
-    if (key !== "image") data.append(key, value);
-  });
+    Object.entries(formData).forEach(([key, value]) => {
+      data.append(key, value);
+    });
+    if (image) {
+      data.append("image", image);
+    }
 
-  if (image) {
-    data.append("image", image);
-  }
-    console.log(data);
-     onSave(data);
-     onClose();
-
-    
-
+    onSave(data);
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="locations-modal-container">
-      <div className="locations-modal-overlay">
-        <div className="locations-modal-content">
-          <h2 className="locations-modal-header">Add New Location</h2>
+      <div className="locations-modal-overlay" onClick={onClose}>
+        <div
+          className="locations-modal-content"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2 className="locations-modal-header">
+            {editData ? "Edit Location" : "Add New Location"}
+          </h2>
           <form
             onSubmit={handleSubmit}
             className="locations-location-form"
             encType="multipart/form-data"
           >
-           {Object.entries(formData).map(([key, val]) => (
-  key === "image" ? (
-    <input
-      key={key}
-      name={key}
-      type="file"
-      accept="image/*"
-      onChange={handleImageChange} // handle file upload separately
-      required
-    />
-  ) : (
-    <input
-      key={key}
-      name={key}
-      type="text"
-      value={val}
-      onChange={handleChange}
-      placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
-      required
-    />
-  )
-))}
-            {/* File Input */}
-            <input type="file" accept="image/*" onChange={handleImageChnage} />
-            {/* Image Preview */}
+            {[
+              { key: "name", label: "Name" },
+              { key: "contactNumber", label: "Contact Number" },
+              { key: "email", label: "Email" },
+              { key: "legalBusinessName", label: "Legal Business Name" },
+              { key: "address", label: "Address" },
+              { key: "city", label: "City" },
+            ].map(({ key, label }) => (
+              <input
+                key={key}
+                name={key}
+                type="text"
+                value={formData[key]}
+                onChange={handleChange}
+                placeholder={label}
+                required
+              />
+            ))}
+
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              required
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+
+            <input type="file" accept="image/*" onChange={handleImageChange} />
+
             {preview && (
               <img
                 src={preview}
@@ -99,12 +136,17 @@ const AddLocationModal = ({ isOpen, onClose, onSave }) => {
                 }}
               />
             )}
+
             <div className="locations-modal-actions">
-              <button type="button" onClick={onClose} className="btn-cancel">
+              <button
+                type="button"
+                onClick={onClose}
+                className="btn-cancel"
+              >
                 Cancel
               </button>
               <button type="submit" className="btn-save">
-                Save
+                {editData ? "Update" : "Save"}
               </button>
             </div>
           </form>
@@ -113,5 +155,4 @@ const AddLocationModal = ({ isOpen, onClose, onSave }) => {
     </div>
   );
 };
-
 export default AddLocationModal;
