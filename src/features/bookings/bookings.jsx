@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { getBookings } from "../../api/bookings";
+import BookingForm from "./add_new_booking"; // update path if needed
 
 
 const Bookings = () => {
     const [search, setSearch] = useState("");
     const [bookings, setBookings] = useState([]);
+    const [modalOpen, setModalOpen] = useState(false);
 
 
     useEffect(() => {
@@ -31,6 +33,16 @@ const Bookings = () => {
         onChange={(e) => setSearch(e.target.value)}
         className="search-input"
       />
+      {modalOpen && (
+        <BookingForm
+          isOpen={modalOpen}
+          inClose={() => setModalOpen(false)}
+          onSave={(data) => {
+            console.log("Saved booking:", data);
+            setModalOpen(false);
+          }}
+        />
+      )}
         </>
     );
 };

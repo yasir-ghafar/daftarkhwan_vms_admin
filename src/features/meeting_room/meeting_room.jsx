@@ -33,8 +33,8 @@ const MeetingRooms = () => {
   const handleAddRoom = (newRoom) => {
     console.log('New Room Object:', newRoom);
     // Example: add to list
-    //setRooms(prevRooms => [...prevRooms, newRoom]);
-    // TODO: also send to backend if needed
+    setRooms(prevRooms => [...prevRooms, newRoom]);
+    // Also send to backend if needed
   };
 
   
