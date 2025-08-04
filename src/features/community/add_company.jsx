@@ -64,22 +64,13 @@ const CompanyModal = ({ isOpen, onClose, onSave }) => {
 
 
   const handleSubmit = (e) => {
-     e.preventDefault();
-    
-    const data = new FormData();
-  Object.entries(formData).forEach(([key, value]) => {
-    if (key !== "image") data.append(key, value);
-  });
-
-  if (image) {
-    data.append("image", image);
-  }
-    console.log(data);
-     onSave(data);
-     onClose();
-
-    
-
+    e.preventDefault();
+    const submittedData = { ...formData };
+    if (submittedData.kycDoc instanceof File) {
+      submittedData.kycDoc = submittedData.kycDoc.name;
+    }
+    console.log("Form Data Submitted:");
+    console.table(submittedData);
   };
 
   if (!isOpen) return null
@@ -144,7 +135,17 @@ const CompanyModal = ({ isOpen, onClose, onSave }) => {
           {activeTab === 'KYC' && (
             <>
               <div className="form-row">
-                <label>KYC Document<input name="kycDoc" value={formData.kycDoc} onChange={handleChange} required /></label>
+                <label>
+                  KYC Document
+                  <input
+                    name="kycDoc"
+                    type="file"
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, kycDoc: e.target.files[0] }))
+                    }
+                    required
+                  />
+                </label>
               </div>
             </>
           )}
