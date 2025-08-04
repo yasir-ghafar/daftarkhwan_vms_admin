@@ -18,7 +18,7 @@ const Locations = () => {
       setLocations(data.data);
       setLoading(false);
     } catch (err) {
-      setError("Failed to load locations.");
+      setError("Failed to load locations.", err);
       setLoading(false);
     }
   };
