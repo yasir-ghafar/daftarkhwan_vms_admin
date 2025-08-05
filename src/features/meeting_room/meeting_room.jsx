@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getRooms, addNewRoom } from "../../api/rooms_api";
+import { getRooms, addNewRoom, getAmenities } from "../../api/rooms_api";
 import { getLocations } from "../../api/locations_api";
 import RoomsList from "./room_list";
 import AddRoomModal from "./add_meeting_room";
@@ -11,6 +11,7 @@ const MeetingRooms = () => {
     const [rooms, setRooms] = useState([]);
     const [locations, setLocations] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [amenities, setAmenities] = useState([]);
     const [isModalOpen, setModalOpen] = useState(false);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [error, setError] = useState(null);
@@ -38,7 +39,7 @@ const MeetingRooms = () => {
         // update flow
         const updatedRoom = { ...selectedRoom, ...roomData };
         // call your update API here
-        const data = await updateRoom(updatedRoom);
+        //const roomData = await updateRoom(updatedRoom);
         // mock update:
         setRooms((prev) =>
           prev.map((room) =>
@@ -53,7 +54,8 @@ const MeetingRooms = () => {
       setLoading(false);
       setSelectedRoom(null);
     } catch (err) {
-      setError("Failed to Save Meeting Room.");
+      
+      setError(`Failed to Save Meeting Room: ${err}`);
       setLoading(false);
     }
   };
@@ -61,13 +63,15 @@ const MeetingRooms = () => {
   const openAddNewRoom = async () => {
     setLoading(true);
     try {
-      await getLocations()
-      .then((data) => {
-        console.log(data.data);
-        setLocations(data.data);
-        setLoading(false);
-        setModalOpen(true);
-      })
+      const [locationRes, amenitiesRes] = await Promise.all([
+        getLocations(),
+        getAmenities()
+      ]);
+
+      setLocations(locationRes.data);
+      setAmenities(amenitiesRes.data);
+      setLoading(false);
+      setModalOpen(true);
     } catch(err) {
         console.error('Error Fetching Meeting Rooms:', err);
         setLoading(false);
@@ -77,7 +81,7 @@ const MeetingRooms = () => {
 
   const handleDelete = (room) => {
 
-    console.log(id);
+    console.log(room.id);
     setDeleteMessage(`Are you sure you want to delete? ${room.name}`)
     setIsDialogOpen(true);
   };
@@ -172,6 +176,7 @@ const MeetingRooms = () => {
         }}
         onSave={handleAddRoom}
         locations={locations}
+        amenities={amenities}
         selectedRoom={selectedRoom}
         isEdit={!!selectedRoom}
       />

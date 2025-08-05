@@ -29,6 +29,8 @@ const AddLocationModal = ({ isOpen, onClose, onSave, editData }) => {
         address: editData.address || "",
         city: editData.city || "",
         status: editData.status || "active",
+        lat: editData.lat || "0.00",
+        lng: editData.lng || "0.00"
       });
       setPreview(editData.imageUrl || null);
     } else {
