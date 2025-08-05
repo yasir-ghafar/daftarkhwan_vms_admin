@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { getBookings } from "../../api/bookings";
 import { getLocations } from "../../api/locations_api";
 import BookingForm from "./add_new_booking"; // update path if needed
+import BookingsList from "./booking_list";
 
 const Bookings = () => {
   const [search, setSearch] = useState("");
@@ -16,6 +17,7 @@ const Bookings = () => {
     setLoading(true);
     try {
       const data = await getBookings();
+      console.log(data.data);
       setBookings(data.data);
     } catch (err) {
       console.error("Error fetching bookings:", err);
@@ -105,25 +107,14 @@ const Bookings = () => {
 
       {error && <div className="error-popup"><p>{error}</p></div>}
 
-      {!loading && !error && bookings.length > 0 && (
-        <div className="booking-list">
-          {bookings
-            .filter(b =>
-              b.name?.toLowerCase().includes(search.toLowerCase()) ||
-              b.id?.toString().includes(search)
-            )
-            .map((booking) => (
-              <div key={booking.id} className="booking-item">
-                <span>{booking.name || "Unnamed Booking"}</span>
-                <div>
-                  <button onClick={() => handleEditClick(booking)}>Edit</button>
-                  <button onClick={() => handleDeleteClick(booking.id)}>Delete</button>
-                </div>
-              </div>
-            ))}
-        </div>
+      {!loading && !error && (
+        <BookingsList
+        bookings={bookings}
+        />
       )}
 
+
+      
       {modalOpen && (
         <BookingForm
           isOpen={modalOpen}
