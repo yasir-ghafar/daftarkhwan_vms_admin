@@ -73,22 +73,59 @@
 
 .location-form input,
 .location-form select,
-.location-form textarea {
+.location-form textarea,
+.location-form .basic-multi-select__control {
+  width: 100%;
+  height: 40px;
   padding: 6px 12px;
   border: 1px solid #ccc;
   border-radius: 8px;
   font-size: 14px;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
-  height: 40px;
   box-sizing: border-box;
+  background-color: white;
 }
 
+/* Focus State */
 .location-form input:focus,
 .location-form select:focus,
-.location-form textarea:focus {
+.location-form textarea:focus,
+.location-form .basic-multi-select__control--is-focused {
   border-color: #007bff;
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+
+/* === react-select multi select === */
+.basic-multi-select__control {
+  min-height: 40px !important;
+  height: auto !important;
+  border-radius: 8px !important;
+  font-size: 14px;
+  box-shadow: none !important;
+  border: 1px solid #ccc !important;
+}
+
+.basic-multi-select__control--is-focused {
+  border-color: #007bff !important;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2) !important;
+}
+
+.basic-multi-select__value-container {
+  padding: 0 6px !important;
+}
+
+.basic-multi-select__multi-value {
+  background-color: #007bff;
+  color: white;
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+.basic-multi-select__multi-value__label {
+  color: white;
+  font-size: 13px;
 }
 
 .location-form input[type="file"] {
@@ -150,4 +187,51 @@
   background-color: #007bff;
   color: #fff;
   border-color: #007bff;
+}
+
+
+.image-preview-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 300px;
+  height: 150px;
+}
+
+.image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+}
+
+.form-header {
+  margin-bottom: 12px;
+  color: #2c3e50;
+  width: 100%;
+}
+
+
+.remove-image-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s ease;
+}
+
+.remove-image-btn:hover {
+  background-color: #e60000;
 }

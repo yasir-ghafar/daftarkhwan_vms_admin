@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getRooms, addNewRoom } from "../../api/rooms_api";
+import { getRooms, addNewRoom, getAmenities } from "../../api/rooms_api";
 import { getLocations } from "../../api/locations_api";
 import RoomsList from "./room_list";
 import AddRoomModal from "./add_meeting_room";
@@ -10,6 +10,7 @@ const MeetingRooms = () => {
     const [search, setSearch] = useState("");
     const [rooms, setRooms] = useState([]);
     const [locations, setLocations] = useState([]);
+    const [amenities, setAmenities] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setModalOpen] = useState(false);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -48,13 +49,15 @@ const MeetingRooms = () => {
   const openAddNewRoom = async () => {
     setLoading(true);
     try {
-      await getLocations()
-      .then((data) => {
-        console.log(data.data);
-        setLocations(data.data);
-        setLoading(false);
-        setModalOpen(true);
-      })
+      const [locationRes, amenitiesRes] = await Promise.all([
+        getLocations(),
+        getAmenities()
+      ]);
+
+      setLocations(locationRes.data);
+      setAmenities(amenitiesRes.data);
+      setLoading(false);
+      setModalOpen(true);
     } catch(err) {
         console.error('Error Fetching Meeting Rooms:', err);
         setLoading(false);
@@ -131,6 +134,7 @@ const MeetingRooms = () => {
         onClose={() => setModalOpen(false)}
         onSave={handleAddRoom}
         locations={locations}
+        amenities= {amenities}
       />
     </div>
   );
