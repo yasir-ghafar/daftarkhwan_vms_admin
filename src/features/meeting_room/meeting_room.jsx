@@ -30,19 +30,32 @@ const MeetingRooms = () => {
       });
   }, []);
 
-  const handleAddRoom = async (newRoom) => {
-    console.log('New Room Object:', newRoom);
-      setLoading(true);
+  const handleAddRoom = async (roomData) => {
+    console.log('Room Data:', roomData);
+    setLoading(true);
     try {
-      const data = await addNewRoom(newRoom);
-      setLoading(false);
-        console.log.data(data.data)
+      if (selectedRoom) {
+        // update flow
+        const updatedRoom = { ...selectedRoom, ...roomData };
+        // call your update API here
+        const data = await updateRoom(updatedRoom);
+        // mock update:
+        setRooms((prev) =>
+          prev.map((room) =>
+            room.id === selectedRoom.id ? updatedRoom : room
+          )
+        );
+      } else {
+        // create flow
+        const data = await addNewRoom(roomData);
         setRooms((prev) => [...prev, data.data]);
-    } catch(err) {
-      setError("Failed to Create Meeting Room.");
+      }
+      setLoading(false);
+      setSelectedRoom(null);
+    } catch (err) {
+      setError("Failed to Save Meeting Room.");
       setLoading(false);
     }
-
   };
 
   const openAddNewRoom = async () => {
@@ -69,8 +82,33 @@ const MeetingRooms = () => {
     setIsDialogOpen(true);
   };
 
-  const handleEdit = (id) => {
-    console.log(id);
+  const handleEdit = async (room) => {
+    console.log("Editing Room:", room);
+    setSelectedRoom(room);
+    setLoading(true);
+    try {
+      const data = await getLocations();
+      const locationList = data.data;
+      setLocations(locationList);
+
+      // Match the room's location ID to the location object
+      const matchedLocation = locationList.find(loc => loc.id === room.location_id);
+      if (matchedLocation) {
+        setSelectedRoom({
+          ...room,
+          location: matchedLocation,
+          locationId: matchedLocation.id
+        });
+      } else {
+        setSelectedRoom(room);
+      }
+
+      setModalOpen(true);
+    } catch (err) {
+      console.error('Error Fetching Locations:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleConfirmDelete = (e) => {
@@ -128,9 +166,14 @@ const MeetingRooms = () => {
       />
       <AddRoomModal
         isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => {
+          setModalOpen(false);
+          setSelectedRoom(null);
+        }}
         onSave={handleAddRoom}
         locations={locations}
+        selectedRoom={selectedRoom}
+        isEdit={!!selectedRoom}
       />
     </div>
   );

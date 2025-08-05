@@ -1,5 +1,5 @@
 import './add_meeting_room.css';
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Select from 'react-select';
 
 const amenitiesOptions = [
@@ -10,22 +10,43 @@ const amenitiesOptions = [
 const floors = ["1st Floor", "2nd Floor", "3rd Floor", "4th Floor"];
 const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-const AddRoomModal = ({ isOpen, onClose, onSave, locations }) => {
+const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, editData }) => {
   const [imagePreview, setImagePreview] = useState(null);
   const [form, setForm] = useState({
     name: "",
-    locationId: "",
+    locationId:  "",
     creditsPerSlot: "",
     pricePerCredit: "",
     seatingCapacity: "",
     image: "",
-    openingTime: "",
+    openingTime:  "",
     closingTime: "",
-    floor: "",
-    status: "active",
+    floor:  "",
+    status:  "active",
     availableDays: [],
     amenities: [],
   });
+
+  useEffect(() => {
+    if (editData) {
+      setForm({
+        name: editData.name || "",
+        locationId: editData.locationId || "",
+        creditsPerSlot: editData.creditsPerSlot?.toString() || "",
+        pricePerCredit: editData.pricePerCredit?.toString() || "",
+        seatingCapacity: editData.seatingCapacity?.toString() || "",
+        image: "",
+        openingTime: editData.openingTime || "",
+        closingTime: editData.closingTime || "",
+        floor: editData.floor || "",
+        status: editData.status || "active",
+        availableDays: Array.isArray(editData.availableDays) ? editData.availableDays : [],
+        amenities: Array.isArray(editData.amenities) ? editData.amenities : [],
+      });
+      setImagePreview(editData.imageUrl || null);
+    } 
+  }, [editData]);
+
 
   if (!isOpen) return null;
 
@@ -51,29 +72,28 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations }) => {
       const reader = new FileReader();
       reader.onloadend = () => setImagePreview(reader.result);
       reader.readAsDataURL(file);
+    } else {
+      // If editing and no new file selected, show existing image if present
+      if (!imagePreview && selectedRoom?.imageUrl) {
+        setImagePreview(selectedRoom.imageUrl);
+      }
     }
   };
 
-const handleSubmit = (e) => {
-  e.preventDefault();
-  const bookingObject = {
-    customerId: form.customerId,
-    companyId: form.companyId,
-    roomId: form.meetingRoom,
-    locationId: form.location,
-    date: form.date,
-    startTime: form.startTime,
-    endTime: form.endTime
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const roomData = {
+      ...form,
+      image: form.image || selectedRoom?.image
+    };
+    if (onSave) onSave(roomData);
   };
-
-  console.log("🧠 BookingForm log:", bookingObject); // 👈 This hits immediately
-
-  if (onSave) onSave(bookingObject);
-};
   return (
     <div className="modal-overlay">
       <form onSubmit={handleSubmit} className="location-form">
-        <h3 style={{ marginBottom: '12px', color: '#2c3e50', width: "100%" }}>Create Meeting Room</h3>
+        <h3 style={{ marginBottom: '12px', color: '#2c3e50', width: "100%" }}>
+          {editData ? "Edit Meeting Room" : "Create Meeting Room"}
+        </h3>
 
         <div className="form-row">
           <div className="form-column">
