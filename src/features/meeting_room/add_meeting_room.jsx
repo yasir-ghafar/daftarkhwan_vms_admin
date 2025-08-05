@@ -2,52 +2,63 @@ import "./add_meeting_room.css";
 import React, { useState, useRef, useEffect } from "react";
 import Select from "react-select";
 
-//const locations = ["New York", "London", "Berlin", "Tokyo"];
 const floors = ["1st Floor", "2nd Floor", "3rd Floor", "4th Floor"];
 const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, editData, amenities }) => {
+const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, amenities }) => {
   const [imagePreview, setImagePreview] = useState(null);
-
-  console.log(amenities);
   const fileInputRef = useRef();
 
   const [form, setForm] = useState({
     name: "",
-    locationId:  "",
+    locationId: "",
     creditsPerSlot: "",
     pricePerCredit: "",
     seatingCapacity: "",
     image: "",
-    openingTime:  "",
+    openingTime: "",
     closingTime: "",
-    floor:  "",
-    status:  "active",
+    floor: "",
+    status: "active",
     availableDays: [],
     amenities: [],
   });
 
   useEffect(() => {
-    if (editData) {
+    if (selectedRoom) {
       setForm({
-        name: editData.name || "",
-        locationId: editData.locationId || "",
-        creditsPerSlot: editData.creditsPerSlot?.toString() || "",
-        pricePerCredit: editData.pricePerCredit?.toString() || "",
-        seatingCapacity: editData.seatingCapacity?.toString() || "",
+        name: selectedRoom.name || "",
+        locationId: selectedRoom.locationId || "",
+        creditsPerSlot: selectedRoom.creditsPerSlot?.toString() || "",
+        pricePerCredit: selectedRoom.pricePerCredit?.toString() || "",
+        seatingCapacity: selectedRoom.seatingCapacity?.toString() || "",
         image: "",
-        openingTime: editData.openingTime || "",
-        closingTime: editData.closingTime || "",
-        floor: editData.floor || "",
-        status: editData.status || "active",
-        availableDays: Array.isArray(editData.availableDays) ? editData.availableDays : [],
-        amenities: Array.isArray(editData.amenities) ? editData.amenities : [],
+        openingTime: selectedRoom.openingTime || "",
+        closingTime: selectedRoom.closingTime || "",
+        floor: selectedRoom.floor || "",
+        status: selectedRoom.status || "active",
+        availableDays: Array.isArray(selectedRoom.availableDays) ? selectedRoom.availableDays : [],
+        amenities: Array.isArray(selectedRoom.amenities) ? selectedRoom.amenities : [],
       });
-      setImagePreview(editData.imageUrl || null);
-    } 
-  }, [editData]);
-
-
+      setImagePreview(selectedRoom.imageUrl || null);
+    } else {
+      setForm({
+        name: "",
+        locationId: "",
+        creditsPerSlot: "",
+        pricePerCredit: "",
+        seatingCapacity: "",
+        image: "",
+        openingTime: "",
+        closingTime: "",
+        floor: "",
+        status: "active",
+        availableDays: [],
+        amenities: [],
+      });
+      setImagePreview(null);
+    }
+  }, [selectedRoom]);
 
   if (!isOpen) return null;
 
@@ -72,44 +83,31 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, editDa
       const reader = new FileReader();
       reader.onloadend = () => setImagePreview(reader.result);
       reader.readAsDataURL(file);
-    } else {
-      // If editing and no new file selected, show existing image if present
-      if (!imagePreview && selectedRoom?.imageUrl) {
-        setImagePreview(selectedRoom.imageUrl);
-      }
+    } else if (!imagePreview && selectedRoom?.imageUrl) {
+      setImagePreview(selectedRoom.imageUrl);
     }
   };
 
   const removeImage = () => {
-  setForm((prev) => ({ ...prev, image: null }));
-  setImagePreview(null);
-
-  
-};
+    setForm((prev) => ({ ...prev, image: null }));
+    setImagePreview(null);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const bookingObject = {
-      customerId: form.customerId,
-      companyId: form.companyId,
-      roomId: form.meetingRoom,
-      locationId: form.location,
-      date: form.date,
-      startTime: form.startTime,
-      endTime: form.endTime,
+    const roomData = {
+      ...form,
+      image: form.image || selectedRoom?.image,
     };
-
-    console.log("🧠 BookingForm log:", bookingObject); // 👈 This hits immediately
-
-    if (onSave) onSave(bookingObject);
+    if (onSave) onSave(roomData);
   };
+
   return (
     <div className="modal-overlay">
       <form onSubmit={handleSubmit} className="location-form">
-        <h3 style={{ marginBottom: '12px', color: '#2c3e50', width: "100%" }}>
-          {editData ? "Edit Meeting Room" : "Create Meeting Room"}
+        <h3 style={{ marginBottom: "12px", color: "#2c3e50", width: "100%" }}>
+          {selectedRoom ? "Edit Meeting Room" : "Create Meeting Room"}
         </h3>
-        <h3 className="form-header">Create Meeting Room</h3>
 
         {/* Room Info */}
         <div className="form-row">
@@ -210,7 +208,7 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, editDa
           </div>
         </div>
 
-        {/* Image, Floor, Status */}
+        {/* Status */}
         <div className="form-row">
           <div className="form-column">
             <div className="form-group">
@@ -228,7 +226,7 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, editDa
           </div>
         </div>
 
-        {/* Amenities */}
+        {/* Amenities and Image */}
         <div className="form-row">
           <div className="form-column">
             <div className="form-group">
@@ -243,17 +241,18 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, editDa
                 className="basic-multi-select"
                 classNamePrefix="select"
                 value={amenities
-                  .filter((amenity) => form.amenities.includes(amenity))
-                  .map((amenity) => ({ value: amenity.id, label: amenity.value }))}
+                  .filter((a) => form.amenities.includes(a.id))
+                  .map((a) => ({ value: a.id, label: a.name }))}
                 onChange={(selectedOptions) =>
                   setForm((prev) => ({
                     ...prev,
-                    amenities: selectedOptions.map((amenity) => amenity.value),
+                    amenities: selectedOptions.map((a) => a.value),
                   }))
                 }
               />
             </div>
           </div>
+
           <div className="form-column">
             <div className="form-group">
               <label>Upload Image:</label>
@@ -265,6 +264,7 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, editDa
               />
             </div>
           </div>
+
           <div className="form-column">
             <div className="form-group">
               {imagePreview && (

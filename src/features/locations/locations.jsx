@@ -10,7 +10,7 @@ const Locations = () => {
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [editLocation, setEditLocation] = useState(null); // 🆕
+  const [editLocation, setEditLocation] = useState(null);
 
   const fetchLocations = async () => {
     try { 
@@ -27,30 +27,41 @@ const Locations = () => {
     fetchLocations();
   }, []);
 
-  const handleAddLocation = async (locationData) => {
-    console.log(`Location Data: ${locationData.lat} and ${locationData.lng}`);
-    try {
-      if (editLocation) {
-        // TODO: add updateLocation API here if available
-        setEditLocation(null);
-        //const data = await updateLocation(editLocation);
-        console.log(editLocation)
-      } else {
-        const data = await addNewLocation(locationData);
-        setLocations((prev) => [...prev, data.data]); // assuming backend returns newly added location
+const handleAddLocation = async (formData) => {
+  try {
+    if (editLocation) {
+      // Convert FormData to plain JS object
+      const updatedData = {};
+      for (let [key, value] of formData.entries()) {
+        updatedData[key] = value;
       }
-    } catch (error) {
-      alert("Unable to save location");
-    } finally {
-      setModalOpen(false);
+      updatedData.id = editLocation.id;
+
+      const updated = await updateLocation(updatedData);
+
+      setLocations((prev) =>
+        prev.map((loc) =>
+          loc.id === updated.id ? updated : loc
+        )
+      );
+      setEditLocation(null);
+    } else {
+      const data = await addNewLocation(formData); // use FormData for adding
+      setLocations((prev) => [...prev, data.data]);
     }
-  };
+  } catch (err) {
+    console.error("Update failed:", err.response?.data || err.message);
+    alert("Unable to save location");
+  } finally {
+    setModalOpen(false);
+  }
+};
 
   const handleDeleteClick = async (id) => {
     try {
       await deleteLocation(id);
       setLocations((prev) => prev.filter((loc) => loc.id !== id));
-    } catch (error) {
+    } catch (err) {
       alert("Error deleting location");
     }
   };
@@ -95,7 +106,7 @@ const Locations = () => {
         <LocationList
           locations={locations}
           onDelete={handleDeleteClick}
-          onEdit={handleEditClick} // 🆕 Pass edit handler
+          onEdit={handleEditClick}
         />
       )}
 
@@ -103,11 +114,10 @@ const Locations = () => {
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
         onSave={handleAddLocation}
-        editData={editLocation} // 🆕
+        editData={editLocation}
       />
     </>
   );
 };
-
 
 export default Locations;

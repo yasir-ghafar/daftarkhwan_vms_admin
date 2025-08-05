@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany, isEdit }) => {
+const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany }) => {
   const [activeTab, setActiveTab] = useState("General");
   const [formData, setFormData] = useState({
     companyName: "",
@@ -10,23 +10,20 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany, isEdit }) => {
     webURL: "",
     location: "",
     reference: "",
-
     billingEmail: "",
     gstNumber: "",
-
     spocName: "",
     spocEmail: "",
-
     kycDoc: "",
   });
 
-  const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
 
   const tabs = ["General", "Billing Details", "SPOC", "KYC"];
 
   useEffect(() => {
     if (selectedCompany) {
+      // populate with selected company data
       setFormData({
         companyName: selectedCompany.companyName || "",
         companyEmail: selectedCompany.companyEmail || "",
@@ -35,16 +32,16 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany, isEdit }) => {
         webURL: selectedCompany.webURL || "",
         location: selectedCompany.location || "",
         reference: selectedCompany.reference || "",
-
         billingEmail: selectedCompany.billingEmail || "",
         gstNumber: selectedCompany.gstNumber || "",
-
         spocName: selectedCompany.spocName || "",
         spocEmail: selectedCompany.spocEmail || "",
-
         kycDoc: selectedCompany.kycDoc || "",
       });
+
+      setPreview(typeof selectedCompany.kycDoc === "string" ? selectedCompany.kycDoc : null);
     } else {
+      // reset form for new entry
       setFormData({
         companyName: "",
         companyEmail: "",
@@ -53,16 +50,16 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany, isEdit }) => {
         webURL: "",
         location: "",
         reference: "",
-
         billingEmail: "",
         gstNumber: "",
-
         spocName: "",
         spocEmail: "",
-
         kycDoc: "",
       });
+
+      setPreview(null);
     }
+
     setActiveTab("General");
   }, [selectedCompany]);
 
@@ -105,16 +102,19 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany, isEdit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Prepare company data object to send
     const companyData = { ...formData };
-    // If kycDoc is a File object, keep it; else if string (existing), keep as is
-    if (companyData.kycDoc instanceof File === false && typeof companyData.kycDoc === "string") {
-      // do nothing, keep existing string
+
+    if (
+      companyData.kycDoc instanceof File === false &&
+      typeof companyData.kycDoc === "string"
+    ) {
+      // leave it
     } else if (companyData.kycDoc instanceof File) {
-      // file selected, keep as is
+      // leave it
     } else {
       companyData.kycDoc = null;
     }
+
     onSave(companyData);
   };
 
@@ -123,7 +123,7 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany, isEdit }) => {
   return (
     <div className="locations-modal-container">
       <div className="modal-content">
-        <h2>{isEdit ? "Edit company" : "Add new company"}</h2>
+        <h2>{selectedCompany ? "Edit company" : "Add new company"}</h2>
         <div className="tab-header">
           {tabs.map((tab) => (
             <button
@@ -214,79 +214,73 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany, isEdit }) => {
           )}
 
           {activeTab === "Billing Details" && (
-            <>
-              <div className="form-row">
-                <label>
-                  Billing Email
-                  <input
-                    name="billingEmail"
-                    type="email"
-                    value={formData.billingEmail}
-                    onChange={handleChange}
-                    required
-                  />
-                </label>
-                <label>
-                  GST Number
-                  <input
-                    name="gstNumber"
-                    value={formData.gstNumber}
-                    onChange={handleChange}
-                    required
-                  />
-                </label>
-              </div>
-            </>
+            <div className="form-row">
+              <label>
+                Billing Email
+                <input
+                  name="billingEmail"
+                  type="email"
+                  value={formData.billingEmail}
+                  onChange={handleChange}
+                  required
+                />
+              </label>
+              <label>
+                GST Number
+                <input
+                  name="gstNumber"
+                  value={formData.gstNumber}
+                  onChange={handleChange}
+                  required
+                />
+              </label>
+            </div>
           )}
 
           {activeTab === "SPOC" && (
-            <>
-              <div className="form-row">
-                <label>
-                  SPOC Name
-                  <input
-                    name="spocName"
-                    value={formData.spocName}
-                    onChange={handleChange}
-                    required
-                  />
-                </label>
-                <label>
-                  SPOC Email
-                  <input
-                    name="spocEmail"
-                    type="email"
-                    value={formData.spocEmail}
-                    onChange={handleChange}
-                    required
-                  />
-                </label>
-              </div>
-            </>
+            <div className="form-row">
+              <label>
+                SPOC Name
+                <input
+                  name="spocName"
+                  value={formData.spocName}
+                  onChange={handleChange}
+                  required
+                />
+              </label>
+              <label>
+                SPOC Email
+                <input
+                  name="spocEmail"
+                  type="email"
+                  value={formData.spocEmail}
+                  onChange={handleChange}
+                  required
+                />
+              </label>
+            </div>
           )}
 
           {activeTab === "KYC" && (
-            <>
-              <div className="form-row">
-                <label>
-                  KYC Document
-                  <input
-                    name="kycDoc"
-                    type="file"
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        kycDoc: e.target.files[0],
-                      }))
-                    }
-                    required={!isEdit || !formData.kycDoc}
-                  />
-                </label>
-                {formData.kycDoc && typeof formData.kycDoc === "string" && (
-                  <p>Current document: {formData.kycDoc}</p>
-                )}
-              </div>
-            </>
+            <div className="form-row">
+              <label>
+                KYC Document
+                <input
+                  name="kycDoc"
+                  type="file"
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      kycDoc: e.target.files[0],
+                    }))
+                  }
+                  required={!formData.kycDoc}
+                />
+              </label>
+              {preview && typeof preview === "string" && (
+                <p>Current document: {preview}</p>
+              )}
+            </div>
           )}
 
           <div className="form-actions">
@@ -308,7 +302,7 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany, isEdit }) => {
                 className="btn-save"
                 disabled={!isCurrentTabValid()}
               >
-                Save
+                {selectedCompany ? "Update" : "Save"}
               </button>
             )}
           </div>
