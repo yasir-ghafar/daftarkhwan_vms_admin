@@ -114,7 +114,6 @@ const Bookings = () => {
       )}
 
 
-      
       {modalOpen && (
         <BookingForm
           isOpen={modalOpen}

@@ -208,7 +208,7 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, amenit
           </div>
         </div>
 
-        {/* Status */}
+        {/* Timing and Status */}
         <div className="form-row">
           {/* Timing */}
         <div className="form-column">
@@ -236,6 +236,8 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, amenit
               />
             </div>
           </div>
+
+          {/* Status */}
           <div className="form-column">
             <div className="form-group">
               <label>Status:</label>

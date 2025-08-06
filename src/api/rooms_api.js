@@ -13,6 +13,11 @@ export const addNewRoom = async (data) => {
     return response.data;
 }
 
+export const updateRoom = async (data) => {
+    console.log(data);
+    const response = await daftarkhwanApi.put(`/meeting-rooms/${data.id}`, data);
+    return response.data;
+}
 
 export const getAmenities = async () => {
     const response = await daftarkhwanApi.get('/amenities');

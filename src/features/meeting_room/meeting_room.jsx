@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getRooms, addNewRoom, getAmenities } from "../../api/rooms_api";
+import { getRooms, addNewRoom, updateRoom, getAmenities } from "../../api/rooms_api";
 import { getLocations } from "../../api/locations_api";
 import RoomsList from "./room_list";
 import AddRoomModal from "./add_meeting_room";
@@ -45,9 +45,9 @@ const MeetingRooms = () => {
           ...roomData,
           id: selectedRoom.id,
         };
-
+        await updateRoom(updatedRoom)
         // TODO: Replace this comment with actual updateRoom(updatedRoom) API call
-        await fetchRooms();  // refresh full list after edit
+        //await fetchRooms();  // refresh full list after edit
       } else {
         console.log("Adding new room:", roomData);
         await addNewRoom(roomData);
