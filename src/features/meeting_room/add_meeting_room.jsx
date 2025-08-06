@@ -210,6 +210,32 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, amenit
 
         {/* Status */}
         <div className="form-row">
+          {/* Timing */}
+        <div className="form-column">
+            <div className="form-group">
+              <label>Opening Time:</label>
+              <input
+                type="time"
+                name="openingTime"
+                value={form.openingTime}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-column">
+            <div className="form-group">
+              <label>Closing Time:</label>
+              <input
+                type="time"
+                name="closingTime"
+                value={form.closingTime}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
           <div className="form-column">
             <div className="form-group">
               <label>Status:</label>

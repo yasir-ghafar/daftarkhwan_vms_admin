@@ -13,7 +13,7 @@ const Locations = () => {
   const [editLocation, setEditLocation] = useState(null);
 
   const fetchLocations = async () => {
-    try { 
+    try {
       const data = await getLocations();
       setLocations(data.data);
       setLoading(false);
@@ -28,34 +28,34 @@ const Locations = () => {
   }, []);
 
 const handleAddLocation = async (formData) => {
+  const isEditing = !!editLocation;
+
+  setModalOpen(false);  // Close the modal immediately
+  setLoading(true);     // Show loading overlay
+
   try {
-    if (editLocation) {
-      // Convert FormData to plain JS object
+    if (isEditing) {
       const updatedData = {};
       for (let [key, value] of formData.entries()) {
         updatedData[key] = value;
       }
       updatedData.id = editLocation.id;
 
-      const updated = await updateLocation(updatedData);
-
-      setLocations((prev) =>
-        prev.map((loc) =>
-          loc.id === updated.id ? updated : loc
-        )
-      );
+      await updateLocation(updatedData);
+      await fetchLocations(); // <--- ✅ Re-fetch fresh list
       setEditLocation(null);
     } else {
-      const data = await addNewLocation(formData); // use FormData for adding
-      setLocations((prev) => [...prev, data.data]);
+      await addNewLocation(formData);
+      await fetchLocations(); // <--- ✅ Re-fetch fresh list
     }
   } catch (err) {
     console.error("Update failed:", err.response?.data || err.message);
     alert("Unable to save location");
   } finally {
-    setModalOpen(false);
+    setLoading(false); // Hide loading overlay
   }
 };
+
 
   const handleDeleteClick = async (id) => {
     try {
@@ -107,6 +107,7 @@ const handleAddLocation = async (formData) => {
           locations={locations}
           onDelete={handleDeleteClick}
           onEdit={handleEditClick}
+          loading={loading}
         />
       )}
 
