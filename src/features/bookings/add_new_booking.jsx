@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from "react";
-// import { getRooms } from "../../api/rooms_api"; // ⛔️ Commented out API call
 
-// Generate time slots from 9:00 to 21:00 (30 min interval)
+// Convert 24-hour to 12-hour format with seconds and AM/PM
+const to12HourFormat = (time24) => {
+  const [hourStr, minute] = time24.split(":");
+  let hour = parseInt(hourStr, 10);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12 || 12;
+  return `${hour.toString().padStart(2, '0')}:${minute}:00 ${ampm}`;
+};
+
+// Generate time slots from 09:00 to 21:30 with 30-min intervals
 const timeSlots = Array.from({ length: 25 }, (_, i) => {
   const hour = String(9 + Math.floor(i / 2)).padStart(2, '0');
   const minute = i % 2 === 0 ? '00' : '30';
   return `${hour}:${minute}`;
 });
 
-const BookingForm = ({ isOpen, onClose, locations }) => {
+const BookingForm = ({ isOpen, onClose, onSave, locations }) => {
   const [formData, setFormData] = useState({
     date: "",
     location: "",
@@ -22,22 +30,21 @@ const BookingForm = ({ isOpen, onClose, locations }) => {
   const [meetingRooms, setMeetingRooms] = useState([]);
   const [bookedSlots, setBookedSlots] = useState([]);
 
-  // 🔧 Simulated static data instead of API
   const staticRooms = [
-    { id: "room1", name: "Conference Room A" },
-    { id: "room2", name: "Board Room B" },
-    { id: "room3", name: "Zoom Room C" }
+    { id: "1", name: "Conference Room A" },
+    { id: "2", name: "Board Room B" },
+    { id: "3", name: "Zoom Room C" }
   ];
 
   const staticBookedSlots = [
-    { date: "2025-08-04", startTime: "11:00", roomId: "room1" },
-    { date: "2025-08-04", startTime: "14:00", roomId: "room2" },
-    { date: "2025-08-04", startTime: "16:30", roomId: "room1" }
+    { date: "2025-08-04", startTime: "11:00", roomId: "1" },
+    { date: "2025-08-04", startTime: "14:00", roomId: "2" },
+    { date: "2025-08-04", startTime: "16:30", roomId: "1" }
   ];
 
   useEffect(() => {
-    setMeetingRooms(staticRooms); // 🟢 Set rooms from static list
-    setBookedSlots(staticBookedSlots); // 🟢 Set booked slots from static list
+    setMeetingRooms(staticRooms);
+    setBookedSlots(staticBookedSlots);
   }, []);
 
   const handleChange = (e) => {
@@ -50,53 +57,37 @@ const BookingForm = ({ isOpen, onClose, locations }) => {
   const getDisabledTimes = () => {
     if (!formData.date || !formData.meetingRoom) return [];
     return bookedSlots
-      .filter(
-        b => b.date === formData.date && b.roomId === formData.meetingRoom
-      )
+      .filter(b => b.date === formData.date && b.roomId === formData.meetingRoom)
       .map(b => b.startTime);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const bookingObject = {
-      customerId: formData.customerId,
-      companyId: formData.companyId,
-      roomId: formData.meetingRoom,
-      locationId: formData.location,
+    const payload = {
       date: formData.date,
-      startTime: formData.startTime,
-      endTime: formData.endTime
+      startTime: to12HourFormat(formData.startTime),
+      endTime: to12HourFormat(formData.endTime),
+      location_id: parseInt(formData.location),
+      room_id: parseInt(formData.meetingRoom),
+      company_id: parseInt(formData.companyId),
+      user_id: parseInt(formData.customerId),
+      status: "confirmed"
     };
 
-    console.log("📝 Booking Submitted:", bookingObject); // ✅ View this in browser console
-
-    onClose(); // Close modal after logging
+    console.log("📝 Booking Submitted:", payload);
+    onSave(payload);
+    onClose();
   };
 
   const disabledTimes = getDisabledTimes();
   const isDateSelected = !!formData.date;
-
   if (!isOpen) return null;
 
   return (
     <div className="modal-overlay">
       <form onSubmit={handleSubmit} className="location-form">
-        {/* Top: Date Field */}
         <div style={{ marginBottom: "20px" }}>
-          <label style={{ fontWeight: "bold" }}>Select Date</label><br />
-          <input
-            type="date"
-            name="date"
-            value={formData.date}
-            onChange={handleChange}
-            required
-            style={{ width: "100%", padding: "8px", marginTop: "4px" }}
-          />
-        </div>
-
-        {/* Rest of the fields (after date is selected) */}
-        {isDateSelected && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
             <div style={{ flex: "1" }}>
               <label>Location</label><br />
@@ -131,7 +122,7 @@ const BookingForm = ({ isOpen, onClose, locations }) => {
             <div style={{ flex: "1" }}>
               <label>Company ID</label><br />
               <input
-                type="text"
+                type="number"
                 name="companyId"
                 value={formData.companyId}
                 onChange={handleChange}
@@ -142,7 +133,7 @@ const BookingForm = ({ isOpen, onClose, locations }) => {
             <div style={{ flex: "1" }}>
               <label>Customer ID</label><br />
               <input
-                type="text"
+                type="number"
                 name="customerId"
                 value={formData.customerId}
                 onChange={handleChange}
@@ -150,41 +141,57 @@ const BookingForm = ({ isOpen, onClose, locations }) => {
               />
             </div>
 
-            <div style={{ flex: "1" }}>
-              <label>Start Time</label><br />
-              <select
-                name="startTime"
-                value={formData.startTime}
+            <div>
+              <label><strong>Select Date</strong></label><br />
+              <input
+                type="date"
+                name="date"
+                value={formData.date}
                 onChange={handleChange}
                 required
-              >
-                <option value="">Select Time</option>
-                {timeSlots.map(time => (
-                  <option key={time} value={time} disabled={disabledTimes.includes(time)}>
-                    {time} {disabledTimes.includes(time) ? "(Booked)" : ""}
-                  </option>
-                ))}
-              </select>
+                style={{ width: "100%", padding: "8px", marginTop: "4px" }}
+              />
             </div>
 
-            <div style={{ flex: "1" }}>
-              <label>End Time</label><br />
-              <select
-                name="endTime"
-                value={formData.endTime}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select Time</option>
-                {timeSlots.map(time => (
-                  <option key={time} value={time} disabled={disabledTimes.includes(time)}>
-                    {time} {disabledTimes.includes(time) ? "(Booked)" : ""}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {isDateSelected && (
+              <>
+                <div style={{ flex: "1" }}>
+                  <label>Start Time</label><br />
+                  <select
+                    name="startTime"
+                    value={formData.startTime}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Select Time</option>
+                    {timeSlots.map(time => (
+                      <option key={time} value={time} disabled={disabledTimes.includes(time)}>
+                        {to12HourFormat(time)} {disabledTimes.includes(time) ? "(Booked)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={{ flex: "1" }}>
+                  <label>End Time</label><br />
+                  <select
+                    name="endTime"
+                    value={formData.endTime}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Select Time</option>
+                    {timeSlots.map(time => (
+                      <option key={time} value={time} disabled={disabledTimes.includes(time)}>
+                        {to12HourFormat(time)} {disabledTimes.includes(time) ? "(Booked)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
+            )}
           </div>
-        )}
+        </div>
 
         <div className="button-group" style={{ marginTop: "30px", textAlign: "center", display: "flex", justifyContent: "center", gap: "20px" }}>
           <button type="submit" className="btn-proceed" disabled={!formData.date}>Proceed</button>

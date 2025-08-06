@@ -1,9 +1,7 @@
 import React from "react";
 
-const BookingsList = ({bookings}) => {
-    
-    
-    return (
+const BookingsList = ({ bookings }) => {
+  return (
     <div className="table-container">
       <table className="location-table">
         <thead>
@@ -14,26 +12,23 @@ const BookingsList = ({bookings}) => {
             <th>Member</th>
             <th>Company</th>
             <th>Cancel</th>
-            <th></th>
           </tr>
         </thead>
         <tbody>
-              {bookings.map((booking, index) => {
-                return (
-                  <tr key={index}>
-                    <td>{booking.date}</td>
-                    <td>{booking.Room.name}</td>
-                    <td> {booking.startTime} - {booking.endTime}</td>
-                    <td>{booking.User.name}</td>
-                    <td>{booking.User.Company.name}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
+          {bookings.map((booking, index) => (
+            <tr key={index}>
+              <td>{booking.date}</td>
+              <td>{booking.room_id || booking.Room?.name || "-"}</td>
+              <td>{booking.startTime} - {booking.endTime}</td>
+              <td>{booking.user_id || booking.User?.name || "-"}</td>
+              <td>{booking.company_id || booking.User?.Company?.name || "-"}</td>
+              <td></td>
+            </tr>
+          ))}
+        </tbody>
       </table>
     </div>
   );
-}
-
+};
 
 export default BookingsList;

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getBookings } from "../../api/bookings";
 import { getLocations } from "../../api/locations_api";
-import BookingForm from "./add_new_booking"; // update path if needed
+import BookingForm from "./add_new_booking";
 import BookingsList from "./booking_list";
 
 const Bookings = () => {
@@ -11,16 +11,13 @@ const Bookings = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [editBooking, setEditBooking] = useState(null);
 
   const fetchBookings = async () => {
     setLoading(true);
     try {
       const data = await getBookings();
-      console.log(data.data);
       setBookings(data.data);
     } catch (err) {
-      console.error("Error fetching bookings:", err);
       setError("Failed to load bookings.");
     } finally {
       setLoading(false);
@@ -36,49 +33,16 @@ const Bookings = () => {
     try {
       const data = await getLocations();
       setLocations(data.data);
-      setEditBooking(null);
       setModalOpen(true);
-    } catch (err) {
-      console.error('Error fetching locations:', err);
+    } catch {
       setError("Failed to load locations.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAddOrEditBooking = async (bookingData) => {
-    try {
-      if (editBooking) {
-        console.log("Edit booking:", editBooking, bookingData);
-        setEditBooking(null);
-      } else {
-        console.log("Add new booking:", bookingData);
-      }
-    } catch (error) {
-      alert("Unable to save booking");
-    } finally {
-      setModalOpen(false);
-    }
-  };
-
-  const handleEditClick = async (booking) => {
-    try {
-      const data = await getLocations();
-      setLocations(data.data);
-      setEditBooking(booking);
-      setModalOpen(true);
-    } catch (err) {
-      console.error('Error loading locations for edit:', err);
-      setError("Failed to load locations.");
-    }
-  };
-
-  const handleDeleteClick = async (id) => {
-    try {
-      console.log("Delete booking:", id);
-    } catch (error) {
-      alert("Error deleting booking");
-    }
+  const handleAddOrEditBooking = (newBooking) => {
+    setBookings(prev => [...prev, newBooking]); // add to frontend list
   };
 
   return (
@@ -108,23 +72,15 @@ const Bookings = () => {
       {error && <div className="error-popup"><p>{error}</p></div>}
 
       {!loading && !error && (
-        <BookingsList
-        bookings={bookings}
-        />
+        <BookingsList bookings={bookings} />
       )}
 
-
-      
       {modalOpen && (
         <BookingForm
           isOpen={modalOpen}
-          onClose={() => {
-            setModalOpen(false);
-            setEditBooking(null);
-          }}
+          onClose={() => setModalOpen(false)}
           onSave={handleAddOrEditBooking}
           locations={locations}
-          editData={editBooking}
         />
       )}
     </>
