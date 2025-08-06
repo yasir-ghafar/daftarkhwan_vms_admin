@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getRooms, addNewRoom, updateRoom, getAmenities } from "../../api/rooms_api";
+
 import { getLocations } from "../../api/locations_api";
 import RoomsList from "./room_list";
 import AddRoomModal from "./add_meeting_room";
@@ -35,8 +36,8 @@ const MeetingRooms = () => {
   }, []);
 
   const handleAddRoom = async (roomData) => {
-    setModalOpen(false);  // close modal immediately
-    setLoading(true);     // show loader
+    setModalOpen(false);
+    setLoading(true);
 
     try {
       if (selectedRoom) {
@@ -48,10 +49,11 @@ const MeetingRooms = () => {
         await updateRoom(updatedRoom)
         // TODO: Replace this comment with actual updateRoom(updatedRoom) API call
         //await fetchRooms();  // refresh full list after edit
+
       } else {
-        console.log("Adding new room:", roomData);
-        await addNewRoom(roomData);
-        await fetchRooms();  // refresh full list after create
+        const res = await addNewRoom(roomData);
+        console.log("Room added:", res.data);
+        setRooms((prevRooms) => [...prevRooms, res.data]);
       }
 
       setSelectedRoom(null);
@@ -119,7 +121,7 @@ const MeetingRooms = () => {
   const handleConfirmDelete = (e) => {
     setIsDialogOpen(false);
     console.log(`Deleting Item with id: ${e.id}`);
-    // Implement actual delete API call and refresh rooms list
+    // TODO: Implement actual delete API call and update rooms
   };
 
   const handleCancelDelete = () => {
