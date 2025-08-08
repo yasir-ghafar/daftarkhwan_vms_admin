@@ -4,7 +4,7 @@ import LoginPage from "../features/auth/login_page";
 import Home from "../features/home/home";
 import Locations from "../features/locations/locations";
 import MeetingRooms from "../features/meeting_room/meeting_room";
-import Community from "../features/community/community";
+import Companies from "../features/community/companies";
 import Bookings from "../features/bookings/bookings";
 
 const AppRoutes = () => (
@@ -14,7 +14,7 @@ const AppRoutes = () => (
             <Route path="locations" element={<Locations />}/>
             <Route path="meeting-rooms" element={<MeetingRooms/>}/>
             <Route path="bookings" element={<Bookings />}/>
-            <Route path="community" element={<Community/>}/>
+            <Route path="community" element={<Companies/>}/>
         </Route>
     </Routes>
 );

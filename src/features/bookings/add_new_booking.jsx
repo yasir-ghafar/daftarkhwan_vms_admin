@@ -187,9 +187,9 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
                   <option key={user.id} value={user.id}>{user.name}</option>
                 ))}
               </select>
-            
             </div>
-
+          </div>
+          <div style={{ flex: "1", display: "flex", flexWrap: "wrap", gap: "20px" }}>
             <div>
               <label><strong>Select Date</strong></label><br />
               <input
@@ -200,8 +200,7 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
                 required
                 style={{ width: "100%", padding: "8px", marginTop: "4px" }}
               />
-            </div>
-
+            </div> 
             {isDateSelected && (
               <>
                 <div style={{ flex: "1" }}>
