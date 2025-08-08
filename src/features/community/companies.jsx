@@ -27,7 +27,7 @@ const Companies = () => {
   const handleAddCompany = async (newCompany) => {
     console.log(newCompany);
     try {
-      const data = await createCompany(newLocation);
+      const data = await createCompany(newCompany);
       console.log(data);
     } catch (error) {
       alert("Unable to create Company");
