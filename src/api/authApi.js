@@ -26,3 +26,9 @@ export const login = async (email, password) => {
         throw err;
     }
 }
+
+
+export const getUsersByCompanyId = async (id) => {
+    const response = await daftarkhwanApi.get(`/auth/users/company/${id}`);
+    return response.data;
+}

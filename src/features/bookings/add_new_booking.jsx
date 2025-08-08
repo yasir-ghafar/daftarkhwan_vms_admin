@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { getRoomByLocationId } from '../../api/rooms_api';
+import { getUsersByCompanyId } from "../../api/authApi";
+
 
 // Convert 24-hour to 12-hour format with seconds and AM/PM
 const to12HourFormat = (time24) => {
@@ -9,6 +12,18 @@ const to12HourFormat = (time24) => {
   return `${hour.toString().padStart(2, '0')}:${minute}:00 ${ampm}`;
 };
 
+//
+const toDateTimeString = (date, time) => {
+  if (!date || !time) return "";
+
+  // Ensure date is in YYYY-MM-DD
+  const [year, month, day] = date.split("-");
+  const [hour, minute] = time.split(":");
+
+  // Return formatted datetime
+  return `${year}-${month}-${day} ${hour}:${minute}:00`;
+};
+
 // Generate time slots from 09:00 to 21:30 with 30-min intervals
 const timeSlots = Array.from({ length: 25 }, (_, i) => {
   const hour = String(9 + Math.floor(i / 2)).padStart(2, '0');
@@ -16,7 +31,7 @@ const timeSlots = Array.from({ length: 25 }, (_, i) => {
   return `${hour}:${minute}`;
 });
 
-const BookingForm = ({ isOpen, onClose, onSave, locations }) => {
+const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
   const [formData, setFormData] = useState({
     date: "",
     location: "",
@@ -28,24 +43,49 @@ const BookingForm = ({ isOpen, onClose, onSave, locations }) => {
   });
 
   const [meetingRooms, setMeetingRooms] = useState([]);
+  const [users, setUsers] = useState([]);
   const [bookedSlots, setBookedSlots] = useState([]);
 
-  const staticRooms = [
-    { id: "1", name: "Conference Room A" },
-    { id: "2", name: "Board Room B" },
-    { id: "3", name: "Zoom Room C" }
-  ];
+  useEffect(() => {
+    const fetchUsers = async () => {
+      if (!formData.companyId) {
+        setUsers([]);
+        return;
+      }
 
-  const staticBookedSlots = [
-    { date: "2025-08-04", startTime: "11:00", roomId: "1" },
-    { date: "2025-08-04", startTime: "14:00", roomId: "2" },
-    { date: "2025-08-04", startTime: "16:30", roomId: "1" }
-  ];
+      try {
+        const usersRes = await getUsersByCompanyId(formData.companyId);
+        const data = usersRes.data;
+        setUsers(data)
+      } catch (err) {
+        console.error("Failed to fetch Users", err);
+        setUsers([]);
+      }
+    };
+
+    fetchUsers();
+
+  },[formData.companyId])
 
   useEffect(() => {
-    setMeetingRooms(staticRooms);
-    setBookedSlots(staticBookedSlots);
-  }, []);
+    const fetchMeetingRooms = async () => {
+      if (!formData.location) {
+        setMeetingRooms([]);
+        return;
+      }
+
+      try {
+        const res = await getRoomByLocationId(formData.location);
+        const data = res.data;
+        setMeetingRooms(data);
+      } catch (err) {
+        console.error("Failed to fetch meeting rooms", err);
+        setMeetingRooms([]);
+      }
+    };
+
+    fetchMeetingRooms();
+  }, [formData.location]);
 
   const handleChange = (e) => {
     setFormData(prev => ({
@@ -66,8 +106,8 @@ const BookingForm = ({ isOpen, onClose, onSave, locations }) => {
 
     const payload = {
       date: formData.date,
-      startTime: to12HourFormat(formData.startTime),
-      endTime: to12HourFormat(formData.endTime),
+      startTime: toDateTimeString(formData.date, formData.startTime),
+      endTime: toDateTimeString(formData.date, formData.endTime),
       location_id: parseInt(formData.location),
       room_id: parseInt(formData.meetingRoom),
       company_id: parseInt(formData.companyId),
@@ -120,25 +160,34 @@ const BookingForm = ({ isOpen, onClose, onSave, locations }) => {
             </div>
 
             <div style={{ flex: "1" }}>
-              <label>Company ID</label><br />
-              <input
-                type="number"
-                name="companyId"
-                value={formData.companyId}
+              <label>Company</label><br />
+              <select
+              name="companyId"
+              value={formData.companyId}
                 onChange={handleChange}
                 required
-              />
+              >
+              <option value="">Select Company</option>
+              {companies.map(company => (
+                <option key={company.id} value={company.id}>{company.name}</option>
+              ))}
+              </select>
             </div>
 
             <div style={{ flex: "1" }}>
-              <label>Customer ID</label><br />
-              <input
+              <label>Member</label><br />
+              <select
                 type="number"
                 name="customerId"
                 value={formData.customerId}
                 onChange={handleChange}
-                required
-              />
+                required>
+                <option value="">Select memeber</option>
+                {users.map(user => (
+                  <option key={user.id} value={user.id}>{user.name}</option>
+                ))}
+              </select>
+            
             </div>
 
             <div>

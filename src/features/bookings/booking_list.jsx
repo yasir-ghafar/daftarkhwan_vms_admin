@@ -1,5 +1,13 @@
 import React from "react";
 
+const to12HourFormat = (time24) => {
+  const [hourStr, minute] = time24.split(":");
+  let hour = parseInt(hourStr, 10);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12 || 12;
+  return `${hour.toString().padStart(2, '0')}:${minute}:00 ${ampm}`;
+};
+
 const BookingsList = ({ bookings }) => {
   return (
     <div className="table-container">
@@ -18,10 +26,10 @@ const BookingsList = ({ bookings }) => {
           {bookings.map((booking, index) => (
             <tr key={index}>
               <td>{booking.date}</td>
-              <td>{booking.room_id || booking.Room?.name || "-"}</td>
-              <td>{booking.startTime} - {booking.endTime}</td>
-              <td>{booking.user_id || booking.User?.name || "-"}</td>
-              <td>{booking.company_id || booking.User?.Company?.name || "-"}</td>
+              <td>{booking.Room?.name}</td>
+              <td>{to12HourFormat(booking.startTime)} - {to12HourFormat(booking.endTime)}</td>
+              <td>{booking.User?.name}</td>
+              <td>{booking.User?.Company?.name}</td>
               <td></td>
             </tr>
           ))}
