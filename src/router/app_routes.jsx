@@ -4,8 +4,9 @@ import LoginPage from "../features/auth/login_page";
 import Home from "../features/home/home";
 import Locations from "../features/locations/locations";
 import MeetingRooms from "../features/meeting_room/meeting_room";
-import Companies from "../features/community/companies";
 import Bookings from "../features/bookings/bookings";
+import Companies from "../features/community/companies";
+import Users from "../features/user/user";
 
 const AppRoutes = () => (
     <Routes>
@@ -15,6 +16,7 @@ const AppRoutes = () => (
             <Route path="meeting-rooms" element={<MeetingRooms/>}/>
             <Route path="bookings" element={<Bookings />}/>
             <Route path="community" element={<Companies/>}/>
+            <Route path="users" element={<Users/>}/>
         </Route>
     </Routes>
 );

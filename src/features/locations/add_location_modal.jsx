@@ -30,7 +30,8 @@ const AddLocationModal = ({ isOpen, onClose, onSave, editData }) => {
         city: editData.city || "",
         status: editData.status || "active",
         lat: editData.lat || "0.00",
-        lng: editData.lng || "0.00"
+        lng: editData.lng || "0.00",
+        image: image,
       });
       setPreview(editData.imageUrl || null);
     } else {
@@ -65,19 +66,27 @@ const AddLocationModal = ({ isOpen, onClose, onSave, editData }) => {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+const handleSubmit = (e) => {
+  e.preventDefault();
 
-    const data = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
+  const data = new FormData();
+
+  Object.entries(formData).forEach(([key, value]) => {
+    if (key !== "image") {
       data.append(key, value);
-    });
-    if (image) {
-      data.append("image", image);
     }
+  });
 
-    onSave(data);
-  };
+  if (image) {
+    // New file selected
+    data.append("image", image);
+  } else if (editData?.imageUrl) {
+    // No new file, send existing image reference
+    data.append("imageUrl", editData.imageUrl);
+  }
+
+  onSave(data);
+};
 
   if (!isOpen) return null;
 
