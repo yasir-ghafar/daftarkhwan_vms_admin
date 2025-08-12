@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
+import ErrorPopup from "../../components/error_popup";
 
 const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany }) => {
   const [activeTab, setActiveTab] = useState("General");
+  const [errorMessage, setErrorMessage] = useState("");
+
   const [formData, setFormData] = useState({
     companyName: "",
     companyEmail: "",
@@ -23,7 +26,6 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany }) => {
 
   useEffect(() => {
     if (selectedCompany) {
-      // populate with selected company data
       setFormData({
         companyName: selectedCompany.companyName || "",
         companyEmail: selectedCompany.companyEmail || "",
@@ -38,10 +40,8 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany }) => {
         spocEmail: selectedCompany.spocEmail || "",
         kycDoc: selectedCompany.kycDoc || "",
       });
-
       setPreview(typeof selectedCompany.kycDoc === "string" ? selectedCompany.kycDoc : null);
     } else {
-      // reset form for new entry
       setFormData({
         companyName: "",
         companyEmail: "",
@@ -56,10 +56,8 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany }) => {
         spocEmail: "",
         kycDoc: "",
       });
-
       setPreview(null);
     }
-
     setActiveTab("General");
   }, [selectedCompany]);
 
@@ -79,8 +77,6 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany }) => {
         ]);
       case "Billing Details":
         return !isFieldEmpty(["billingEmail", "gstNumber"]);
-      case "SPOC":
-        return !isFieldEmpty(["spocName", "spocEmail"]);
       case "KYC":
         return !isFieldEmpty(["kycDoc"]);
       default:
@@ -94,6 +90,10 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany }) => {
   };
 
   const handleNext = () => {
+    if (!isCurrentTabValid()) {
+      setErrorMessage(`Please fill all required fields in the "${activeTab}" tab before proceeding.`);
+      return;
+    }
     const currentIndex = tabs.indexOf(activeTab);
     if (currentIndex < tabs.length - 1) {
       setActiveTab(tabs[currentIndex + 1]);
@@ -102,6 +102,12 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!isCurrentTabValid()) {
+      setErrorMessage(`Please fill all required fields in the "${activeTab}" tab before saving.`);
+      return;
+    }
+
     const companyData = { ...formData };
 
     if (
@@ -115,200 +121,185 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany }) => {
       companyData.kycDoc = null;
     }
 
-    onSave(companyData);
+    try {
+      onSave(companyData);
+    } catch (err) {
+      setErrorMessage(err.message || "Failed to save company.");
+    }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="locations-modal-container">
-      <div className="modal-content">
-        <h2>{selectedCompany ? "Edit company" : "Add new company"}</h2>
-        <div className="tab-header">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              className={`tab-button ${tab === activeTab ? "active" : ""}`}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+    <>
+      <div className="locations-modal-container">
+        <div className="modal-content">
+          <h2>{selectedCompany ? "Edit company" : "Add new company"}</h2>
+          <div className="tab-header">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                className={`tab-button ${tab === activeTab ? "active" : ""}`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
 
-        <form onSubmit={handleSubmit} className="tab-form">
-          {activeTab === "General" && (
-            <>
+          <form onSubmit={handleSubmit} className="tab-form">
+            {activeTab === "General" && (
+              <>
+                <div className="form-row">
+                  <label>
+                    Company name
+                    <input
+                      name="companyName"
+                      value={formData.companyName}
+                      onChange={handleChange}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Company e-mail
+                    <input
+                      name="companyEmail"
+                      type="email"
+                      value={formData.companyEmail}
+                      onChange={handleChange}
+                      required
+                    />
+                  </label>
+                </div>
+                <div className="form-row">
+                  <label>
+                    Contact number
+                    <input
+                      name="contactNumber"
+                      value={formData.contactNumber}
+                      onChange={handleChange}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Business Type (optional)
+                    <input
+                      name="businessType"
+                      value={formData.businessType}
+                      onChange={handleChange}
+                    />
+                  </label>
+                </div>
+                <div className="form-row">
+                  <label>
+                    Web URL
+                    <input
+                      name="webURL"
+                      value={formData.webURL}
+                      onChange={handleChange}
+                      required
+                    />
+                  </label>
+                </div>
+                <div className="form-row">
+                  <label>
+                    Location
+                    <input
+                      name="location"
+                      value={formData.location}
+                      onChange={handleChange}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Reference
+                    <input
+                      name="reference"
+                      value={formData.reference}
+                      onChange={handleChange}
+                      required
+                    />
+                  </label>
+                </div>
+              </>
+            )}
+
+            {activeTab === "Billing Details" && (
               <div className="form-row">
                 <label>
-                  Company name
+                  Billing Email
                   <input
-                    name="companyName"
-                    value={formData.companyName}
-                    onChange={handleChange}
-                    required
-                  />
-                </label>
-                <label>
-                  Company e-mail
-                  <input
-                    name="companyEmail"
+                    name="billingEmail"
                     type="email"
-                    value={formData.companyEmail}
+                    value={formData.billingEmail}
+                    onChange={handleChange}
+                    required
+                  />
+                </label>
+                <label>
+                  GST Number
+                  <input
+                    name="gstNumber"
+                    value={formData.gstNumber}
                     onChange={handleChange}
                     required
                   />
                 </label>
               </div>
+            )}
+
+            {activeTab === "KYC" && (
               <div className="form-row">
                 <label>
-                  Contact number
+                  KYC Document
                   <input
-                    name="contactNumber"
-                    value={formData.contactNumber}
-                    onChange={handleChange}
-                    required
+                    name="kycDoc"
+                    type="file"
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        kycDoc: e.target.files[0],
+                      }))
+                    }
+                    required={!formData.kycDoc}
                   />
                 </label>
-                <label>
-                  Business Type (optional)
-                  <input
-                    name="businessType"
-                    value={formData.businessType}
-                    onChange={handleChange}
-                  />
-                </label>
+                {preview && typeof preview === "string" && (
+                  <p>Current document: {preview}</p>
+                )}
               </div>
-              <div className="form-row">
-                <label>
-                  Web URL
-                  <input
-                    name="webURL"
-                    value={formData.webURL}
-                    onChange={handleChange}
-                    required
-                  />
-                </label>
-              </div>
-              <div className="form-row">
-                <label>
-                  Location
-                  <input
-                    name="location"
-                    value={formData.location}
-                    onChange={handleChange}
-                    required
-                  />
-                </label>
-                <label>
-                  Reference
-                  <input
-                    name="reference"
-                    value={formData.reference}
-                    onChange={handleChange}
-                    required
-                  />
-                </label>
-              </div>
-            </>
-          )}
+            )}
 
-          {activeTab === "Billing Details" && (
-            <div className="form-row">
-              <label>
-                Billing Email
-                <input
-                  name="billingEmail"
-                  type="email"
-                  value={formData.billingEmail}
-                  onChange={handleChange}
-                  required
-                />
-              </label>
-              <label>
-                GST Number
-                <input
-                  name="gstNumber"
-                  value={formData.gstNumber}
-                  onChange={handleChange}
-                  required
-                />
-              </label>
-            </div>
-          )}
-
-          {activeTab === "SPOC" && (
-            <div className="form-row">
-              <label>
-                SPOC Name
-                <input
-                  name="spocName"
-                  value={formData.spocName}
-                  onChange={handleChange}
-                  required
-                />
-              </label>
-              <label>
-                SPOC Email
-                <input
-                  name="spocEmail"
-                  type="email"
-                  value={formData.spocEmail}
-                  onChange={handleChange}
-                  required
-                />
-              </label>
-            </div>
-          )}
-
-          {activeTab === "KYC" && (
-            <div className="form-row">
-              <label>
-                KYC Document
-                <input
-                  name="kycDoc"
-                  type="file"
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      kycDoc: e.target.files[0],
-                    }))
-                  }
-                  required={!formData.kycDoc}
-                />
-              </label>
-              {preview && typeof preview === "string" && (
-                <p>Current document: {preview}</p>
+            <div className="form-actions">
+              <button type="button" onClick={onClose} className="btn-cancel">
+                Cancel
+              </button>
+              {activeTab !== "KYC" ? (
+                <button
+                  type="button"
+                  className="btn-next"
+                  onClick={handleNext}
+                  disabled={!isCurrentTabValid()}
+                >
+                  Next
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  className="btn-save"
+                  disabled={!isCurrentTabValid()}
+                >
+                  {selectedCompany ? "Update" : "Save"}
+                </button>
               )}
             </div>
-          )}
-
-          <div className="form-actions">
-            <button type="button" onClick={onClose} className="btn-cancel">
-              Cancel
-            </button>
-            {activeTab !== "KYC" ? (
-              <button
-                type="button"
-                className="btn-next"
-                onClick={handleNext}
-                disabled={!isCurrentTabValid()}
-              >
-                Next
-              </button>
-            ) : (
-              <button
-                type="submit"
-                className="btn-save"
-                disabled={!isCurrentTabValid()}
-              >
-                {selectedCompany ? "Update" : "Save"}
-              </button>
-            )}
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
-    </div>
+
+      {/* Error Popup */}
+      <ErrorPopup message={errorMessage} onClose={() => setErrorMessage("")} />
+    </>
   );
 };
 

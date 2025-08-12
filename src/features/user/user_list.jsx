@@ -7,6 +7,7 @@ const UsersList = ({ users, onDelete, onEdit }) => {
     onDelete(user);
   };
 
+  console.log(users);
   return (
     <div className="table-container">
       <table className="location-table">
@@ -26,7 +27,13 @@ const UsersList = ({ users, onDelete, onEdit }) => {
               <td>{user.name}</td>
               <td>{user.email}</td>
               <td>{user.role}</td>
-              <td>{user.company?.name ?? 'N/A'}</td>
+              <td>
+                {user.company_name ||
+                 user.company?.name ||
+                 user.companyName ||
+                 (typeof user.company === 'string' ? user.company : null) ||
+                 'N/A'}
+              </td>
               <td>
                 <span
                   style={{ cursor: 'pointer' }}

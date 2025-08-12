@@ -3,6 +3,7 @@ import { getUsers } from "../../api/user_api";
 import UsersList from "./user_list";
 import AddUserModal from "./add_new_user";
 import DeleteDialog from "../../components/DeleteDialog";
+import SuccessPopup from "../../components/confirmation_popup";
 
 const Users = () => {
   const [search, setSearch] = useState("");
@@ -13,6 +14,8 @@ const Users = () => {
   const [error, setError] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [deleteMessage, setDeleteMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
 
   const fetchUsers = async () => {
@@ -35,6 +38,7 @@ const Users = () => {
 
   // Add or update user locally
   const handleAddUser = (userData) => {
+    setIsLoading(true);
     setModalOpen(false);
     if (selectedUser) {
       setUsers((prev) =>
@@ -42,22 +46,28 @@ const Users = () => {
           u.id === selectedUser.id ? { ...selectedUser, ...userData } : u
         )
       );
+      setSuccessMessage("User updated successfully!");
     } else {
       const newUser = { id: Date.now(), ...userData };
       setUsers((prev) => [...prev, newUser]);
+      setSuccessMessage("User created successfully!");
     }
     setSelectedUser(null);
+    setIsLoading(false);
   };
 
   // Open modal for new user
   const openAddNewUser = async () => {
+    setIsLoading(true);
     try {
       const userRes = await getUsers();
       setUsers(userRes.data);
       setModalOpen(true);
+      setIsLoading(false);
     } catch (err) {
       console.error("Error opening modal:", err);
       setError("Failed to open modal.");
+      setIsLoading(false);
     }
   };
 
@@ -99,6 +109,7 @@ const Users = () => {
 
   return (
     <div>
+      {isLoading && <div className="loading-bar"></div>}
       <div className="top-bar">
         <h2>Users</h2>
         <button className="add-btn" onClick={openAddNewUser}>
@@ -154,6 +165,12 @@ const Users = () => {
         selectedUser={selectedUser}
         isEdit={!!selectedUser}
       />
+      {successMessage && (
+        <SuccessPopup
+          message={successMessage}
+          onClose={() => setSuccessMessage("")}
+        />
+      )}
     </div>
   );
 };

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { getRooms, addNewRoom, updateRoom, getAmenities } from "../../api/rooms_api";
-
 import { getLocations } from "../../api/locations_api";
 import RoomsList from "./room_list";
 import AddRoomModal from "./add_meeting_room";
 import DeleteDialog from "../../components/DeleteDialog";
+import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+import app from "../../firebase/firebase";
 
 const MeetingRooms = () => {
   const [search, setSearch] = useState("");
@@ -39,31 +40,63 @@ const MeetingRooms = () => {
     setModalOpen(false);
     setLoading(true);
 
-    try {
-      if (selectedRoom) {
-        const updatedRoom = {
-          ...selectedRoom,
-          ...roomData,
-          id: selectedRoom.id,
-        };
-        await updateRoom(updatedRoom)
-        // TODO: Replace this comment with actual updateRoom(updatedRoom) API call
-        //await fetchRooms();  // refresh full list after edit
-
-      } else {
-        const res = await addNewRoom(roomData);
-        console.log("Room added:", res.data);
-        setRooms((prevRooms) => [...prevRooms, res.data]);
-      }
-
-      setSelectedRoom(null);
-    } catch (err) {
-      console.error("Error saving room:", err);
-      setError(`Failed to save room: ${err.message || err}`);
-    } finally {
-      setLoading(false);
+ try {
+    // Step 1: Convert formData into a plain object
+    const dataObject = {};
+    for (let [key, value] of roomData.entries()) {
+      dataObject[key] = value;
     }
+
+    // Step 2: If an image file exists, upload it to Firebase
+    const imageFile = roomData.get("image"); // Assuming "image" is the field name in your form
+    if (imageFile && imageFile instanceof File && imageFile.size > 0) {
+      try {
+        const imageUrl = await uploadImageToFirebase(imageFile); // <--- Your helper function
+        dataObject.image = imageUrl; // Replace the file with the Firebase URL
+      } catch (uploadErr) {
+        console.error("Image upload failed:", uploadErr);
+        alert("Image upload failed. Please try again.");
+        return; // Stop the process if upload fails
+      }
+    }
+
+    // Step 3: If editing, include the ID and update, else create new
+    if (handleAddRoom) {
+      dataObject.id = setRooms.id;
+      await updateRoom(dataObject);
+    } else {
+      await addNewRoom(dataObject);
+    }
+
+    // Step 4: Refresh list after operation
+    await fetchRooms();
+
+    // Step 5: Clear edit state if editing
+    if (handleEdit) setRooms(null);
+
+  } catch (err) {
+    console.error("Save failed:", err.response?.data || err.message);
+    alert("Unable to save location");
+  } finally {
+    setLoading(false); // Hide loading overlay
+  }
+
   };
+
+  const uploadImageToFirebase = async (imageFile) => {
+  try{
+  if (imageFile) {
+    const storage=getStorage(app);
+    const storageRef = ref(storage, "images/"+imageFile.name);
+    await uploadBytes(storageRef, imageFile);
+    const downloadUrl = await getDownloadURL(storageRef);
+    return downloadUrl;
+   }
+  } catch(imageUploadError) {
+    console.log(imageUploadError)
+    return null;
+  } 
+}
 
   const openAddNewRoom = async () => {
     setLoading(true);
