@@ -85,9 +85,21 @@ const Users = () => {
     setSelectedUser(null);
   };
 
+  // 🔍 Filter users before sending to UsersList
+  const filteredUsers = users.filter((user) => {
+    const searchTerm = search.toLowerCase();
+    return (
+      user.name?.toLowerCase().includes(searchTerm) ||
+      user.email?.toLowerCase().includes(searchTerm) ||
+      user.role?.toLowerCase().includes(searchTerm) ||
+      user.company_name?.toLowerCase().includes(searchTerm) ||
+      user.company?.name?.toLowerCase().includes(searchTerm) ||
+      user.companyName?.toLowerCase().includes(searchTerm)
+    );
+  });
+
   return (
     <div>
-      {/* Loader shown when fetching from backend or during save actions */}
       {(loading || isLoading) && (
         <Loadder
           message={
@@ -105,6 +117,7 @@ const Users = () => {
         </button>
       </div>
 
+      {/* 🔍 Search bar */}
       <input
         type="text"
         placeholder="Search users..."
@@ -120,7 +133,7 @@ const Users = () => {
       )}
 
       {!loading && !error && (
-        <UsersList users={users} onDelete={handleDelete} onEdit={() => {}} />
+        <UsersList users={filteredUsers} onDelete={handleDelete} onEdit={() => {}} />
       )}
 
       <DeleteDialog
@@ -140,6 +153,7 @@ const Users = () => {
         selectedUser={selectedUser}
         isEdit={!!selectedUser}
       />
+
       {successMessage && (
         <SuccessPopup
           message={successMessage}

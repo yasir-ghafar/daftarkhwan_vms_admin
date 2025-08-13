@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { addNewBooking, getBookings } from "../../api/bookings";
+import { addNewBooking, getBookings, cancelBooking } from "../../api/bookings";
 import { getLocations } from "../../api/locations_api";
 import { getCompanies } from "../../api/company_api";
 import BookingForm from "./add_new_booking";
 import BookingsList from "./booking_list";
 import ErrorPopup from "../../components/error_popup";
+import "./bookings.css";
 
 const Bookings = () => {
   const [search, setSearch] = useState("");
@@ -15,7 +16,10 @@ const Bookings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Utility to convert error to string
+  // new state for delete modal
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState(null);
+
   const extractErrorMessage = (err) => {
     if (!err) return "An unknown error occurred.";
     if (typeof err === "string") return err;
@@ -64,7 +68,7 @@ const Bookings = () => {
       const response = await addNewBooking(newBooking);
       if (response.status === 200) {
         setModalOpen(false);
-        fetchBookings(); // reload list
+        fetchBookings();
       } else {
         throw new Error("Booking failed.");
       }
@@ -76,11 +80,34 @@ const Bookings = () => {
     }
   };
 
+  // open delete confirmation modal
+  const handleCancelClick = (id) => {
+    setSelectedBookingId(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  // delete booking
+  const handleProceedDelete = async () => {
+    setLoading(true);
+    try {
+      await cancelBooking(selectedBookingId);
+      setBookings((prev) => prev.filter((b) => b.id !== selectedBookingId));
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    } finally {
+      setLoading(false);
+      setIsDeleteModalOpen(false);
+      setSelectedBookingId(null);
+    }
+  };
+
   return (
     <>
       <div className="top-bar">
         <h2>Bookings</h2>
-        <button className="add-btn" onClick={openAddNewBooking}>Add New</button>
+        <button className="add-btn" onClick={openAddNewBooking}>
+          Add New
+        </button>
       </div>
 
       <input
@@ -105,7 +132,7 @@ const Bookings = () => {
       )}
 
       {!loading && !error && (
-        <BookingsList bookings={bookings} />
+        <BookingsList bookings={bookings} search={search} onCancelClick={handleCancelClick} />
       )}
 
       {modalOpen && (
@@ -116,6 +143,23 @@ const Bookings = () => {
           locations={locations}
           companies={companies}
         />
+      )}
+
+      {/* delete confirmation modal */}
+      {isDeleteModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <h3>Do you want to cancel this booking?</h3>
+            <div className="modal-actions">
+              <button className="btn-secondary" onClick={() => setIsDeleteModalOpen(false)}>
+                Cancel
+              </button>
+              <button className="btn-danger" onClick={handleProceedDelete}>
+                Proceed
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

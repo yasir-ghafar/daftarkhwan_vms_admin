@@ -1,36 +1,35 @@
 import React, { useEffect, useState } from "react";
 import CompaniesList from "./companies_list";
 import CompanyModal from "./add_company";
+import { getCompanies } from "../../api/company_api";
 
 const Community = () => {
   const [companies, setCompanies] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchCompanies = async () => {
+    setLoading(true);
+    try {
+      const data = await getCompanies();
+      let list = [];
+      if (Array.isArray(data)) list = data;
+      else if (Array.isArray(data?.companies)) list = data.companies;
+      else if (Array.isArray(data?.data)) list = data.data;
+      setCompanies(list ?? []);
+    } catch (err) {
+      console.error("Failed to fetch companies:", err);
+      setError("Failed to load companies.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    console.log("Community component mounted");
-
-    // Placeholder data — replace with real fetch later
-    setCompanies([
-      {
-        id: 1,
-        name: "Acme Corp",
-        locationName: "Lahore",
-        status: "active",
-        companyName: "Acme Corp",
-        companyEmail: "info@acme.com",
-        contactNumber: "1234567890",
-        businessType: "IT",
-        webURL: "https://acme.com",
-        location: "Lahore",
-        reference: "LinkedIn",
-        billingEmail: "billing@acme.com",
-        gstNumber: "GST123",
-        spocName: "John Doe",
-        spocEmail: "john@acme.com",
-        kycDoc: "acme-kyc.pdf"
-      }
-    ]);
+    fetchCompanies();
   }, []);
 
   const handleEdit = (company) => {
@@ -39,43 +38,71 @@ const Community = () => {
   };
 
   const handleAdd = () => {
-    setSelectedCompany(null); // clear for fresh entry
+    setSelectedCompany(null);
     setModalOpen(true);
   };
 
   const handleSave = (companyData) => {
     if (selectedCompany) {
-      // Update existing company
       setCompanies((prev) =>
-        prev.map((comp) =>
-          comp.id === selectedCompany.id
-            ? { ...comp, ...companyData, name: companyData.companyName, locationName: companyData.location }
-            : comp
+        prev.map((c) =>
+          c.id === selectedCompany.id
+            ? {
+                ...c,
+                ...companyData,
+                name: companyData.companyName ?? c.name,
+                locationName: companyData.location ?? c.locationName,
+              }
+            : c
         )
       );
     } else {
-      // Add new company
       const newCompany = {
         ...companyData,
         id: Date.now(),
-        name: companyData.companyName,
-        locationName: companyData.location,
-        status: "active"
+        name: companyData.companyName ?? companyData.name,
+        locationName: companyData.location ?? companyData.locationName,
+        status: companyData.status ?? "active",
       };
-      setCompanies((prev) => [...prev, newCompany]);
+      setCompanies((prev) => [newCompany, ...prev]);
     }
-
     setModalOpen(false);
     setSelectedCompany(null);
   };
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
-        <button onClick={handleAdd} className="btn-add">+ Add Company</button>
+      {/* ✅ Existing search bar now works */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: "1rem",
+        }}
+      >
+        <input
+          type="text"
+          placeholder="Search companies..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="search-input"
+          style={{ flex: 1, marginRight: "1rem" }}
+        />
+        <button onClick={handleAdd} className="btn-add">
+          + Add Company
+        </button>
       </div>
 
-      <CompaniesList companies={companies} onEdit={handleEdit} />
+      {loading && <p>Loading companies...</p>}
+      {error && <div className="error-popup"><p>{error}</p></div>}
+
+      {!loading && !error && (
+        <CompaniesList
+          companies={companies}
+          onEdit={handleEdit}
+          search={search} // ✅ Pass to list
+        />
+      )}
 
       <CompanyModal
         isOpen={isModalOpen}

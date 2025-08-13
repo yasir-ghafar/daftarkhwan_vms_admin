@@ -1,9 +1,14 @@
-import React, { useState } from "react";
-import "./locations_list.css"; // shared pagination styling
+import React, { useState, useEffect } from "react";
+import "./locations_list.css";
 
-const LocationList = ({ locations, onDelete, onEdit, loading }) => {
+const LocationList = ({ locations, onDelete, onEdit, loading, search }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const locationsPerPage = 10;
+
+  // 🔄 Reset to first page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   const indexOfLastLocation = currentPage * locationsPerPage;
   const indexOfFirstLocation = indexOfLastLocation - locationsPerPage;
@@ -55,18 +60,8 @@ const LocationList = ({ locations, onDelete, onEdit, loading }) => {
                 <td>{loc.city}</td>
                 <td>{loc.contactNumber}</td>
                 <td>{loc.email}</td>
-                <td
-                  className="edit-icon"
-                  onClick={() => handleEditClick(loc)}
-                >
-                  ✏️
-                </td>
-                <td
-                  className="edit-icon"
-                  onClick={() => handleDeleteClick(loc.id)}
-                >
-                  🗑️
-                </td>
+                <td className="edit-icon" onClick={() => handleEditClick(loc)}>✏️</td>
+                <td className="edit-icon" onClick={() => handleDeleteClick(loc.id)}>🗑️</td>
               </tr>
             ))}
           </tbody>
@@ -83,12 +78,12 @@ const LocationList = ({ locations, onDelete, onEdit, loading }) => {
           &lt;
         </button>
         <span className="pagination-info">
-          {currentPage} / {totalPages}
+          {currentPage} / {totalPages || 1}
         </span>
         <button
           className="pagination-btn"
           onClick={handleNext}
-          disabled={currentPage === totalPages}
+          disabled={currentPage === totalPages || totalPages === 0}
         >
           &gt;
         </button>

@@ -40,63 +40,55 @@ const MeetingRooms = () => {
     setModalOpen(false);
     setLoading(true);
 
- try {
-    // Step 1: Convert formData into a plain object
-    const dataObject = {};
-    for (let [key, value] of roomData.entries()) {
-      dataObject[key] = value;
-    }
-
-    // Step 2: If an image file exists, upload it to Firebase
-    const imageFile = roomData.get("image"); // Assuming "image" is the field name in your form
-    if (imageFile && imageFile instanceof File && imageFile.size > 0) {
-      try {
-        const imageUrl = await uploadImageToFirebase(imageFile); // <--- Your helper function
-        dataObject.image = imageUrl; // Replace the file with the Firebase URL
-      } catch (uploadErr) {
-        console.error("Image upload failed:", uploadErr);
-        alert("Image upload failed. Please try again.");
-        return; // Stop the process if upload fails
+    try {
+      const dataObject = {};
+      for (let [key, value] of roomData.entries()) {
+        dataObject[key] = value;
       }
+
+      const imageFile = roomData.get("image");
+      if (imageFile && imageFile instanceof File && imageFile.size > 0) {
+        try {
+          const imageUrl = await uploadImageToFirebase(imageFile);
+          dataObject.image = imageUrl;
+        } catch (uploadErr) {
+          console.error("Image upload failed:", uploadErr);
+          alert("Image upload failed. Please try again.");
+          return;
+        }
+      }
+
+      if (selectedRoom) {
+        dataObject.id = selectedRoom.id;
+        await updateRoom(dataObject);
+      } else {
+        await addNewRoom(dataObject);
+      }
+
+      await fetchRooms();
+      if (selectedRoom) setSelectedRoom(null);
+
+    } catch (err) {
+      console.error("Save failed:", err.response?.data || err.message);
+      alert("Unable to save meeting room");
+    } finally {
+      setLoading(false);
     }
-
-    // Step 3: If editing, include the ID and update, else create new
-    if (handleAddRoom) {
-      dataObject.id = setRooms.id;
-      await updateRoom(dataObject);
-    } else {
-      await addNewRoom(dataObject);
-    }
-
-    // Step 4: Refresh list after operation
-    await fetchRooms();
-
-    // Step 5: Clear edit state if editing
-    if (handleEdit) setRooms(null);
-
-  } catch (err) {
-    console.error("Save failed:", err.response?.data || err.message);
-    alert("Unable to save location");
-  } finally {
-    setLoading(false); // Hide loading overlay
-  }
-
   };
 
   const uploadImageToFirebase = async (imageFile) => {
-  try{
-  if (imageFile) {
-    const storage=getStorage(app);
-    const storageRef = ref(storage, "images/"+imageFile.name);
-    await uploadBytes(storageRef, imageFile);
-    const downloadUrl = await getDownloadURL(storageRef);
-    return downloadUrl;
-   }
-  } catch(imageUploadError) {
-    console.log(imageUploadError)
-    return null;
-  } 
-}
+    try {
+      if (imageFile) {
+        const storage = getStorage(app);
+        const storageRef = ref(storage, "images/" + imageFile.name);
+        await uploadBytes(storageRef, imageFile);
+        return await getDownloadURL(storageRef);
+      }
+    } catch (imageUploadError) {
+      console.log(imageUploadError);
+      return null;
+    }
+  };
 
   const openAddNewRoom = async () => {
     setLoading(true);
@@ -105,7 +97,6 @@ const MeetingRooms = () => {
         getLocations(),
         getAmenities(),
       ]);
-
       setLocations(locationRes.data);
       setAmenities(amenitiesRes.data);
       setModalOpen(true);
@@ -120,23 +111,19 @@ const MeetingRooms = () => {
   const handleEdit = async (room) => {
     setSelectedRoom(room);
     setLoading(true);
-
     try {
       const locationRes = await getLocations();
       const matched = locationRes.data.find(
         (loc) => loc.id === room.location_id
       );
-
       setLocations(locationRes.data);
       setSelectedRoom({
         ...room,
         location: matched,
         locationId: matched?.id || "",
       });
-
       const amenitiesRes = await getAmenities();
       setAmenities(amenitiesRes.data);
-
       setModalOpen(true);
     } catch (err) {
       console.error("Error fetching data for edit:", err);
@@ -161,6 +148,16 @@ const MeetingRooms = () => {
     setIsDialogOpen(false);
   };
 
+  // 🔍 Filter rooms before sending to list
+  const filteredRooms = rooms.filter((room) => {
+    const searchTerm = search.toLowerCase();
+    return (
+      room.name?.toLowerCase().includes(searchTerm) ||
+      room.location?.name?.toLowerCase().includes(searchTerm) ||
+      room.Status?.toLowerCase().includes(searchTerm)
+    );
+  });
+
   return (
     <div>
       <div className="top-bar">
@@ -172,7 +169,7 @@ const MeetingRooms = () => {
 
       <input
         type="text"
-        placeholder="Search locations..."
+        placeholder="Search meeting rooms..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="search-input"
@@ -194,7 +191,12 @@ const MeetingRooms = () => {
       )}
 
       {!loading && !error && (
-        <RoomsList rooms={rooms} onDelete={handleDelete} onEdit={handleEdit} />
+        <RoomsList
+          rooms={filteredRooms}
+          onDelete={handleDelete}
+          onEdit={handleEdit}
+          search={search} // Pass search term for page reset
+        />
       )}
 
       <DeleteDialog

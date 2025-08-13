@@ -1,9 +1,14 @@
-import React, { useState } from "react";
-import "./room_list.css"; // Add your pagination CSS here
+import React, { useState, useEffect } from "react";
+import "./room_list.css";
 
-const RoomsList = ({ rooms, onDelete, onEdit }) => {
+const RoomsList = ({ rooms, onDelete, onEdit, search }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const roomsPerPage = 10;
+
+  // 🔄 Reset to first page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   const indexOfLastRoom = currentPage * roomsPerPage;
   const indexOfFirstRoom = indexOfLastRoom - roomsPerPage;
