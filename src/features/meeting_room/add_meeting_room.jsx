@@ -7,6 +7,7 @@ const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, amenities }) => {
   const [imagePreview, setImagePreview] = useState(null);
+  const [image, setImage] = useState(null);
   const fileInputRef = useRef();
 
   const [form, setForm] = useState({
@@ -57,6 +58,7 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, amenit
         amenities: [],
       });
       setImagePreview(null);
+      setImage(null)
     }
   }, [selectedRoom]);
 
@@ -79,12 +81,8 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, amenit
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setForm((prev) => ({ ...prev, image: file }));
-      const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result);
-      reader.readAsDataURL(file);
-    } else if (!imagePreview && selectedRoom?.imageUrl) {
-      setImagePreview(selectedRoom.imageUrl);
+      setImage(file);
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
@@ -95,11 +93,22 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, amenit
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const roomData = {
-      ...form,
-      image: form.image || selectedRoom?.image,
-    };
-    if (onSave) onSave(roomData);
+
+    const data = new FormData();
+
+    Object.entries(form).forEach(([key, value]) => {
+      if (key !== "image") {
+        data.append(key, value);
+      }
+    });
+
+    if (image) {
+      data.append("image", image);
+    } else if (selectedRoom?.imageUrl) {
+      data.append("imageUrl", editData.imageUrl);
+    }
+
+    onSave(data);
   };
 
   return (
