@@ -4,6 +4,7 @@ import UsersList from "./user_list";
 import AddUserModal from "./add_new_user";
 import DeleteDialog from "../../components/DeleteDialog";
 import SuccessPopup from "../../components/confirmation_popup";
+import Loadder from "../../components/loadding"; // Unified loader component
 
 const Users = () => {
   const [search, setSearch] = useState("");
@@ -17,26 +18,23 @@ const Users = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-
   const fetchUsers = async () => {
+    setLoading(true);
     try {
       const userRes = await getUsers();
       setUsers(userRes.data);
-      setLoading(false);
     } catch (err) {
-      console.error("Error opening modal:", err);
-      setError("Failed to open modal.");
+      console.error("Error fetching users:", err);
+      setError("Failed to fetch users.");
+    } finally {
       setLoading(false);
     }
-  }
-  // Local-only fetch simulation
+  };
+
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  
-
-  // Add or update user locally
   const handleAddUser = (userData) => {
     setIsLoading(true);
     setModalOpen(false);
@@ -56,35 +54,20 @@ const Users = () => {
     setIsLoading(false);
   };
 
-  // Open modal for new user
   const openAddNewUser = async () => {
     setIsLoading(true);
     try {
       const userRes = await getUsers();
       setUsers(userRes.data);
       setModalOpen(true);
-      setIsLoading(false);
     } catch (err) {
       console.error("Error opening modal:", err);
       setError("Failed to open modal.");
+    } finally {
       setIsLoading(false);
     }
   };
 
-  // Edit user
-  const handleEdit = async (user) => {
-//  `   try {
-//       const companyRes = await getUsers();
-//       setCompanies(companyRes.data);
-//       setSelectedUser(user);
-//       setModalOpen(true);
-//     } catch (err) {
-//       console.error("Error fetching companies:", err);
-//       setError("Could not load company data.");
-//     }`
-  };
-
-  // Delete user locally
   const handleDelete = (user) => {
     setDeleteMessage(`Are you sure you want to delete ${user.name}?`);
     setSelectedUser(user);
@@ -102,14 +85,19 @@ const Users = () => {
     setSelectedUser(null);
   };
 
-  // Filtered users based on search
-  // const filteredUsers = users.filter((u) =>
-  //   u.name.toLowerCase().includes(search.toLowerCase())
-  // );
-
   return (
     <div>
-      {isLoading && <div className="loading-bar"></div>}
+      {/* Loader shown when fetching from backend or during save actions */}
+      {(loading || isLoading) && (
+        <Loadder
+          message={
+            loading
+              ? "Loading users, please wait..."
+              : "Processing request..."
+          }
+        />
+      )}
+
       <div className="top-bar">
         <h2>Users</h2>
         <button className="add-btn" onClick={openAddNewUser}>
@@ -131,21 +119,8 @@ const Users = () => {
         </div>
       )}
 
-      {loading && (
-        <div className="loading-overlay">
-          <div className="loading-dialog">
-            <div className="loader"></div>
-            <p>Loading please wait...</p>
-          </div>
-        </div>
-      )}
-
       {!loading && !error && (
-        <UsersList
-          users={users}
-          onDelete={handleDelete}
-          onEdit={handleEdit}
-        />
+        <UsersList users={users} onDelete={handleDelete} onEdit={() => {}} />
       )}
 
       <DeleteDialog
