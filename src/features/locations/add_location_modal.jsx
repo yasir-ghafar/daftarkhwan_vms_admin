@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 //import './add_modal.css';
+import ErrorPopup from "../../components/error_popup";
 
 const AddLocationModal = ({ isOpen, onClose, onSave, editData }) => {
   const initialState = {
@@ -17,6 +18,7 @@ const AddLocationModal = ({ isOpen, onClose, onSave, editData }) => {
   const [formData, setFormData] = useState(initialState);
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Populate form data on edit
   useEffect(() => {
@@ -66,108 +68,132 @@ const AddLocationModal = ({ isOpen, onClose, onSave, editData }) => {
     }
   };
 
-const handleSubmit = (e) => {
-  e.preventDefault();
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-  const data = new FormData();
-
-  Object.entries(formData).forEach(([key, value]) => {
-    if (key !== "image") {
-      data.append(key, value);
+    // Simple validation
+    if (!formData.name.trim()) {
+      setErrorMessage("Location name is required.");
+      return;
     }
-  });
+    if (!formData.email.trim()) {
+      setErrorMessage("Email is required.");
+      return;
+    }
+    if (!formData.city.trim()) {
+      setErrorMessage("City is required.");
+      return;
+    }
 
-  if (image) {
-    // New file selected
-    data.append("image", image);
-  } else if (editData?.imageUrl) {
-    // No new file, send existing image reference
-    data.append("imageUrl", editData.imageUrl);
-  }
+    const data = new FormData();
 
-  onSave(data);
-};
+    Object.entries(formData).forEach(([key, value]) => {
+      if (key !== "image") {
+        data.append(key, value);
+      }
+    });
+
+    if (image) {
+      // New file selected
+      data.append("image", image);
+    } else if (editData?.imageUrl) {
+      // No new file, send existing image reference
+      data.append("imageUrl", editData.imageUrl);
+    }
+
+    try {
+      if (onSave) onSave(data);
+    } catch (err) {
+      setErrorMessage(err.message || "Failed to save location.");
+    }
+  };
 
   if (!isOpen) return null;
 
   return (
-    <div className="locations-modal-container">
-      <div className="locations-modal-overlay" onClick={onClose}>
-        <div
-          className="locations-modal-content"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <h2 className="locations-modal-header">
-            {editData ? "Edit Location" : "Add New Location"}
-          </h2>
-          <form
-            onSubmit={handleSubmit}
-            className="locations-location-form"
-            encType="multipart/form-data"
+    <>
+      <div className="locations-modal-container">
+        <div className="locations-modal-overlay" onClick={onClose}>
+          <div
+            className="locations-modal-content"
+            onClick={(e) => e.stopPropagation()}
           >
-            {[
-              { key: "name", label: "Name" },
-              { key: "contactNumber", label: "Contact Number" },
-              { key: "email", label: "Email" },
-              { key: "legalBusinessName", label: "Legal Business Name" },
-              { key: "address", label: "Address" },
-              { key: "city", label: "City" },
-              { key: "lat", label: "Latitude"},
-              { key: "lng", label: "Longitude"},
-            ].map(({ key, label }) => (
-              <input
-                key={key}
-                name={key}
-                type="text"
-                value={formData[key]}
-                onChange={handleChange}
-                placeholder={label}
-                required
-              />
-            ))}
-
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              required
+            <h2 className="locations-modal-header">
+              {editData ? "Edit Location" : "Add New Location"}
+            </h2>
+            <form
+              onSubmit={handleSubmit}
+              className="locations-location-form"
+              encType="multipart/form-data"
             >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
+              {[
+                { key: "name", label: "Name" },
+                { key: "contactNumber", label: "Contact Number" },
+                { key: "email", label: "Email" },
+                { key: "legalBusinessName", label: "Legal Business Name" },
+                { key: "address", label: "Address" },
+                { key: "city", label: "City" },
+                { key: "lat", label: "Latitude" },
+                { key: "lng", label: "Longitude" },
+              ].map(({ key, label }) => (
+                <input
+                  key={key}
+                  name={key}
+                  type="text"
+                  value={formData[key]}
+                  onChange={handleChange}
+                  placeholder={label}
+                  required
+                />
+              ))}
 
-            <input type="file" accept="image/*" onChange={handleImageChange} />
-
-            {preview && (
-              <img
-                src={preview}
-                alt="Preview"
-                style={{
-                  width: 200,
-                  height: 100,
-                  objectFit: "cover",
-                  marginTop: "10px",
-                  borderRadius: "4px",
-                }}
-              />
-            )}
-
-            <div className="locations-modal-actions">
-              <button
-                type="button"
-                onClick={onClose}
-                className="btn-cancel"
+              <select
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                required
               >
-                Cancel
-              </button>
-              <button type="submit" className="btn-save">
-                {editData ? "Update" : "Save"}
-              </button>
-            </div>
-          </form>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+
+              <input type="file" accept="image/*" onChange={handleImageChange} />
+
+              {preview && (
+                <img
+                  src={preview}
+                  alt="Preview"
+                  style={{
+                    width: 200,
+                    height: 100,
+                    objectFit: "cover",
+                    marginTop: "10px",
+                    borderRadius: "4px",
+                  }}
+                />
+              )}
+
+              <div className="locations-modal-actions">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="btn-cancel"
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-save">
+                  {editData ? "Update" : "Save"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Error Popup */}
+      <ErrorPopup message={errorMessage} onClose={() => setErrorMessage("")} />
+    </>
   );
 };
+
 export default AddLocationModal;

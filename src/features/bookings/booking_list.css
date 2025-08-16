@@ -1,0 +1,55 @@
+.pagination-container {
+  display: flex;
+  justify-content: flex-end; /* moves to extreme right */
+  align-items: center;
+  margin-top: 10px;
+  gap: 5px;
+}
+
+.pagination-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.pagination-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.pagination-info {
+  font-size: 14px;
+  color: #333;
+  margin: 0 4px;
+}
+
+.cancel-btn-2 {
+  padding: 6px 14px;
+  border: 2px solid red;
+  border-radius: 10px; /* squircle style */
+  background: transparent;
+  color: red;
+  font-size: 0.85rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.cancel-btn-2:hover {
+  background: red;
+  color: white;
+  transform: scale(1.05);
+}
+
+.cancel-btn-2:active {
+  transform: scale(0.95);
+}

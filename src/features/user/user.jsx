@@ -3,6 +3,8 @@ import { getUsers } from "../../api/user_api";
 import UsersList from "./user_list";
 import AddUserModal from "./add_new_user";
 import DeleteDialog from "../../components/DeleteDialog";
+import SuccessPopup from "../../components/confirmation_popup";
+import Loadder from "../../components/loadding"; // Unified loader component
 
 const Users = () => {
   const [search, setSearch] = useState("");
@@ -13,28 +15,28 @@ const Users = () => {
   const [error, setError] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [deleteMessage, setDeleteMessage] = useState("");
-
+  const [successMessage, setSuccessMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchUsers = async () => {
+    setLoading(true);
     try {
       const userRes = await getUsers();
       setUsers(userRes.data);
-      setLoading(false);
     } catch (err) {
-      console.error("Error opening modal:", err);
-      setError("Failed to open modal.");
+      console.error("Error fetching users:", err);
+      setError("Failed to fetch users.");
+    } finally {
       setLoading(false);
     }
-  }
-  // Local-only fetch simulation
+  };
+
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  
-
-  // Add or update user locally
   const handleAddUser = (userData) => {
+    setIsLoading(true);
     setModalOpen(false);
     if (selectedUser) {
       setUsers((prev) =>
@@ -42,15 +44,18 @@ const Users = () => {
           u.id === selectedUser.id ? { ...selectedUser, ...userData } : u
         )
       );
+      setSuccessMessage("User updated successfully!");
     } else {
       const newUser = { id: Date.now(), ...userData };
       setUsers((prev) => [...prev, newUser]);
+      setSuccessMessage("User created successfully!");
     }
     setSelectedUser(null);
+    setIsLoading(false);
   };
 
-  // Open modal for new user
   const openAddNewUser = async () => {
+    setIsLoading(true);
     try {
       const userRes = await getUsers();
       setUsers(userRes.data);
@@ -58,23 +63,11 @@ const Users = () => {
     } catch (err) {
       console.error("Error opening modal:", err);
       setError("Failed to open modal.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Edit user
-  const handleEdit = async (user) => {
-//  `   try {
-//       const companyRes = await getUsers();
-//       setCompanies(companyRes.data);
-//       setSelectedUser(user);
-//       setModalOpen(true);
-//     } catch (err) {
-//       console.error("Error fetching companies:", err);
-//       setError("Could not load company data.");
-//     }`
-  };
-
-  // Delete user locally
   const handleDelete = (user) => {
     setDeleteMessage(`Are you sure you want to delete ${user.name}?`);
     setSelectedUser(user);
@@ -92,13 +85,31 @@ const Users = () => {
     setSelectedUser(null);
   };
 
-  // Filtered users based on search
-  // const filteredUsers = users.filter((u) =>
-  //   u.name.toLowerCase().includes(search.toLowerCase())
-  // );
+  // 🔍 Filter users before sending to UsersList
+  const filteredUsers = users.filter((user) => {
+    const searchTerm = search.toLowerCase();
+    return (
+      user.name?.toLowerCase().includes(searchTerm) ||
+      user.email?.toLowerCase().includes(searchTerm) ||
+      user.role?.toLowerCase().includes(searchTerm) ||
+      user.company_name?.toLowerCase().includes(searchTerm) ||
+      user.company?.name?.toLowerCase().includes(searchTerm) ||
+      user.companyName?.toLowerCase().includes(searchTerm)
+    );
+  });
 
   return (
     <div>
+      {(loading || isLoading) && (
+        <Loadder
+          message={
+            loading
+              ? "Loading users, please wait..."
+              : "Processing request..."
+          }
+        />
+      )}
+
       <div className="top-bar">
         <h2>Users</h2>
         <button className="add-btn" onClick={openAddNewUser}>
@@ -106,6 +117,7 @@ const Users = () => {
         </button>
       </div>
 
+      {/* 🔍 Search bar */}
       <input
         type="text"
         placeholder="Search users..."
@@ -120,21 +132,8 @@ const Users = () => {
         </div>
       )}
 
-      {loading && (
-        <div className="loading-overlay">
-          <div className="loading-dialog">
-            <div className="loader"></div>
-            <p>Loading please wait...</p>
-          </div>
-        </div>
-      )}
-
       {!loading && !error && (
-        <UsersList
-          users={users}
-          onDelete={handleDelete}
-          onEdit={handleEdit}
-        />
+        <UsersList users={filteredUsers} onDelete={handleDelete} onEdit={() => {}} />
       )}
 
       <DeleteDialog
@@ -154,6 +153,13 @@ const Users = () => {
         selectedUser={selectedUser}
         isEdit={!!selectedUser}
       />
+
+      {successMessage && (
+        <SuccessPopup
+          message={successMessage}
+          onClose={() => setSuccessMessage("")}
+        />
+      )}
     </div>
   );
 };

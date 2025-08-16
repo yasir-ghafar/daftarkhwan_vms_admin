@@ -6,7 +6,6 @@ import AddLocationModal from "./add_location_modal";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import app from "../../firebase/firebase";
 
-
 const Locations = () => {
   const [search, setSearch] = useState("");
   const [isModalOpen, setModalOpen] = useState(false);
@@ -30,70 +29,60 @@ const Locations = () => {
     fetchLocations();
   }, []);
 
-const handleAddLocation = async (formData) => {
-  const isEditing = !!editLocation;
+  const handleAddLocation = async (formData) => {
+    const isEditing = !!editLocation;
 
-  setModalOpen(false);  // Close the modal immediately
-  setLoading(true);     // Show loading overlay
+    setModalOpen(false);
+    setLoading(true);
 
-  try {
-    // Step 1: Convert formData into a plain object
-    const dataObject = {};
-    for (let [key, value] of formData.entries()) {
-      dataObject[key] = value;
-    }
-
-    // Step 2: If an image file exists, upload it to Firebase
-    const imageFile = formData.get("image"); // Assuming "image" is the field name in your form
-    if (imageFile && imageFile instanceof File && imageFile.size > 0) {
-      try {
-        const imageUrl = await uploadImageToFirebase(imageFile); // <--- Your helper function
-        dataObject.image = imageUrl; // Replace the file with the Firebase URL
-      } catch (uploadErr) {
-        console.error("Image upload failed:", uploadErr);
-        alert("Image upload failed. Please try again.");
-        return; // Stop the process if upload fails
+    try {
+      const dataObject = {};
+      for (let [key, value] of formData.entries()) {
+        dataObject[key] = value;
       }
+
+      const imageFile = formData.get("image");
+      if (imageFile && imageFile instanceof File && imageFile.size > 0) {
+        try {
+          const imageUrl = await uploadImageToFirebase(imageFile);
+          dataObject.image = imageUrl;
+        } catch (uploadErr) {
+          console.error("Image upload failed:", uploadErr);
+          alert("Image upload failed. Please try again.");
+          return;
+        }
+      }
+
+      if (isEditing) {
+        dataObject.id = editLocation.id;
+        await updateLocation(dataObject);
+      } else {
+        await addNewLocation(dataObject);
+      }
+
+      await fetchLocations();
+      if (isEditing) setEditLocation(null);
+    } catch (err) {
+      console.error("Save failed:", err.response?.data || err.message);
+      alert("Unable to save location");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    // Step 3: If editing, include the ID and update, else create new
-    if (isEditing) {
-      dataObject.id = editLocation.id;
-      await updateLocation(dataObject);
-    } else {
-      await addNewLocation(dataObject);
+  const uploadImageToFirebase = async (imageFile) => {
+    try {
+      if (imageFile) {
+        const storage = getStorage(app);
+        const storageRef = ref(storage, "images/" + imageFile.name);
+        await uploadBytes(storageRef, imageFile);
+        return await getDownloadURL(storageRef);
+      }
+    } catch (imageUploadError) {
+      console.log(imageUploadError);
+      return null;
     }
-
-    // Step 4: Refresh list after operation
-    await fetchLocations();
-
-    // Step 5: Clear edit state if editing
-    if (isEditing) setEditLocation(null);
-
-  } catch (err) {
-    console.error("Save failed:", err.response?.data || err.message);
-    alert("Unable to save location");
-  } finally {
-    setLoading(false); // Hide loading overlay
-  }
-};
-
-const uploadImageToFirebase = async (imageFile) => {
-  try{
-  if (imageFile) {
-    const storage=getStorage(app);
-    const storageRef = ref(storage, "images/"+imageFile.name);
-    await uploadBytes(storageRef, imageFile);
-    const downloadUrl = await getDownloadURL(storageRef);
-    return downloadUrl;
-   }
-  } catch(imageUploadError) {
-    console.log(imageUploadError)
-    return null;
-  } 
-}
-
-
+  };
 
   const handleDeleteClick = async (id) => {
     try {
@@ -109,14 +98,28 @@ const uploadImageToFirebase = async (imageFile) => {
     setModalOpen(true);
   };
 
+  // 🔍 Filter locations before sending to LocationList
+  const filteredLocations = locations.filter((loc) => {
+    const searchTerm = search.toLowerCase();
+    return (
+      loc.name?.toLowerCase().includes(searchTerm) ||
+      loc.city?.toLowerCase().includes(searchTerm) ||
+      loc.contactNumber?.toLowerCase().includes(searchTerm) ||
+      loc.email?.toLowerCase().includes(searchTerm)
+    );
+  });
+
   return (
     <>
       <div className="top-bar">
         <h2>Locations</h2>
-        <button className="add-btn" onClick={() => {
-          setEditLocation(null);
-          setModalOpen(true);
-        }}>
+        <button
+          className="add-btn"
+          onClick={() => {
+            setEditLocation(null);
+            setModalOpen(true);
+          }}
+        >
           Add New
         </button>
       </div>
@@ -133,7 +136,7 @@ const uploadImageToFirebase = async (imageFile) => {
         <div className="loading-overlay">
           <div className="loading-dialog">
             <div className="loader"></div>
-            <p> Loading please wait....</p>
+            <p>Loading please wait....</p>
           </div>
         </div>
       )}
@@ -142,10 +145,11 @@ const uploadImageToFirebase = async (imageFile) => {
 
       {!loading && !error && (
         <LocationList
-          locations={locations}
+          locations={filteredLocations}
           onDelete={handleDeleteClick}
           onEdit={handleEditClick}
           loading={loading}
+          search={search} // 🔍 pass search term for page reset
         />
       )}
 

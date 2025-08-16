@@ -9,12 +9,23 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // ✅ prevent reload
+    e.preventDefault();
     setLoading(true);
+
     try {
       console.log(`Email: ${email} and Password: ${password}`);
+
       const data = await login(email, password);
       console.log("Login Response:", data);
+
+      // ✅ Check if backend returned role
+      if (!data || data.data.role !== "admin") {
+        setLoading(false);
+        alert("Access Denied: You are not an admin.");
+        return;
+      }
+
+      // ✅ Proceed if admin
       setLoading(false);
       navigate("/home/locations");
     } catch (error) {
@@ -43,16 +54,14 @@ const LoginPage = () => {
         />
         <button type="submit" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
-          </button>
+        </button>
       </form>
 
-      
       {loading && (
         <div className="loading-overlay">
-          
           <div className="loading-dialog">
             <div className="loader"></div>
-            <p> Loggin in, please wait....</p>
+            <p>Logging in, please wait....</p>
           </div>
         </div>
       )}

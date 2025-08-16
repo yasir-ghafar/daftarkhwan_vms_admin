@@ -23,6 +23,23 @@
   box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.2);
 }
 
+.loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 4px;
+  background: #4cafef;
+  width: 100%;
+  animation: loadingAnim 1s linear infinite;
+  z-index: 9999;
+}
+
+@keyframes loadingAnim {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0); }
+  100% { transform: translateX(100%); }
+}
+
 /* Title */
 .location-form h3 {
   font-size: 1.4rem;

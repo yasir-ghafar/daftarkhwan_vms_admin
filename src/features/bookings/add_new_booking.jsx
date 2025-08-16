@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getRoomByLocationId } from '../../api/rooms_api';
 import { getUsersByCompanyId } from "../../api/authApi";
-
+import ErrorPopup from "../../components/error_popup";
 
 // Convert 24-hour to 12-hour format with seconds and AM/PM
 const to12HourFormat = (time24) => {
@@ -15,12 +15,8 @@ const to12HourFormat = (time24) => {
 //
 const toDateTimeString = (date, time) => {
   if (!date || !time) return "";
-
-  // Ensure date is in YYYY-MM-DD
   const [year, month, day] = date.split("-");
   const [hour, minute] = time.split(":");
-
-  // Return formatted datetime
   return `${year}-${month}-${day} ${hour}:${minute}:00`;
 };
 
@@ -45,6 +41,7 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
   const [meetingRooms, setMeetingRooms] = useState([]);
   const [users, setUsers] = useState([]);
   const [bookedSlots, setBookedSlots] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -55,17 +52,15 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
 
       try {
         const usersRes = await getUsersByCompanyId(formData.companyId);
-        const data = usersRes.data;
-        setUsers(data)
+        setUsers(usersRes.data);
       } catch (err) {
-        console.error("Failed to fetch Users", err);
+        setErrorMessage("Failed to fetch users.");
         setUsers([]);
       }
     };
 
     fetchUsers();
-
-  },[formData.companyId])
+  }, [formData.companyId]);
 
   useEffect(() => {
     const fetchMeetingRooms = async () => {
@@ -76,10 +71,9 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
 
       try {
         const res = await getRoomByLocationId(formData.location);
-        const data = res.data;
-        setMeetingRooms(data);
+        setMeetingRooms(res.data);
       } catch (err) {
-        console.error("Failed to fetch meeting rooms", err);
+        setErrorMessage("Failed to fetch meeting rooms.");
         setMeetingRooms([]);
       }
     };
@@ -104,6 +98,32 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    // Basic validation
+    if (!formData.location) {
+      setErrorMessage("Please select a location.");
+      return;
+    }
+    if (!formData.meetingRoom) {
+      setErrorMessage("Please select a meeting room.");
+      return;
+    }
+    if (!formData.companyId) {
+      setErrorMessage("Please select a company.");
+      return;
+    }
+    if (!formData.customerId) {
+      setErrorMessage("Please select a member.");
+      return;
+    }
+    if (!formData.date) {
+      setErrorMessage("Please select a date.");
+      return;
+    }
+    if (!formData.startTime || !formData.endTime) {
+      setErrorMessage("Please select both start and end times.");
+      return;
+    }
+
     const payload = {
       date: formData.date,
       startTime: toDateTimeString(formData.date, formData.startTime),
@@ -115,9 +135,12 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
       status: "confirmed"
     };
 
-    console.log("📝 Booking Submitted:", payload);
-    onSave(payload);
-    onClose();
+    try {
+      onSave(payload);
+      onClose();
+    } catch (err) {
+      setErrorMessage(err.message || "Failed to save booking.");
+    }
   };
 
   const disabledTimes = getDisabledTimes();
@@ -125,128 +148,134 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay">
-      <form onSubmit={handleSubmit} className="location-form">
-        <div style={{ marginBottom: "20px" }}>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
-            <div style={{ flex: "1" }}>
-              <label>Location</label><br />
-              <select
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select Location</option>
-                {locations.map(loc => (
-                  <option key={loc.id} value={loc.id}>{loc.name}</option>
-                ))}
-              </select>
+    <>
+      <div className="modal-overlay">
+        <form onSubmit={handleSubmit} className="location-form">
+          <div style={{ marginBottom: "20px" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
+              <div style={{ flex: "1" }}>
+                <label>Location</label><br />
+                <select
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select Location</option>
+                  {locations.map(loc => (
+                    <option key={loc.id} value={loc.id}>{loc.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ flex: "1" }}>
+                <label>Meeting Room</label><br />
+                <select
+                  name="meetingRoom"
+                  value={formData.meetingRoom}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select Room</option>
+                  {meetingRooms.map(room => (
+                    <option key={room.id} value={room.id}>{room.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ flex: "1" }}>
+                <label>Company</label><br />
+                <select
+                  name="companyId"
+                  value={formData.companyId}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select Company</option>
+                  {companies.map(company => (
+                    <option key={company.id} value={company.id}>{company.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ flex: "1" }}>
+                <label>Member</label><br />
+                <select
+                  name="customerId"
+                  value={formData.customerId}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select member</option>
+                  {users.map(user => (
+                    <option key={user.id} value={user.id}>{user.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            <div style={{ flex: "1" }}>
-              <label>Meeting Room</label><br />
-              <select
-                name="meetingRoom"
-                value={formData.meetingRoom}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select Room</option>
-                {meetingRooms.map(room => (
-                  <option key={room.id} value={room.id}>{room.name}</option>
-                ))}
-              </select>
-            </div>
+            <div style={{ flex: "1", display: "flex", flexWrap: "wrap", gap: "20px" }}>
+              <div>
+                <label><strong>Select Date</strong></label><br />
+                <input
+                  type="date"
+                  name="date"
+                  value={formData.date}
+                  onChange={handleChange}
+                  required
+                  style={{ width: "100%", padding: "8px", marginTop: "4px" }}
+                />
+              </div> 
+              {isDateSelected && (
+                <>
+                  <div style={{ flex: "1" }}>
+                    <label>Start Time</label><br />
+                    <select
+                      name="startTime"
+                      value={formData.startTime}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Select Time</option>
+                      {timeSlots.map(time => (
+                        <option key={time} value={time} disabled={disabledTimes.includes(time)}>
+                          {to12HourFormat(time)} {disabledTimes.includes(time) ? "(Booked)" : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-            <div style={{ flex: "1" }}>
-              <label>Company</label><br />
-              <select
-              name="companyId"
-              value={formData.companyId}
-                onChange={handleChange}
-                required
-              >
-              <option value="">Select Company</option>
-              {companies.map(company => (
-                <option key={company.id} value={company.id}>{company.name}</option>
-              ))}
-              </select>
-            </div>
-
-            <div style={{ flex: "1" }}>
-              <label>Member</label><br />
-              <select
-                type="number"
-                name="customerId"
-                value={formData.customerId}
-                onChange={handleChange}
-                required>
-                <option value="">Select memeber</option>
-                {users.map(user => (
-                  <option key={user.id} value={user.id}>{user.name}</option>
-                ))}
-              </select>
+                  <div style={{ flex: "1" }}>
+                    <label>End Time</label><br />
+                    <select
+                      name="endTime"
+                      value={formData.endTime}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Select Time</option>
+                      {timeSlots.map(time => (
+                        <option key={time} value={time} disabled={disabledTimes.includes(time)}>
+                          {to12HourFormat(time)} {disabledTimes.includes(time) ? "(Booked)" : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
             </div>
           </div>
-          <div style={{ flex: "1", display: "flex", flexWrap: "wrap", gap: "20px" }}>
-            <div>
-              <label><strong>Select Date</strong></label><br />
-              <input
-                type="date"
-                name="date"
-                value={formData.date}
-                onChange={handleChange}
-                required
-                style={{ width: "100%", padding: "8px", marginTop: "4px" }}
-              />
-            </div> 
-            {isDateSelected && (
-              <>
-                <div style={{ flex: "1" }}>
-                  <label>Start Time</label><br />
-                  <select
-                    name="startTime"
-                    value={formData.startTime}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">Select Time</option>
-                    {timeSlots.map(time => (
-                      <option key={time} value={time} disabled={disabledTimes.includes(time)}>
-                        {to12HourFormat(time)} {disabledTimes.includes(time) ? "(Booked)" : ""}
-                      </option>
-                    ))}
-                  </select>
-                </div>
 
-                <div style={{ flex: "1" }}>
-                  <label>End Time</label><br />
-                  <select
-                    name="endTime"
-                    value={formData.endTime}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">Select Time</option>
-                    {timeSlots.map(time => (
-                      <option key={time} value={time} disabled={disabledTimes.includes(time)}>
-                        {to12HourFormat(time)} {disabledTimes.includes(time) ? "(Booked)" : ""}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </>
-            )}
+          <div className="button-group" style={{ marginTop: "30px", textAlign: "center", display: "flex", justifyContent: "center", gap: "20px" }}>
+            <button type="submit" className="btn-proceed" disabled={!formData.date}>Proceed</button>
+            <button type="button" onClick={onClose} className="btn-cancel">Cancel</button>
           </div>
-        </div>
+        </form>
+      </div>
 
-        <div className="button-group" style={{ marginTop: "30px", textAlign: "center", display: "flex", justifyContent: "center", gap: "20px" }}>
-          <button type="submit" className="btn-proceed" disabled={!formData.date}>Proceed</button>
-          <button type="button" onClick={onClose} className="btn-cancel">Cancel</button>
-        </div>
-      </form>
-    </div>
+      {/* Error Popup */}
+      <ErrorPopup message={errorMessage} onClose={() => setErrorMessage("")} />
+    </>
   );
 };
 

@@ -1,0 +1,74 @@
+Sidebar container
+.sidebar {
+  width: 200px;
+  background-color: #f8f9fc;
+  color: #333;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  font-family: 'Inter', sans-serif;
+  border-right: 1px solid #e6e6e6;
+}
+
+
+
+.sidebar h2 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 20px 0 10px;
+  letter-spacing: 0.5px;
+  color: #000;
+}
+
+.sidebar nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar nav ul li {
+  margin-bottom: 5px;
+}
+
+.sidebar nav ul li a {
+  color: #3366ff;
+  text-decoration: none;
+  font-size: 1.05rem;
+  font-weight: 500;
+  padding: 10px 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sidebar nav ul li a:hover {
+  background-color: rgba(51, 102, 255, 0.1);
+}
+
+.sidebar nav ul li a.active {
+  background-color: #3366ff;
+  color: #ffffff; 
+}
+
+.sidebar nav ul li a.active svg {
+  color: #ffffff;
+}
+
+.sidebar nav ul li a svg {
+  font-size: 1.3rem;
+  transition: color 0.2s ease;
+}
+
+.sidebar nav ul li:last-child a {
+  color: #e53935;
+}
+
+.sidebar nav ul li:last-child a:hover {
+  background-color: rgba(229, 57, 53, 0.1);
+} 
+
+
