@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./user_list.css"; // shared pagination styling
 
-const UsersList = ({ users, onDelete, onEdit, search }) => {
+const UsersList = ({ users, onDelete, onEdit, search, onUpdateWallet }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 10;
 
@@ -36,6 +36,10 @@ const UsersList = ({ users, onDelete, onEdit, search }) => {
     }
   };
 
+  const handleOnUpdateWallet = (user) =>  {
+    onUpdateWallet(user);
+  }
+
   return (
     <div>
       <div className="table-container">
@@ -67,20 +71,20 @@ const UsersList = ({ users, onDelete, onEdit, search }) => {
                   Printing:{" "}
                   {user.Wallet ? user.Wallet.printing_credits ?? "N/A" : "N/A"}
                 </td>
+                <td style={{ textAlign: "center" }}>
+                  <button
+                    className="btn-next"
+                    onClick={() => {}}
+                  >
+                    Update Wallet
+                  </button>
+                </td>
                 <td>
                   <span
                     style={{ cursor: "pointer" }}
                     onClick={() => handleEdit(user)}
                   >
                     ✏️
-                  </span>
-                </td>
-                <td>
-                  <span
-                    style={{ cursor: "pointer" }}
-                    onClick={() => handleDelete(user)}
-                  >
-                    🗑️
                   </span>
                 </td>
               </tr>

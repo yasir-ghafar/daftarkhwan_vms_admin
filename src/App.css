@@ -230,17 +230,6 @@ form button:hover {
   margin-bottom: 20px;
 }
 
-.location-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.location-form input {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
 
 .modal-actions {
   display: flex;

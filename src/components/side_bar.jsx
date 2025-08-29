@@ -27,11 +27,11 @@ const Sidebar = () => {
       <h2>ENGAGE</h2>
       <nav>
         <ul>
-          <li><NavLink to="/home/locations" activeClassName="active">Space</NavLink></li>
-          <li><NavLink to="/home/meeting-rooms" activeClassName="active">Meeting Rooms</NavLink></li>
-          <li><NavLink to="/home/bookings" activeClassName="active">Bookings</NavLink></li>
-          <li><NavLink to="/home/users" activeClassName="active">Users</NavLink></li>
-          <li><NavLink to="/home/community" activeClassName="active">Company</NavLink></li>
+          <li><NavLink to="/home/locations" activeclassname="active">Space</NavLink></li>
+          <li><NavLink to="/home/meeting-rooms" activeclassname="active">Meeting Rooms</NavLink></li>
+          <li><NavLink to="/home/bookings" activeclassname="active">Bookings</NavLink></li>
+          <li><NavLink to="/home/users" activeclassname="active">Users</NavLink></li>
+          <li><NavLink to="/home/community" activeclassname="active">Company</NavLink></li>
           <li>
             <a href="/" onClick={handleLogout}>
               Logout

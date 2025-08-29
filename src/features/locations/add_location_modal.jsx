@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-//import './add_modal.css';
+import React, { useState, useEffect, useRef } from "react";
 import ErrorPopup from "../../components/error_popup";
 
 const AddLocationModal = ({ isOpen, onClose, onSave, editData }) => {
@@ -12,13 +11,14 @@ const AddLocationModal = ({ isOpen, onClose, onSave, editData }) => {
     city: "",
     status: "active",
     lat: "",
-    lng: ""
+    lng: "",
   };
 
   const [formData, setFormData] = useState(initialState);
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const fileInputRef = useRef();
 
   // Populate form data on edit
   useEffect(() => {
@@ -33,13 +33,13 @@ const AddLocationModal = ({ isOpen, onClose, onSave, editData }) => {
         status: editData.status || "active",
         lat: editData.lat || "0.00",
         lng: editData.lng || "0.00",
-        image: image,
       });
       setPreview(editData.imageUrl || null);
+      setImage(null);
     } else {
       setFormData(initialState);
-      setImage(null);
       setPreview(null);
+      setImage(null);
     }
   }, [editData]);
 
@@ -64,14 +64,20 @@ const AddLocationModal = ({ isOpen, onClose, onSave, editData }) => {
     const file = e.target.files[0];
     if (file) {
       setImage(file);
-      setPreview(URL.createObjectURL(file));
+      const reader = new FileReader();
+      reader.onloadend = () => setPreview(reader.result);
+      reader.readAsDataURL(file);
     }
+  };
+
+  const removeImage = () => {
+    setImage(null);
+    setPreview(null);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Simple validation
     if (!formData.name.trim()) {
       setErrorMessage("Location name is required.");
       return;
@@ -86,7 +92,6 @@ const AddLocationModal = ({ isOpen, onClose, onSave, editData }) => {
     }
 
     const data = new FormData();
-
     Object.entries(formData).forEach(([key, value]) => {
       if (key !== "image") {
         data.append(key, value);
@@ -94,10 +99,8 @@ const AddLocationModal = ({ isOpen, onClose, onSave, editData }) => {
     });
 
     if (image) {
-      // New file selected
       data.append("image", image);
     } else if (editData?.imageUrl) {
-      // No new file, send existing image reference
       data.append("imageUrl", editData.imageUrl);
     }
 
@@ -112,86 +115,190 @@ const AddLocationModal = ({ isOpen, onClose, onSave, editData }) => {
 
   return (
     <>
-      <div className="locations-modal-container">
-        <div className="locations-modal-overlay" onClick={onClose}>
-          <div
-            className="locations-modal-content"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="locations-modal-header">
-              {editData ? "Edit Location" : "Add New Location"}
-            </h2>
-            <form
-              onSubmit={handleSubmit}
-              className="locations-location-form"
-              encType="multipart/form-data"
-            >
-              {[
-                { key: "name", label: "Name" },
-                { key: "contactNumber", label: "Contact Number" },
-                { key: "email", label: "Email" },
-                { key: "legalBusinessName", label: "Legal Business Name" },
-                { key: "address", label: "Address" },
-                { key: "city", label: "City" },
-                { key: "lat", label: "Latitude" },
-                { key: "lng", label: "Longitude" },
-              ].map(({ key, label }) => (
+      <div className="modal-overlay">
+        <form onSubmit={handleSubmit} className="location-form">
+          <h3 style={{ marginBottom: "12px", color: "#2c3e50", width: "100%" }}>
+            {editData ? "Edit Location" : "Add New Location"}
+          </h3>
+
+          {/* Row 1 */}
+          <div className="form-row">
+            <div className="form-column">
+              <div className="form-group">
+                <label>Name:</label>
                 <input
-                  key={key}
-                  name={key}
                   type="text"
-                  value={formData[key]}
+                  name="name"
+                  value={formData.name}
                   onChange={handleChange}
-                  placeholder={label}
                   required
                 />
-              ))}
-
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                required
-              >
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-
-              <input type="file" accept="image/*" onChange={handleImageChange} />
-
-              {preview && (
-                <img
-                  src={preview}
-                  alt="Preview"
-                  style={{
-                    width: 200,
-                    height: 100,
-                    objectFit: "cover",
-                    marginTop: "10px",
-                    borderRadius: "4px",
-                  }}
-                />
-              )}
-
-              <div className="locations-modal-actions">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="btn-cancel"
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="btn-save">
-                  {editData ? "Update" : "Save"}
-                </button>
               </div>
-            </form>
+            </div>
+
+            <div className="form-column">
+              <div className="form-group">
+                <label>Contact Number:</label>
+                <input
+                  type="text"
+                  name="contactNumber"
+                  value={formData.contactNumber}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div className="form-column">
+              <div className="form-group">
+                <label>Email:</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
           </div>
-        </div>
+
+          {/* Row 2 */}
+          <div className="form-row">
+            <div className="form-column">
+              <div className="form-group">
+                <label>Legal Business Name:</label>
+                <input
+                  type="text"
+                  name="legalBusinessName"
+                  value={formData.legalBusinessName}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div className="form-column">
+              <div className="form-group">
+                <label>Address:</label>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div className="form-column">
+              <div className="form-group">
+                <label>City:</label>
+                <input
+                  type="text"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Row 3 */}
+          <div className="form-row">
+            <div className="form-column">
+              <div className="form-group">
+                <label>Latitude:</label>
+                <input
+                  type="text"
+                  name="lat"
+                  value={formData.lat}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div className="form-column">
+              <div className="form-group">
+                <label>Longitude:</label>
+                <input
+                  type="text"
+                  name="lng"
+                  value={formData.lng}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div className="form-column">
+              <div className="form-group">
+                <label>Status:</label>
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Row 4 - Image Upload */}
+          <div className="form-row">
+            <div className="form-column">
+              <div className="form-group">
+                <label>Upload Image:</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  ref={fileInputRef}
+                />
+              </div>
+            </div>
+
+            <div className="form-column">
+              {preview && (
+                <div className="image-preview-wrapper">
+                  <img
+                    src={preview}
+                    alt="Preview"
+                    className="image-preview"
+                  />
+                  <button
+                    type="button"
+                    className="remove-image-btn"
+                    onClick={removeImage}
+                  >
+                    &times;
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="form-row">
+            <div className="modal-actions">
+              <button type="button" onClick={onClose} className="cancel-btn">
+                Cancel
+              </button>
+              <button type="submit" className="save-btn">
+                {editData ? "Update" : "Save"}
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
 
       {/* Error Popup */}
-      <ErrorPopup message={errorMessage} onClose={() => setErrorMessage("")} />
+      {errorMessage && (
+        <ErrorPopup
+          message={errorMessage}
+          onClose={() => setErrorMessage("")}
+        />
+      )}
     </>
   );
 };

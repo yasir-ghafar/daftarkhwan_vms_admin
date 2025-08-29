@@ -4,11 +4,11 @@ import Select from "react-select";
 import SuccessPopup from "../../components/confirmation_popup";
 
 const floors = ["1st Floor", "2nd Floor", "3rd Floor", "4th Floor"];
-//const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const weekdays = [{abbrev: "Mon", name: "Monday"}, {abbrev: "Tue", name: "Tuesday"}, {abbrev: "Wed", name: "Wednesday"}, {abbrev: "Thur", name: "Thursday"}, {abbrev: "Fri", name: "Friday"}, {abbrev: "Sat", name: "Saturday"}, {abbrev: "Sun", name: "Sunday"}];
 
 const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, amenities }) => {
   const [imagePreview, setImagePreview] = useState(null);
+  const [image, setImage] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
   const fileInputRef = useRef();
 
@@ -60,7 +60,7 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, amenit
         amenities: [],
       });
       setImagePreview(null);
-      //setImage(null)
+      setImage(null)
     }
   }, [selectedRoom]);
 
@@ -106,43 +106,57 @@ const handleSubmit = (e) => {
   };
 
   const availableDaysFull = form.availableDays.map(
-    abbrev => weekdays.find(d => d.abbrev === abbrev)?.name || abbrev
+    (abbrev) => weekdays.find((d) => d.abbrev === abbrev)?.name || abbrev
   );
 
-  const amenitiesArray = Array.isArray(form.amenities) ? form.amenities : [form.amenities];
+  const amenitiesArray = Array.isArray(form.amenities)
+    ? form.amenities
+    : [form.amenities];
 
-  // Exact object for console log
+  // Exact object for debugging
   const formObject = {
     name: form.name,
     creditsPerSlot: form.creditsPerSlot,
     pricePerCredit: form.pricePerCredit,
     seatingCapacity: form.seatingCapacity,
-    image: form.image || selectedRoom?.image,
     openingTime: formatTimeToAMPM(form.openingTime),
     closingTime: formatTimeToAMPM(form.closingTime),
     floor: form.floor,
     availableDays: availableDaysFull,
     locationId: form.locationId,
     status: form.status,
-    amenities: amenitiesArray
+    amenities: amenitiesArray,
   };
 
-  console.log(formObject);
+  console.log("Form Object (before FormData):", formObject);
 
-  // FormData with exact same format
+  // Build FormData
   const formData = new FormData();
+
+  // Append text fields
   Object.entries({
     ...formObject,
     availableDays: JSON.stringify(availableDaysFull),
-    amenities: JSON.stringify(amenitiesArray)
+    amenities: JSON.stringify(amenitiesArray),
   }).forEach(([key, value]) => {
     formData.append(key, value);
   });
 
+  // Append image if uploaded
+  if (image) {
+    formData.append("image", image);
+  } else if (selectedRoom?.imageUrl) {
+    // If no new image uploaded but editing existing room, keep old reference
+    formData.append("imageUrl", selectedRoom.imageUrl);
+  }
+
   if (onSave) onSave(formData);
 
-  setSuccessMessage(selectedRoom ? "Room updated successfully!" : "Room created successfully!");
+  setSuccessMessage(
+    selectedRoom ? "Room updated successfully!" : "Room created successfully!"
+  );
 };
+
 
   return (
     <>

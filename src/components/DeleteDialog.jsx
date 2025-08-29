@@ -9,7 +9,7 @@ const DeleteDialog = ({ isOpen, onConfirm, onCancel, message }) => {
       <div className="dialog-box">
         <h3>Confirm Deletion</h3>
         <p>
-          message
+          {message}
         </p>
         <div className="modal-actions">
           <button onClick={onCancel} className="cancel-btn">Cancel</button>

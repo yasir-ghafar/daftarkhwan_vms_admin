@@ -38,7 +38,7 @@ const MeetingRooms = () => {
     fetchRooms();
   }, []);
 
-  const handleAddRoom = async (formData) => {
+  const handleAddRoom = async (roomData) => {
     const isEditing = !!selectedRoom;
     setModalOpen(false);
     setLoading(true);
@@ -139,12 +139,13 @@ const MeetingRooms = () => {
 
   const handleDelete = (room) => {
     setDeleteMessage(`Are you sure you want to delete? ${room.name}`);
+    setSelectedRoom(room);
     setIsDialogOpen(true);
   };
 
   const handleConfirmDelete = (e) => {
     setIsDialogOpen(false);
-    console.log(`Deleting Item with id: ${e.id}`);
+    console.log(`Deleting Item with id: ${selectedRoom.id}`);
     // TODO: Implement actual delete API call and update rooms
   };
 
