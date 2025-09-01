@@ -3,8 +3,49 @@ import React, { useState, useRef, useEffect } from "react";
 import Select from "react-select";
 import SuccessPopup from "../../components/confirmation_popup";
 
-const floors = ["1st Floor", "2nd Floor", "3rd Floor", "4th Floor"];
+const floors = ["Ground Floor", "1st Floor", "2nd Floor", "3rd Floor", "4th Floor", "5th Floor", "6th Floor", "7th Floor", "8th Floor", "9th Floor"];
 const weekdays = [{abbrev: "Mon", name: "Monday"}, {abbrev: "Tue", name: "Tuesday"}, {abbrev: "Wed", name: "Wednesday"}, {abbrev: "Thur", name: "Thursday"}, {abbrev: "Fri", name: "Friday"}, {abbrev: "Sat", name: "Saturday"}, {abbrev: "Sun", name: "Sunday"}];
+
+
+/// Add Helper Methods to parse available days and amenities:
+
+/** ---------- Helpers (Refactored) ---------- */
+
+// Always returns a clean array of strings
+function toStringArray(input) {
+  if (!input) return [];
+
+  let value = input;
+
+  try {
+    // Keep parsing until we stop getting a string
+    while (typeof value === "string") {
+      value = JSON.parse(value);
+    }
+  } catch (e) {
+    console.error("Failed to parse string array:", e);
+    return [];
+  }
+
+  return Array.isArray(value) ? value.map(String) : [];
+}
+
+// Map available days to UI abbreviations
+function mapAvailableDays(input, weekdays) {
+  return toStringArray(input).map((day) => {
+    const found = weekdays.find((w) => w.name === day || w.abbrev === day);
+    return found ? found.abbrev : day;
+  });
+}
+
+// Normalize amenities to plain string array
+function mapAmenities(input) {
+  return toStringArray(input).map((a) =>
+    typeof a === "string" ? a : a?.name
+  ).filter(Boolean);
+}
+
+// Component
 
 const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, amenities }) => {
   const [imagePreview, setImagePreview] = useState(null);
@@ -29,9 +70,15 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, amenit
 
   useEffect(() => {
     if (selectedRoom) {
+
+    const mappedDays = mapAvailableDays(selectedRoom.availableDays, weekdays);
+    const mappedAmenities = mapAmenities(selectedRoom.amenities);
+      console.log(mappedDays);
+      console.log(mappedAmenities);
+
       setForm({
         name: selectedRoom.name || "",
-        locationId: selectedRoom.locationId || "",
+        locationId: selectedRoom.LocationId || "",
         creditsPerSlot: selectedRoom.creditsPerSlot?.toString() || "",
         pricePerCredit: selectedRoom.pricePerCredit?.toString() || "",
         seatingCapacity: selectedRoom.seatingCapacity?.toString() || "",
@@ -40,8 +87,8 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, amenit
         closingTime: selectedRoom.closingTime || "",
         floor: selectedRoom.floor || "",
         status: selectedRoom.status || "active",
-        availableDays: Array.isArray(selectedRoom.availableDays) ? selectedRoom.availableDays : [],
-        amenities: Array.isArray(selectedRoom.amenities) ? selectedRoom.amenities : [],
+        availableDays: mappedDays,
+        amenities: mappedAmenities,
       });
       setImagePreview(selectedRoom.imageUrl || null);
     } else {
@@ -96,24 +143,27 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, amenit
 const handleSubmit = (e) => {
   e.preventDefault();
 
+  // Convert "HH:mm" → "hh:mm:ss AM/PM"
   const formatTimeToAMPM = (time) => {
     if (!time) return "";
     const [hour, minute] = time.split(":");
     let h = parseInt(hour, 10);
     const ampm = h >= 12 ? "PM" : "AM";
-    h = h % 12 || 12; // Convert 0 to 12 for midnight
+    h = h % 12 || 12;
     return `${String(h).padStart(2, "0")}:${minute}:00 ${ampm}`;
   };
 
+  // Convert abbrev → full day names
   const availableDaysFull = form.availableDays.map(
     (abbrev) => weekdays.find((d) => d.abbrev === abbrev)?.name || abbrev
   );
 
+  // Always ensure array
   const amenitiesArray = Array.isArray(form.amenities)
     ? form.amenities
     : [form.amenities];
 
-  // Exact object for debugging
+  // ✅ Pure object for API (clean string arrays)
   const formObject = {
     name: form.name,
     creditsPerSlot: form.creditsPerSlot,
@@ -122,31 +172,30 @@ const handleSubmit = (e) => {
     openingTime: formatTimeToAMPM(form.openingTime),
     closingTime: formatTimeToAMPM(form.closingTime),
     floor: form.floor,
-    availableDays: availableDaysFull,
+    availableDays: availableDaysFull, // <-- stays array
     locationId: form.locationId,
     status: form.status,
-    amenities: amenitiesArray,
+    amenities: amenitiesArray, // <-- stays array
   };
 
-  console.log("Form Object (before FormData):", formObject);
+  console.log("🚀 Clean Object:", formObject);
 
-  // Build FormData
+  // ✅ Build FormData for upload
   const formData = new FormData();
 
-  // Append text fields
-  Object.entries({
-    ...formObject,
-    availableDays: JSON.stringify(availableDaysFull),
-    amenities: JSON.stringify(amenitiesArray),
-  }).forEach(([key, value]) => {
-    formData.append(key, value);
+  Object.entries(formObject).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      // Convert arrays into JSON strings for FormData
+      formData.append(key, JSON.stringify(value));
+    } else {
+      formData.append(key, value);
+    }
   });
 
   // Append image if uploaded
   if (image) {
     formData.append("image", image);
   } else if (selectedRoom?.imageUrl) {
-    // If no new image uploaded but editing existing room, keep old reference
     formData.append("imageUrl", selectedRoom.imageUrl);
   }
 
@@ -227,6 +276,7 @@ const handleSubmit = (e) => {
                 <label>Credits/Slot:</label>
                 <input
                   type="number"
+                  step="any"
                   name="creditsPerSlot"
                   value={form.creditsPerSlot}
                   onChange={handleChange}

@@ -26,6 +26,7 @@ const BookingsList = ({ bookings, search, onCancelClick }) => {
     return [
       booking.date,
       booking.Room?.name,
+      booking.Room.location.name,
       booking.User?.name,
       booking.User?.Company?.name,
       booking.startTime,
@@ -56,6 +57,7 @@ const BookingsList = ({ bookings, search, onCancelClick }) => {
             <tr>
               <th>Date</th>
               <th>Meeting Room</th>
+              <th>Location</th>
               <th>Start - End Timings</th>
               <th>Member</th>
               <th>Company</th>
@@ -67,6 +69,7 @@ const BookingsList = ({ bookings, search, onCancelClick }) => {
               <tr key={index}>
                 <td>{booking.date}</td>
                 <td>{booking.Room?.name}</td>
+                <td>{booking.Room.location.name}</td>
                 <td>
                   {to12HourFormat(booking.startTime)} -{" "}
                   {to12HourFormat(booking.endTime)}

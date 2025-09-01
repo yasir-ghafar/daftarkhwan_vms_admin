@@ -61,6 +61,8 @@ const MeetingRooms = () => {
         }
       }
 
+      console.log(dataObject);
+
       if (selectedRoom) {
         dataObject.id = selectedRoom.id;
         await updateRoom(dataObject);

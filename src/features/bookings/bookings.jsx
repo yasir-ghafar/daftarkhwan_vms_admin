@@ -32,6 +32,7 @@ const Bookings = () => {
     setLoading(true);
     try {
       const data = await getBookings();
+      console.log(data.data);
       setBookings(data.data);
     } catch (err) {
       setError("Failed to load bookings.");
