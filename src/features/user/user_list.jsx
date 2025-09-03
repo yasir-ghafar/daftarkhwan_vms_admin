@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import "./user_list.css"; // shared pagination styling
 
 const UsersList = ({ users, onDelete, onEdit, search, onUpdateWallet }) => {
@@ -36,7 +36,7 @@ const UsersList = ({ users, onDelete, onEdit, search, onUpdateWallet }) => {
     }
   };
 
-  const handleOnUpdateWallet = (user) =>  {
+  const handleWalletUpdate = (user) =>  {
     onUpdateWallet(user);
   }
 
@@ -74,7 +74,7 @@ const UsersList = ({ users, onDelete, onEdit, search, onUpdateWallet }) => {
                 <td style={{ textAlign: "center" }}>
                   <button
                     className="btn-next"
-                    onClick={() => {}}
+                    onClick={() => handleWalletUpdate(user)}
                   >
                     Update Wallet
                   </button>
@@ -114,6 +114,7 @@ const UsersList = ({ users, onDelete, onEdit, search, onUpdateWallet }) => {
         </button>
       </div>
     </div>
+
   );
 };
 

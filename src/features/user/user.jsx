@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { getUsers } from "../../api/user_api";
+import { getUsers, addNewUser, editUser } from "../../api/user_api";
 import UsersList from "./user_list";
 import AddUserModal from "./add_new_user";
 import DeleteDialog from "../../components/DeleteDialog";
 import SuccessPopup from "../../components/confirmation_popup";
 import Loadder from "../../components/loadding"; // Unified loader component
+
+import AddCreditDialog from "./add_credits_dialog";
+import { updateWalletBalance } from "../../api/company_api";
 
 const Users = () => {
   const [search, setSearch] = useState("");
@@ -12,6 +15,7 @@ const Users = () => {
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setModalOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isWalletDialogOpen, setWalletDialogOpen] = useState(false);
   const [error, setError] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [deleteMessage, setDeleteMessage] = useState("");
@@ -35,24 +39,39 @@ const Users = () => {
     fetchUsers();
   }, []);
 
-  const handleAddUser = (userData) => {
-    setIsLoading(true);
-    setModalOpen(false);
+
+
+const handleAddUser = async (userData) => {
+  setIsLoading(true);
+  setModalOpen(false);
+
+  try {
     if (selectedUser) {
+      // Call backend update API
+      const updatedUser = await editUser(selectedUser.id, userData);
+
+      // Update local state
       setUsers((prev) =>
-        prev.map((u) =>
-          u.id === selectedUser.id ? { ...selectedUser, ...userData } : u
-        )
+        prev.map((u) => (u.id === selectedUser.id ? updatedUser : u))
       );
       setSuccessMessage("User updated successfully!");
     } else {
-      const newUser = { id: Date.now(), ...userData };
+      // Call backend create API
+      const newUser = await addNewUser(userData);
+
+      // Add to local state
       setUsers((prev) => [...prev, newUser]);
       setSuccessMessage("User created successfully!");
     }
+  } catch (error) {
+    console.error("Error in handleAddUser:", error);
+    setSuccessMessage("Something went wrong!");
+  } finally {
     setSelectedUser(null);
     setIsLoading(false);
-  };
+  }
+};
+
 
   const openAddNewUser = async () => {
     setIsLoading(true);
@@ -72,6 +91,16 @@ const Users = () => {
     setDeleteMessage(`Are you sure you want to delete ${user.name}?`);
     setSelectedUser(user);
     setIsDialogOpen(true);
+  };
+
+  const handleEditUser = (user) => {
+    setSelectedUser(user);
+    setModalOpen(true);
+  }
+
+  const handleWalletUpdate = (user) => {
+    setSelectedUser(user);
+    setWalletDialogOpen(true);
   };
 
   const handleConfirmDelete = () => {
@@ -98,14 +127,35 @@ const Users = () => {
     );
   });
 
+  /// Method to update wallet balance for User
+  const handleWalletSave = async (data) => {
+    console.log(data);
+    setLoading(true)
+    try {
+      const walletId = selectedUser.Wallet.id
+      const response = await updateWalletBalance(walletId, data);
+      console.log(response);
+      fetchUsers();
+    } catch(err) {
+      setError("Failed to Update Wallet Balance.");
+    } finally {
+      setLoading(false);
+      setWalletDialogOpen(false);
+    }
+  }
+
+
+  const handleHistoryClick = async (id) => {
+    console.log("Wallet Id: ", id);
+    window.open(`/transactions/${id}`, "_blank");
+    
+  }
   return (
     <div>
       {(loading || isLoading) && (
         <Loadder
           message={
-            loading
-              ? "Loading users, please wait..."
-              : "Processing request..."
+            loading ? "Loading users, please wait..." : "Processing request..."
           }
         />
       )}
@@ -133,7 +183,12 @@ const Users = () => {
       )}
 
       {!loading && !error && (
-        <UsersList users={filteredUsers} onDelete={handleDelete} onEdit={() => {}} />
+        <UsersList
+          users={filteredUsers}
+          onDelete={handleDelete}
+          onEdit={handleEditUser}
+          onUpdateWallet={handleWalletUpdate}
+        />
       )}
 
       <DeleteDialog
@@ -152,6 +207,15 @@ const Users = () => {
         onSave={handleAddUser}
         selectedUser={selectedUser}
         isEdit={!!selectedUser}
+      />
+
+      <AddCreditDialog
+        open={isWalletDialogOpen}
+        onClose={() => setWalletDialogOpen(false)}
+        onSave={handleWalletSave}
+        onHistory={handleHistoryClick}
+        user={selectedUser}
+        
       />
 
       {successMessage && (

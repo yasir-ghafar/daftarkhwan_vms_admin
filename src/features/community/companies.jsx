@@ -10,6 +10,7 @@ const Companies = () => {
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedCompany, setSelectedCompany] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
 
 
@@ -59,6 +60,11 @@ const Companies = () => {
       setLoading(false)
     }
   }
+
+  const handleEditCompany = async (company) => {
+    setSelectedCompany(company);
+    setModalOpen(true);
+  }
   return (
     <>
       <div className="top-bar">
@@ -91,13 +97,16 @@ const Companies = () => {
         </div>
       )}
 
-      {!loading && !error && <CompaniesList companies={companies} />}
+      {!loading && !error && <CompaniesList 
+      companies={companies}
+      onEdit={handleEditCompany} />}
 
       <CompanyModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
         onSave={handleAddCompany}
         locations={locations}
+        selectedCompany={selectedCompany}
       />
     </>
   );

@@ -7,6 +7,7 @@ import MeetingRooms from "../features/meeting_room/meeting_room";
 import Bookings from "../features/bookings/bookings";
 import Companies from "../features/community/companies";
 import Users from "../features/user/user";
+import Transactions from "../features/wallet/transaction_list";
 
 const AppRoutes = () => (
     <Routes>
@@ -18,6 +19,8 @@ const AppRoutes = () => (
             <Route path="community" element={<Companies/>}/>
             <Route path="users" element={<Users/>}/>
         </Route>
+
+        <Route path="/transactions/:id" element={<Transactions/>}/>
     </Routes>
 );
 

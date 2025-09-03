@@ -26,7 +26,7 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany, locations }) =
         email: selectedCompany.email || "",
         contactNumber: selectedCompany.contactNumber || "",
         businessType: selectedCompany.businessType || "",
-        webURL: selectedCompany.webURL || "",
+        webURL: selectedCompany.websiteUrl || "",
         locationName: selectedCompany.location || "",
         locationId: selectedCompany.locationId || "",
         reference: selectedCompany.reference || "",

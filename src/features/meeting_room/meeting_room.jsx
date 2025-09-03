@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getRooms, addNewRoom, updateRoom, getAmenities } from "../../api/rooms_api";
+import { getRooms, addNewRoom, updateRoom, deleteRoom, getAmenities } from "../../api/rooms_api";
 import { getLocations } from "../../api/locations_api";
 import RoomsList from "./room_list";
 import AddRoomModal from "./add_meeting_room";
@@ -25,6 +25,7 @@ const MeetingRooms = () => {
     setLoading(true);
     try {
       const res = await getRooms();
+      console.log(res.data);
       setRooms(res.data);
     } catch (err) {
       console.error("Error Fetching Meeting Rooms:", err);
@@ -145,9 +146,18 @@ const MeetingRooms = () => {
     setIsDialogOpen(true);
   };
 
-  const handleConfirmDelete = (e) => {
+  const handleConfirmDelete = async (e) => {
     setIsDialogOpen(false);
-    console.log(`Deleting Item with id: ${selectedRoom.id}`);
+    setLoading(true);
+    try {
+      console.log(`Deleting Item with id: ${selectedRoom.id}`);
+      await deleteRoom(selectedRoom.id)
+      setRooms((prev) => prev.filter((room) => room.id !== id));
+    } catch (err) {
+      alert("Error deleting Meeting Room:" + err);
+    } finally{
+      setLoading(false);
+    }
     // TODO: Implement actual delete API call and update rooms
   };
 

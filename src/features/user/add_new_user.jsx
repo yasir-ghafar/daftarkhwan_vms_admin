@@ -15,8 +15,11 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
   const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [companies, setCompanies] = useState([]);
+  
+  
   useEffect(() => {
     const fetchCompanies = async () => {
+
       try {
         const data = await getCompanies();
         console.log("Fetched companies:", data);

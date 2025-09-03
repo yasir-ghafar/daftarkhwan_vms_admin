@@ -55,7 +55,7 @@ const RoomsList = ({ rooms, onDelete, onEdit, search }) => {
               <tr key={index}>
                 <td>{room.name}</td>
                 <td>{room.location?.name ?? "N/A"}</td>
-                <td>{room.Status ?? "Active"}</td>
+                <td>{room.status ?? "Active"}</td>
                 <td>{room.availableSlotsCount ?? "0"}</td>
                 <td>
                   <span

@@ -15,3 +15,16 @@ export const getCompaniesByLocationId = async (id) => {
     const response = await daftarkhwanApi.get(`/company/location-id/${id}`);
     return response;
 }
+
+export const updateWalletBalance = async (id, data) => {
+    console.log("Wallet Id: ", id);
+    console.log("Data", data);
+    const response = await daftarkhwanApi.put(`/company/wallets/${id}`, data);
+    return response;
+}
+
+
+export const getWalletTransactions = async (id) => {
+    const response = await daftarkhwanApi.get(`/company/wallet/transactions/${id}`)
+    return response.data;
+}

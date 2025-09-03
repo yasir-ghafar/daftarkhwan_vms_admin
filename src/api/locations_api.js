@@ -19,6 +19,6 @@ export const updateLocation = async (data) => {
 }
 
 export const deleteLocation = async (id) => {
-    const response = await daftarkhwanApi.delete(`/locations/delete/${id}`);
+    const response = await daftarkhwanApi.delete('/locations/delete/', id);
     return response;
 }
