@@ -31,6 +31,13 @@ const Companies = () => {
     fetchCompanies();
   }, []);
 
+  const filterdCompanies = companies.filter((company) => {
+    const searchTerm = search.toLowerCase();
+    return(
+      company.name?.toLowerCase().includes(searchTerm) 
+    );
+  });
+
   const handleAddCompany = async (newCompany) => {
     setLoading(true)
     console.log(newCompany);
@@ -98,7 +105,7 @@ const Companies = () => {
       )}
 
       {!loading && !error && <CompaniesList 
-      companies={companies}
+      companies={filterdCompanies}
       onEdit={handleEditCompany} />}
 
       <CompanyModal

@@ -90,7 +90,7 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, amenit
         availableDays: mappedDays,
         amenities: mappedAmenities,
       });
-      setImagePreview(selectedRoom.imageUrl || null);
+      setImagePreview(selectedRoom.image || null);
     } else {
       setForm({
         name: "",
