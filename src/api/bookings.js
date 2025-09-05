@@ -9,7 +9,7 @@ export const getBookings = async () => {
 export const addNewBooking = async (data) => {
     console.log(data);
     const response = await daftarkhwanApi.post("/bookings", data);
-    return response.data;
+    return response;
 }
 
 

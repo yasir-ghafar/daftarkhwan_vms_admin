@@ -34,7 +34,9 @@ const Companies = () => {
   const filterdCompanies = companies.filter((company) => {
     const searchTerm = search.toLowerCase();
     return(
-      company.name?.toLowerCase().includes(searchTerm) 
+      company.name?.toLowerCase().includes(searchTerm) ||
+      company.locationName?.toLowerCase().includes(searchTerm) ||
+      company.location?.name?.toLowerCase().includes(searchTerm)
     );
   });
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { getRoomByLocationId } from '../../api/rooms_api';
 import { getUsersByCompanyId } from "../../api/authApi";
 import ErrorPopup from "../../components/error_popup";
+import SuccessPopup from "../../components/confirmation_popup";
 
 // Convert 24-hour to 12-hour format with seconds and AM/PM
 const to12HourFormat = (time24) => {
@@ -42,6 +43,7 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
   const [users, setUsers] = useState([]);
   const [bookedSlots, setBookedSlots] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -132,7 +134,9 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
       room_id: parseInt(formData.meetingRoom),
       company_id: parseInt(formData.companyId),
       user_id: parseInt(formData.customerId),
-      status: "confirmed"
+      status: "confirmed",
+      title: "",
+      description: ""
     };
 
     try {

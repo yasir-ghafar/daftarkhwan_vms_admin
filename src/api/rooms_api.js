@@ -20,7 +20,9 @@ export const getRoomByLocationId = async (id) => {
 
 export const deleteRoom = async (id) => {
     const response = await daftarkhwanApi.delete(`meeting-rooms/delete/${id}`)
+    return response;
 }
+
 export const updateRoom = async (data) => {
     console.log(data);
     const response = await daftarkhwanApi.put(`/meeting-rooms/${data.id}`, data);

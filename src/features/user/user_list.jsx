@@ -50,6 +50,7 @@ const UsersList = ({ users, onDelete, onEdit, search, onUpdateWallet }) => {
               <th>Email</th>
               <th>Role</th>
               <th>Company</th>
+              <th>Location</th>
               <th>Balance</th>
               <th>Actions</th>
               <th></th>
@@ -62,6 +63,7 @@ const UsersList = ({ users, onDelete, onEdit, search, onUpdateWallet }) => {
                 <td>{user.email}</td>
                 <td>{user.role}</td>
                 <td>{user.Company.name || "N/A"}</td>
+                <td>{user.Company.locationName}</td>
                 <td>
                   Meeting Room:{" "}
                   {user.Wallet

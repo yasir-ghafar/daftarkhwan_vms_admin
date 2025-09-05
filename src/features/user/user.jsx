@@ -65,7 +65,7 @@ const handleAddUser = async (userData) => {
     }
   } catch (error) {
     console.error("Error in handleAddUser:", error);
-    setSuccessMessage("Something went wrong!");
+    setError("Something went wrong!");
   } finally {
     setSelectedUser(null);
     setIsLoading(false);
@@ -121,8 +121,8 @@ const handleAddUser = async (userData) => {
       user.name?.toLowerCase().includes(searchTerm) ||
       user.email?.toLowerCase().includes(searchTerm) ||
       user.role?.toLowerCase().includes(searchTerm) ||
-      user.company_name?.toLowerCase().includes(searchTerm) ||
-      user.company?.name?.toLowerCase().includes(searchTerm) ||
+      user.Company?.name?.toLowerCase().includes(searchTerm) ||
+      user.Company.locationName.toLowerCase().includes(searchTerm) ||
       user.companyName?.toLowerCase().includes(searchTerm)
     );
   });

@@ -6,7 +6,7 @@ const to12HourFormat = (time24) => {
   let hour = parseInt(hourStr, 10);
   const ampm = hour >= 12 ? "PM" : "AM";
   hour = hour % 12 || 12;
-  return `${hour.toString().padStart(2, "0")}:${minute}:00 ${ampm}`;
+  return `${hour.toString().padStart(2, "0")}:${minute} ${ampm}`;
 };
 
 const BookingsList = ({ bookings, search, onCancelClick }) => {
@@ -61,6 +61,7 @@ const BookingsList = ({ bookings, search, onCancelClick }) => {
               <th>Start - End Timings</th>
               <th>Member</th>
               <th>Company</th>
+              <th>Status</th>
               <th>Cancel</th>
             </tr>
           </thead>
@@ -76,6 +77,7 @@ const BookingsList = ({ bookings, search, onCancelClick }) => {
                 </td>
                 <td>{booking.User?.name}</td>
                 <td>{booking.User?.Company?.name}</td>
+                <td>{booking.status.toLowerCase()}</td>
                 <td style={{ textAlign: "center" }}>
                   <button
                     className="cancel-btn-2"

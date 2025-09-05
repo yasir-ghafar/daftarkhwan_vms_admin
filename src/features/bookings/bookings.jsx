@@ -6,6 +6,7 @@ import BookingForm from "./add_new_booking";
 import BookingsList from "./booking_list";
 import ErrorPopup from "../../components/error_popup";
 import "./bookings.css";
+import SuccessPopup from "../../components/confirmation_popup";
 
 const Bookings = () => {
   const [search, setSearch] = useState("");
@@ -15,6 +16,7 @@ const Bookings = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   // new state for delete modal
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -64,18 +66,27 @@ const Bookings = () => {
   };
 
   const handleAddOrEditBooking = async (newBooking) => {
+    console.log(newBooking);
     setLoading(true);
     try {
       const response = await addNewBooking(newBooking);
-      if (response.status === 200) {
+      if (response.status === 201) {
         setModalOpen(false);
+        setSuccessMessage(response.data.message);
         fetchBookings();
+      } else if (response.status === 403) {
+        throw new Error("Insufficient wallet balance");
       } else {
         throw new Error("Booking failed.");
       }
     } catch (err) {
-      console.error(err);
-      setError(extractErrorMessage(err));
+      if (err.status === 403) {
+        setError(extractErrorMessage("Insufficient wallet balance"));
+      } else if (err.status === 409) {
+        setError(extractErrorMessage("The selected room is already booked during the requested time."));
+      } else {
+        setError(extractErrorMessage(err));
+      }
     } finally {
       setLoading(false);
     }
@@ -130,6 +141,10 @@ const Bookings = () => {
 
       {error && (
         <ErrorPopup message={error} onClose={() => setError(null)} />
+      )}
+
+      {error && (
+        <SuccessPopup message={successMessage} onClose={() => setSuccessMessage(null)} />
       )}
 
       {!loading && !error && (
