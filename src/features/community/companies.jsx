@@ -12,6 +12,7 @@ const Companies = () => {
   const [error, setError] = useState(null);
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
+   const [selectedLocation, setSelectedLocation] = useState("");
 
 
   const fetchCompanies = async () => {
@@ -31,14 +32,20 @@ const Companies = () => {
     fetchCompanies();
   }, []);
 
-  const filterdCompanies = companies.filter((company) => {
-    const searchTerm = search.toLowerCase();
-    return(
-      company.name?.toLowerCase().includes(searchTerm) ||
-      company.locationName?.toLowerCase().includes(searchTerm) ||
-      company.location?.name?.toLowerCase().includes(searchTerm)
-    );
-  });
+  const filteredCompanies = companies.filter((company) => {
+  const searchTerm = search.toLowerCase();
+
+  const matchesSearch =
+    company.name?.toLowerCase().includes(searchTerm) ||
+    company.locationName?.toLowerCase().includes(searchTerm) ||
+    company.location?.name?.toLowerCase().includes(searchTerm);
+
+  const matchesLocation = selectedLocation
+    ? String(company.LocationId) === String(selectedLocation)
+    : true;
+
+  return matchesSearch && matchesLocation;
+});
 
   const handleAddCompany = async (newCompany) => {
     setLoading(true)
@@ -83,13 +90,34 @@ const Companies = () => {
         </button>
       </div>
 
-      <input
+      
+      <div className="filters-bar">
+        <input
         type="text"
         placeholder="Search locations..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="search-input"
       />
+
+        {/* Location Filter */}
+        <select
+          value={selectedLocation}
+          onChange={(e) => setSelectedLocation(e.target.value)}
+          className="filter-dropdown"
+        >
+          <option value="">All Locations</option>
+          {[
+            ...new Map(
+              companies.map((company) => [company.LocationId, company.locationName])
+            ),
+          ].map(([id, name]) => (
+            <option key={id} value={id}>
+              {name}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {loading && (
         <div className="loading-overlay">
@@ -107,7 +135,7 @@ const Companies = () => {
       )}
 
       {!loading && !error && <CompaniesList 
-      companies={filterdCompanies}
+      companies={filteredCompanies}
       onEdit={handleEditCompany} />}
 
       <CompanyModal

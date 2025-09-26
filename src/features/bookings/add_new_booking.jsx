@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getRoomByLocationId } from '../../api/rooms_api';
+import { getRoomByLocationId } from "../../api/rooms_api";
 import { getUsersByCompanyId } from "../../api/authApi";
 import ErrorPopup from "../../components/error_popup";
 import SuccessPopup from "../../components/confirmation_popup";
@@ -10,10 +10,10 @@ const to12HourFormat = (time24) => {
   let hour = parseInt(hourStr, 10);
   const ampm = hour >= 12 ? "PM" : "AM";
   hour = hour % 12 || 12;
-  return `${hour.toString().padStart(2, '0')}:${minute}:00 ${ampm}`;
+  return `${hour.toString().padStart(2, "0")}:${minute}:00 ${ampm}`;
 };
 
-//
+// Convert date + time to full string
 const toDateTimeString = (date, time) => {
   if (!date || !time) return "";
   const [year, month, day] = date.split("-");
@@ -23,20 +23,22 @@ const toDateTimeString = (date, time) => {
 
 // Generate time slots from 09:00 to 21:30 with 30-min intervals
 const timeSlots = Array.from({ length: 25 }, (_, i) => {
-  const hour = String(9 + Math.floor(i / 2)).padStart(2, '0');
-  const minute = i % 2 === 0 ? '00' : '30';
+  const hour = String(9 + Math.floor(i / 2)).padStart(2, "0");
+  const minute = i % 2 === 0 ? "00" : "30";
   return `${hour}:${minute}`;
 });
 
 const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
   const [formData, setFormData] = useState({
+    title: "",
+    description: "",
     date: "",
     location: "",
     meetingRoom: "",
     companyId: "",
     customerId: "",
     startTime: "",
-    endTime: ""
+    endTime: "",
   });
 
   const [meetingRooms, setMeetingRooms] = useState([]);
@@ -45,62 +47,66 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  // Fetch users when company changes
   useEffect(() => {
     const fetchUsers = async () => {
       if (!formData.companyId) {
         setUsers([]);
         return;
       }
-
       try {
         const usersRes = await getUsersByCompanyId(formData.companyId);
         setUsers(usersRes.data);
-      } catch (err) {
+      } catch {
         setErrorMessage("Failed to fetch users.");
         setUsers([]);
       }
     };
-
     fetchUsers();
   }, [formData.companyId]);
 
+  // Fetch meeting rooms when location changes
   useEffect(() => {
     const fetchMeetingRooms = async () => {
       if (!formData.location) {
         setMeetingRooms([]);
         return;
       }
-
       try {
         const res = await getRoomByLocationId(formData.location);
         setMeetingRooms(res.data);
-      } catch (err) {
+      } catch {
         setErrorMessage("Failed to fetch meeting rooms.");
         setMeetingRooms([]);
       }
     };
-
     fetchMeetingRooms();
   }, [formData.location]);
 
   const handleChange = (e) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
   const getDisabledTimes = () => {
     if (!formData.date || !formData.meetingRoom) return [];
     return bookedSlots
-      .filter(b => b.date === formData.date && b.roomId === formData.meetingRoom)
-      .map(b => b.startTime);
+      .filter(
+        (b) => b.date === formData.date && b.roomId === formData.meetingRoom
+      )
+      .map((b) => b.startTime);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     // Basic validation
+    if (!formData.title.trim()) {
+      setErrorMessage("Please enter a title.");
+      return;
+    }
     if (!formData.location) {
       setErrorMessage("Please select a location.");
       return;
@@ -127,6 +133,8 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
     }
 
     const payload = {
+      title: formData.title,
+      description: formData.description,
       date: formData.date,
       startTime: toDateTimeString(formData.date, formData.startTime),
       endTime: toDateTimeString(formData.date, formData.endTime),
@@ -135,8 +143,6 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
       company_id: parseInt(formData.companyId),
       user_id: parseInt(formData.customerId),
       status: "confirmed",
-      title: "",
-      description: ""
     };
 
     try {
@@ -156,9 +162,10 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
       <div className="modal-overlay">
         <form onSubmit={handleSubmit} className="location-form">
           <div style={{ marginBottom: "20px" }}>
+            {/* Dropdowns Row */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
               <div style={{ flex: "1" }}>
-                <label>Location</label><br />
+                <label>Location</label>
                 <select
                   name="location"
                   value={formData.location}
@@ -166,14 +173,16 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
                   required
                 >
                   <option value="">Select Location</option>
-                  {locations.map(loc => (
-                    <option key={loc.id} value={loc.id}>{loc.name}</option>
+                  {locations.map((loc) => (
+                    <option key={loc.id} value={loc.id}>
+                      {loc.name}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div style={{ flex: "1" }}>
-                <label>Meeting Room</label><br />
+                <label>Meeting Room</label>
                 <select
                   name="meetingRoom"
                   value={formData.meetingRoom}
@@ -181,14 +190,16 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
                   required
                 >
                   <option value="">Select Room</option>
-                  {meetingRooms.map(room => (
-                    <option key={room.id} value={room.id}>{room.name}</option>
+                  {meetingRooms.map((room) => (
+                    <option key={room.id} value={room.id}>
+                      {room.name}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div style={{ flex: "1" }}>
-                <label>Company</label><br />
+                <label>Company</label>
                 <select
                   name="companyId"
                   value={formData.companyId}
@@ -196,44 +207,64 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
                   required
                 >
                   <option value="">Select Company</option>
-                  {companies.map(company => (
-                    <option key={company.id} value={company.id}>{company.name}</option>
+                  {companies.map((company) => (
+                    <option key={company.id} value={company.id}>
+                      {company.name}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div style={{ flex: "1" }}>
-                <label>Member</label><br />
+                <label>Member</label>
                 <select
                   name="customerId"
                   value={formData.customerId}
                   onChange={handleChange}
                   required
                 >
-                  <option value="">Select member</option>
-                  {users.map(user => (
-                    <option key={user.id} value={user.id}>{user.name}</option>
+                  <option value="">Select Member</option>
+                  {users.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.name}
+                    </option>
                   ))}
                 </select>
               </div>
             </div>
 
-            <div style={{ flex: "1", display: "flex", flexWrap: "wrap", gap: "20px" }}>
+            {/* Date & Time */}
+            <div
+              style={{
+                flex: "1",
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "20px",
+                marginTop: "20px",
+              }}
+            >
               <div>
-                <label><strong>Select Date</strong></label><br />
+                <label>
+                  <strong>Select Date</strong>
+                </label>
                 <input
                   type="date"
                   name="date"
                   value={formData.date}
                   onChange={handleChange}
                   required
-                  style={{ width: "100%", padding: "8px", marginTop: "4px" }}
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    marginTop: "4px",
+                  }}
                 />
-              </div> 
+              </div>
+
               {isDateSelected && (
                 <>
                   <div style={{ flex: "1" }}>
-                    <label>Start Time</label><br />
+                    <label>Start Time</label>
                     <select
                       name="startTime"
                       value={formData.startTime}
@@ -241,16 +272,21 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
                       required
                     >
                       <option value="">Select Time</option>
-                      {timeSlots.map(time => (
-                        <option key={time} value={time} disabled={disabledTimes.includes(time)}>
-                          {to12HourFormat(time)} {disabledTimes.includes(time) ? "(Booked)" : ""}
+                      {timeSlots.map((time) => (
+                        <option
+                          key={time}
+                          value={time}
+                          disabled={disabledTimes.includes(time)}
+                        >
+                          {to12HourFormat(time)}{" "}
+                          {disabledTimes.includes(time) ? "(Booked)" : ""}
                         </option>
                       ))}
                     </select>
                   </div>
 
                   <div style={{ flex: "1" }}>
-                    <label>End Time</label><br />
+                    <label>End Time</label>
                     <select
                       name="endTime"
                       value={formData.endTime}
@@ -258,9 +294,14 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
                       required
                     >
                       <option value="">Select Time</option>
-                      {timeSlots.map(time => (
-                        <option key={time} value={time} disabled={disabledTimes.includes(time)}>
-                          {to12HourFormat(time)} {disabledTimes.includes(time) ? "(Booked)" : ""}
+                      {timeSlots.map((time) => (
+                        <option
+                          key={time}
+                          value={time}
+                          disabled={disabledTimes.includes(time)}
+                        >
+                          {to12HourFormat(time)}{" "}
+                          {disabledTimes.includes(time) ? "(Booked)" : ""}
                         </option>
                       ))}
                     </select>
@@ -270,9 +311,60 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
             </div>
           </div>
 
-          <div className="button-group" style={{ marginTop: "30px", textAlign: "center", display: "flex", justifyContent: "center", gap: "20px" }}>
-            <button type="submit" className="btn-proceed" disabled={!formData.date}>Proceed</button>
-            <button type="button" onClick={onClose} className="btn-cancel">Cancel</button>
+          {/* Title */}
+            <div style={{ marginBottom: "15px" }}>
+              <label>Title</label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                placeholder="Enter booking title"
+                required
+              />
+            </div>
+
+            {/* Description */}
+            <div style={{ marginBottom: "15px" }}>
+              <label>Description</label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                rows={4}
+                placeholder="Enter description..."
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  border: "1px solid #ccc",
+                  borderRadius: "6px",
+                  backgroundColor: "#f9f9f9",
+                  fontSize: "14px",
+                }}
+              />
+            </div>
+
+          {/* Buttons */}
+          <div
+            className="button-group"
+            style={{
+              marginTop: "30px",
+              textAlign: "center",
+              display: "flex",
+              justifyContent: "center",
+              gap: "20px",
+            }}
+          >
+            <button
+              type="submit"
+              className="btn-proceed"
+              disabled={!formData.date}
+            >
+              Proceed
+            </button>
+            <button type="button" onClick={onClose} className="btn-cancel">
+              Cancel
+            </button>
           </div>
         </form>
       </div>

@@ -45,7 +45,9 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
     email: "",
     company_id: "",
     phoneNumber: "",
-    password: ""
+    password: "",
+    credit_types: "postpaid"
+
   });
 
   useEffect(() => {
@@ -184,6 +186,20 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
                       {r.label}
                     </option>
                   ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="form-column">
+              <div className="form-group">
+                <label>Credits Type:</label>
+                <select
+                  name="status"
+                  value={form.credit_types}
+                  onChange={handleChange}
+                  required>
+                  <option value="prepaid">Prepaid</option>
+                  <option value="postpaid">Postpaid</option>
                 </select>
               </div>
             </div>
