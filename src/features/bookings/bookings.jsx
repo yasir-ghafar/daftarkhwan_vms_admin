@@ -98,20 +98,25 @@ const Bookings = () => {
     setIsDeleteModalOpen(true);
   };
 
-  // delete booking
   const handleProceedDelete = async () => {
-    setLoading(true);
-    try {
-      await cancelBooking(selectedBookingId);
-      setBookings((prev) => prev.filter((b) => b.id !== selectedBookingId));
-    } catch (err) {
-      setError(extractErrorMessage(err));
-    } finally {
-      setLoading(false);
-      setIsDeleteModalOpen(false);
-      setSelectedBookingId(null);
-    }
-  };
+  setLoading(true);
+  try {
+    await cancelBooking(selectedBookingId);
+
+    // Update status instead of removing
+    setBookings((prev) =>
+      prev.map((b) =>
+        b.id === selectedBookingId ? { ...b, status: "cancelled" } : b
+      )
+    );
+  } catch (err) {
+    setError(extractErrorMessage(err));
+  } finally {
+    setLoading(false);
+    setIsDeleteModalOpen(false);
+    setSelectedBookingId(null);
+  }
+};
 
   // ✅ Search & filter logic here (instead of child)
   const normalize = (v) =>

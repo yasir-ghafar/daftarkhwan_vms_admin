@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import ErrorPopup from "../../components/error_popup";
 import SuccessPopup from "../../components/confirmation_popup";
 import { getCompanies } from "../../api/company_api";
-import daftarkhwanApi from "../../api/api";
 
 const roles = [
   { value: "member", label: "Member" },
@@ -12,33 +11,7 @@ const roles = [
 
 const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
   const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [companies, setCompanies] = useState([]);
-  
-  
-  useEffect(() => {
-    const fetchCompanies = async () => {
-
-      try {
-        const data = await getCompanies();
-        console.log("Fetched companies:", data);
-        let list = [];
-        if (Array.isArray(data)) {
-          list = data;
-        } else if (Array.isArray(data?.companies)) {
-          list = data.companies;
-        } else if (Array.isArray(data?.data)) {
-          list = data.data;
-        }
-        setCompanies(list);
-      } catch (err) {
-        console.error("Failed to fetch companies:", err);
-      }
-    };
-    fetchCompanies();
-  }, []);
-
   const [form, setForm] = useState({
     name: "",
     role: "member",
@@ -47,9 +20,29 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
     phoneNumber: "",
     password: "",
     credit_types: "postpaid"
-
   });
 
+  // fetch companies when modal opens
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const fetchCompanies = async () => {
+      try {
+        const data = await getCompanies();
+        let list = [];
+        if (Array.isArray(data)) list = data;
+        else if (Array.isArray(data?.companies)) list = data.companies;
+        else if (Array.isArray(data?.data)) list = data.data;
+
+        setCompanies(list);
+      } catch (err) {
+        console.error("Failed to fetch companies:", err);
+      }
+    };
+    fetchCompanies();
+  }, [isOpen]);
+
+  // prefill form when editing
   useEffect(() => {
     if (selectedUser) {
       setForm({
@@ -58,7 +51,8 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
         email: selectedUser.email || "",
         company_id: selectedUser.company_id?.toString() || "",
         phoneNumber: selectedUser.phoneNumber || "",
-        password: "" // Never pre-fill passwords
+        password: "", // never pre-fill passwords
+        credit_types: selectedUser.credit_types || "postpaid"
       });
     } else {
       setForm({
@@ -67,7 +61,8 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
         email: "",
         company_id: "",
         phoneNumber: "",
-        password: ""
+        password: "",
+        credit_types: "postpaid"
       });
     }
   }, [selectedUser]);
@@ -79,10 +74,10 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Simple validation
+    // simple validation
     if (!form.name.trim()) {
       setErrorMessage("Full name is required.");
       return;
@@ -104,53 +99,12 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
       return;
     }
 
-    setIsLoading(true);
-    try {
-      const userObject = {
-        name: form.name,
-        role: form.role,
-        email: form.email,
-        company_id: form.company_id,
-        phoneNumber: form.phoneNumber,
-        password: form.password
-      };
-      console.log("User object to be saved:", userObject);
-      if (!selectedUser) {
-        const res = await daftarkhwanApi.post("/auth/register", userObject);
-        console.log("User saved to backend:", res.data);
-        setSuccessMessage("User created successfully!");
-        if (onSave) onSave(res.data);
-      } else {
-        // If editing existing user, keep previous behavior if needed
-        // Currently no update API call is done here
-        if (onSave) onSave(userObject);
-        setSuccessMessage("User updated successfully!");
-      }
-      setIsLoading(false);
-    } catch (err) {
-      console.error("Failed to save user to backend:", err);
-
-      let errorMsg = "Failed to save user.";
-      if (err.response?.data) {
-        if (typeof err.response.data === "string") {
-          errorMsg = err.response.data;
-        } else if (typeof err.response.data.message === "string") {
-          errorMsg = err.response.data.message;
-        } else {
-          errorMsg = JSON.stringify(err.response.data);
-        }
-      } else if (err.message) {
-        errorMsg = err.message;
-      }
-
-      setErrorMessage(errorMsg);
-      setIsLoading(false);
-    }
+    // hand over form data to parent
+    if (onSave) onSave(form);
   };
 
   return (
     <>
-      {isLoading && <div className="loading-bar"></div>}
       <div className="modal-overlay">
         <form onSubmit={handleSubmit} className="location-form">
           <h3 style={{ marginBottom: "12px", color: "#2c3e50", width: "100%" }}>
@@ -194,10 +148,11 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
               <div className="form-group">
                 <label>Credits Type:</label>
                 <select
-                  name="status"
+                  name="credit_types"
                   value={form.credit_types}
                   onChange={handleChange}
-                  required>
+                  required
+                >
                   <option value="prepaid">Prepaid</option>
                   <option value="postpaid">Postpaid</option>
                 </select>
@@ -230,7 +185,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
                   required
                 >
                   <option value="">Select Company</option>
-                  {Array.isArray(companies) && companies.map((c) => (
+                  {companies.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
                     </option>
@@ -263,7 +218,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
                   name="password"
                   value={form.password}
                   onChange={handleChange}
-                  required={!selectedUser} // Only required for new users
+                  required={!selectedUser} // only required for new users
                 />
               </div>
             </div>
@@ -285,12 +240,6 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
 
       {/* Error Popup */}
       <ErrorPopup message={errorMessage} onClose={() => setErrorMessage("")} />
-      {successMessage && (
-        <SuccessPopup
-          message={successMessage}
-          onClose={() => setSuccessMessage("")}
-        />
-      )}
     </>
   );
 };
