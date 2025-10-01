@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { getRooms, addNewRoom, updateRoom, deleteRoom, getAmenities } from "../../api/rooms_api";
+import {
+  getRooms,
+  addNewRoom,
+  updateRoom,
+  deleteRoom,
+  getAmenities,
+} from "../../api/rooms_api";
 import { getLocations } from "../../api/locations_api";
 import RoomsList from "./room_list";
 import AddRoomModal from "./add_meeting_room";
@@ -7,6 +13,18 @@ import DeleteDialog from "../../components/DeleteDialog";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import app from "../../firebase/firebase";
 
+const floors = [
+  "Ground Floor",
+  "1st Floor",
+  "2nd Floor",
+  "3rd Floor",
+  "4th Floor",
+  "5th Floor",
+  "6th Floor",
+  "7th Floor",
+  "8th Floor",
+  "9th Floor",
+];
 
 const MeetingRooms = () => {
   const [search, setSearch] = useState("");
@@ -19,7 +37,8 @@ const MeetingRooms = () => {
   const [error, setError] = useState(null);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [deleteMesssage, setDeleteMessage] = useState("");
-  const [editRoom, setEditRoom] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState("");
+  const [selectedFloor, setSelectedFloor] = useState("");
 
   const fetchRooms = async () => {
     setLoading(true);
@@ -73,14 +92,12 @@ const MeetingRooms = () => {
 
       await fetchRooms();
       if (selectedRoom) setSelectedRoom(null);
-
     } catch (err) {
       console.error("Save failed:", err.response?.data || err.message);
       alert("Unable to save meeting room");
     } finally {
       setLoading(false);
     }
-      
   };
 
   const uploadImageToFirebase = async (imageFile) => {
@@ -151,11 +168,11 @@ const MeetingRooms = () => {
     setLoading(true);
     try {
       console.log(`Deleting Item with id: ${selectedRoom.id}`);
-      await deleteRoom(selectedRoom.id)
+      await deleteRoom(selectedRoom.id);
       setRooms((prev) => prev.filter((room) => room.id !== id));
     } catch (err) {
       alert("Error deleting Meeting Room:" + err);
-    } finally{
+    } finally {
       setLoading(false);
     }
     // TODO: Implement actual delete API call and update rooms
@@ -165,14 +182,20 @@ const MeetingRooms = () => {
     setIsDialogOpen(false);
   };
 
-  // 🔍 Filter rooms before sending to list
   const filteredRooms = rooms.filter((room) => {
     const searchTerm = search.toLowerCase();
-    return (
+    const matchesSearch =
       room.name?.toLowerCase().includes(searchTerm) ||
       room.location?.name?.toLowerCase().includes(searchTerm) ||
-      room.Status?.toLowerCase().includes(searchTerm)
-    );
+      room.status?.toLowerCase().includes(searchTerm);
+
+    const matchesLocation = selectedLocation
+      ? String(room.LocationId) === String(selectedLocation)
+      : true;
+
+    const matchesFloor = selectedFloor ? room.floor === selectedFloor : true;
+
+    return matchesSearch && matchesLocation && matchesFloor;
   });
 
   return (
@@ -184,13 +207,46 @@ const MeetingRooms = () => {
         </button>
       </div>
 
-      <input
+      <div className="filters-bar">
+        <input
         type="text"
         placeholder="Search meeting rooms..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="search-input"
       />
+        {/* Location Filter */}
+        <select
+          value={selectedLocation}
+          onChange={(e) => setSelectedLocation(e.target.value)}
+          className="filter-dropdown"
+        >
+          <option value="">All Locations</option>
+          {[
+            ...new Map(
+              rooms.map((room) => [room.LocationId, room.location?.name])
+            ),
+          ].map(([id, name]) => (
+            <option key={id} value={id}>
+              {name}
+            </option>
+          ))}
+        </select>
+
+        {/* Floor Filter */}
+        <select
+          value={selectedFloor}
+          onChange={(e) => setSelectedFloor(e.target.value)}
+          className="filter-dropdown"
+        >
+          <option value="">All Floors</option>
+          {floors.map((floor, idx) => (
+            <option key={idx} value={floor}>
+              {floor}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {error && (
         <div className="error-popup">

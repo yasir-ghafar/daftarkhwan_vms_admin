@@ -45,6 +45,17 @@ function mapAmenities(input) {
   ).filter(Boolean);
 }
 
+ // Convert "HH:mm" → "hh:mm:ss AM/PM"
+  const formatTimeToAMPM = (time) => {
+    if (!time) return "";
+    const [hour, minute] = time.split(":");
+    let h = parseInt(hour, 10);
+    const ampm = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12;
+    return `${String(h).padStart(2, "0")}:${minute}:00 ${ampm}`;
+  };
+
+  
 // Component
 
 const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, amenities }) => {
@@ -53,7 +64,7 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, amenit
   const [successMessage, setSuccessMessage] = useState("");
   const fileInputRef = useRef();
 
-  const [form, setForm] = useState({
+  const defaultFormState = {
     name: "",
     locationId: "",
     creditsPerSlot: "",
@@ -66,50 +77,36 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, amenit
     status: "active",
     availableDays: [],
     amenities: [],
-  });
+  };
+
+  const [form, setForm] = useState(defaultFormState);
 
   useEffect(() => {
-    if (selectedRoom) {
-
+  if (selectedRoom) {
     const mappedDays = mapAvailableDays(selectedRoom.availableDays, weekdays);
     const mappedAmenities = mapAmenities(selectedRoom.amenities);
-      console.log(mappedDays);
-      console.log(mappedAmenities);
 
-      setForm({
-        name: selectedRoom.name || "",
-        locationId: selectedRoom.LocationId || "",
-        creditsPerSlot: selectedRoom.creditsPerSlot?.toString() || "",
-        pricePerCredit: selectedRoom.pricePerCredit?.toString() || "",
-        seatingCapacity: selectedRoom.seatingCapacity?.toString() || "",
-        image: "",
-        openingTime: selectedRoom.openingTime || "",
-        closingTime: selectedRoom.closingTime || "",
-        floor: selectedRoom.floor || "",
-        status: selectedRoom.status || "active",
-        availableDays: mappedDays,
-        amenities: mappedAmenities,
-      });
-      setImagePreview(selectedRoom.image || null);
-    } else {
-      setForm({
-        name: "",
-        locationId: "",
-        creditsPerSlot: "",
-        pricePerCredit: "",
-        seatingCapacity: "",
-        image: "",
-        openingTime: "",
-        closingTime: "",
-        floor: "",
-        status: "active",
-        availableDays: [],
-        amenities: [],
-      });
-      setImagePreview(null);
-      setImage(null)
-    }
-  }, [selectedRoom]);
+    setForm({
+      ...defaultFormState,
+      name: selectedRoom.name || "",
+      locationId: selectedRoom.LocationId || "",
+      creditsPerSlot: selectedRoom.creditsPerSlot?.toString() || "",
+      pricePerCredit: selectedRoom.pricePerCredit?.toString() || "",
+      seatingCapacity: selectedRoom.seatingCapacity?.toString() || "",
+      openingTime: selectedRoom.openingTime || "",
+      closingTime: selectedRoom.closingTime || "",
+      floor: selectedRoom.floor || "",
+      status: selectedRoom.status || "active",
+      availableDays: mappedDays,
+      amenities: mappedAmenities,
+    });
+    setImagePreview(selectedRoom.image || null);
+  } else {
+    setForm(defaultFormState);
+    setImagePreview(null);
+    setImage(null);
+  }
+}, [selectedRoom]);
 
   if (!isOpen) return null;
 
@@ -142,16 +139,6 @@ const AddRoomModal = ({ isOpen, onClose, onSave, locations, selectedRoom, amenit
 
 const handleSubmit = (e) => {
   e.preventDefault();
-
-  // Convert "HH:mm" → "hh:mm:ss AM/PM"
-  const formatTimeToAMPM = (time) => {
-    if (!time) return "";
-    const [hour, minute] = time.split(":");
-    let h = parseInt(hour, 10);
-    const ampm = h >= 12 ? "PM" : "AM";
-    h = h % 12 || 12;
-    return `${String(h).padStart(2, "0")}:${minute}:00 ${ampm}`;
-  };
 
   // Convert abbrev → full day names
   const availableDaysFull = form.availableDays.map(
@@ -394,6 +381,7 @@ const handleSubmit = (e) => {
                   accept="image/*"
                   onChange={handleImageChange}
                   ref={fileInputRef}
+                  required={!selectedRoom}
                 />
               </div>
             </div>

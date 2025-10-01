@@ -11,7 +11,6 @@ export const getUsers = async () => {
   }
 }
 
-
 export const addNewUser = async (data) => {
   try {
     const response = await daftarkhwanApi.post("/auth/register/", data);

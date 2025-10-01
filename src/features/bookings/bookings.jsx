@@ -5,8 +5,8 @@ import { getCompanies } from "../../api/company_api";
 import BookingForm from "./add_new_booking";
 import BookingsList from "./booking_list";
 import ErrorPopup from "../../components/error_popup";
-import "./bookings.css";
 import SuccessPopup from "../../components/confirmation_popup";
+import "./bookings.css";
 
 const Bookings = () => {
   const [search, setSearch] = useState("");
@@ -17,6 +17,7 @@ const Bookings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState("");
 
   // new state for delete modal
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -34,9 +35,8 @@ const Bookings = () => {
     setLoading(true);
     try {
       const data = await getBookings();
-      console.log(data.data);
       setBookings(data.data);
-    } catch (err) {
+    } catch {
       setError("Failed to load bookings.");
     } finally {
       setLoading(false);
@@ -54,11 +54,10 @@ const Bookings = () => {
         getLocations(),
         getCompanies(),
       ]);
-
       setLocations(locationsRes.data);
       setCompanies(companiesRes.data);
       setModalOpen(true);
-    } catch (err) {
+    } catch {
       setError("Failed to load locations and companies.");
     } finally {
       setLoading(false);
@@ -66,7 +65,6 @@ const Bookings = () => {
   };
 
   const handleAddOrEditBooking = async (newBooking) => {
-    console.log(newBooking);
     setLoading(true);
     try {
       const response = await addNewBooking(newBooking);
@@ -81,9 +79,11 @@ const Bookings = () => {
       }
     } catch (err) {
       if (err.status === 403) {
-        setError(extractErrorMessage("Insufficient wallet balance"));
+        setError("Insufficient wallet balance");
       } else if (err.status === 409) {
-        setError(extractErrorMessage("The selected room is already booked during the requested time."));
+        setError(
+          "The selected room is already booked during the requested time."
+        );
       } else {
         setError(extractErrorMessage(err));
       }
@@ -113,6 +113,31 @@ const Bookings = () => {
     }
   };
 
+  // ✅ Search & filter logic here (instead of child)
+  const normalize = (v) =>
+    v === null || v === undefined ? "" : String(v).toLowerCase();
+  const searchTerm = normalize(search).trim();
+
+  const filteredBookings = bookings.filter((booking) => {
+    const matchesSearch = !searchTerm
+      ? true
+      : [
+          booking.date,
+          booking.Room?.name,
+          booking.Room?.location?.name,
+          booking.User?.name,
+          booking.User?.Company?.name,
+          booking.startTime,
+          booking.endTime,
+        ].some((field) => normalize(field).includes(searchTerm));
+
+    const matchesLocation = selectedLocation
+      ? String(booking.location_id) === String(selectedLocation)
+      : true;
+
+    return matchesSearch && matchesLocation;
+  });
+
   return (
     <>
       <div className="top-bar">
@@ -130,6 +155,25 @@ const Bookings = () => {
         className="search-input"
       />
 
+      <div className="filters-bar">
+        <select
+          value={selectedLocation}
+          onChange={(e) => setSelectedLocation(e.target.value)}
+          className="filter-dropdown"
+        >
+          <option value="">All Locations</option>
+          {[
+            ...new Map(
+              bookings.map((b) => [b.location_id, b.Room?.location?.name])
+            ),
+          ].map(([id, name]) => (
+            <option key={id} value={id}>
+              {name}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {loading && (
         <div className="loading-overlay">
           <div className="loading-dialog">
@@ -139,16 +183,16 @@ const Bookings = () => {
         </div>
       )}
 
-      {error && (
-        <ErrorPopup message={error} onClose={() => setError(null)} />
-      )}
-
-      {error && (
-        <SuccessPopup message={successMessage} onClose={() => setSuccessMessage(null)} />
+      {error && <ErrorPopup message={error} onClose={() => setError(null)} />}
+      {successMessage && (
+        <SuccessPopup
+          message={successMessage}
+          onClose={() => setSuccessMessage(null)}
+        />
       )}
 
       {!loading && !error && (
-        <BookingsList bookings={bookings} search={search} onCancelClick={handleCancelClick} />
+        <BookingsList bookings={filteredBookings} onCancelClick={handleCancelClick} />
       )}
 
       {modalOpen && (
@@ -161,13 +205,16 @@ const Bookings = () => {
         />
       )}
 
-      {/* delete confirmation modal */}
+      {/* Delete confirmation modal */}
       {isDeleteModalOpen && (
         <div className="modal-overlay">
           <div className="modal-box">
             <h3>Do you want to cancel this booking?</h3>
             <div className="modal-actions">
-              <button className="btn-secondary" onClick={() => setIsDeleteModalOpen(false)}>
+              <button
+                className="btn-secondary"
+                onClick={() => setIsDeleteModalOpen(false)}
+              >
                 Cancel
               </button>
               <button className="btn-danger" onClick={handleProceedDelete}>
