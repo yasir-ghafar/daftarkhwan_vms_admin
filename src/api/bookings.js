@@ -14,6 +14,6 @@ export const addNewBooking = async (data) => {
 
 
 export const cancelBooking = async (id) => {
-    const response = await daftarkhwanApi.delete(`/bookings/cancel/${id}`);
+    const response = await daftarkhwanApi.post(`/bookings/cancel/${id}`);
     return response;
 }

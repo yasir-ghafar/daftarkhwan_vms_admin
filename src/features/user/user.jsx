@@ -39,8 +39,6 @@ const Users = () => {
     fetchUsers();
   }, []);
 
-
-
 const handleAddUser = async (userData) => {
   setIsLoading(true);
   setModalOpen(false);
@@ -122,7 +120,7 @@ const handleAddUser = async (userData) => {
       user.email?.toLowerCase().includes(searchTerm) ||
       user.role?.toLowerCase().includes(searchTerm) ||
       user.Company?.name?.toLowerCase().includes(searchTerm) ||
-      user.Company.locationName.toLowerCase().includes(searchTerm) ||
+      user.Company?.locationName?.toLowerCase().includes(searchTerm) ||
       user.companyName?.toLowerCase().includes(searchTerm)
     );
   });

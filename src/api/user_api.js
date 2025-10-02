@@ -1,6 +1,5 @@
 import daftarkhwanApi from "./api";
 
-
 export const getUsers = async () => {
   try {
     const response = await daftarkhwanApi.get("/auth/users");
@@ -20,6 +19,7 @@ export const addNewUser = async (data) => {
     throw error;
   }
 }
+
 export const editUser = async (id, data) => {
   try {
     const response = await daftarkhwanApi.put(`/auth/users/edit/${id}`);
