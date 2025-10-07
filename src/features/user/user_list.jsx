@@ -89,6 +89,14 @@ const UsersList = ({ users, onDelete, onEdit, search, onUpdateWallet }) => {
                     ✏️
                   </span>
                 </td>
+                <td>
+                  <span
+                    style={{ cursor: "pointer" }}
+                    onClick={() => handleDelete(user)}
+                  >
+                    🗑️
+                  </span>
+                </td>
               </tr>
             ))}
           </tbody>

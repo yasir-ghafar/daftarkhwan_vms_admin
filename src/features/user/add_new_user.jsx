@@ -5,9 +5,9 @@ import SuccessPopup from "../../components/confirmation_popup";
 import { getCompanies } from "../../api/company_api";
 
 const roles = [
-  { value: "admin", label: "admin"},
+  { value: "admin", label: "admin" },
   { value: "member", label: "Member" },
-  { value: "poc", label: "POC" }
+  { value: "poc", label: "POC" },
 ];
 
 const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
@@ -20,7 +20,8 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
     company_id: "",
     phoneNumber: "",
     password: "",
-    credit_types: "postpaid"
+    credit_types: "prepaid",
+    auto_renew: false, // ✅ NEW FIELD
   });
 
   // fetch companies when modal opens
@@ -53,7 +54,8 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
         company_id: selectedUser.company_id?.toString() || "",
         phoneNumber: selectedUser.phoneNumber || "",
         password: "", // never pre-fill passwords
-        credit_types: selectedUser.credit_types || "postpaid"
+        credit_types: selectedUser.credit_types || "prepaid",
+        auto_renew: selectedUser.auto_renew || false, // ✅ prefill if editing
       });
     } else {
       setForm({
@@ -63,7 +65,8 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
         company_id: "",
         phoneNumber: "",
         password: "",
-        credit_types: "postpaid"
+        credit_types: "postpaid",
+        auto_renew: false, // ✅ default false for new users
       });
     }
   }, [selectedUser]);
@@ -71,8 +74,11 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
   if (!isOpen) return null;
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
   const handleSubmit = (e) => {
@@ -100,7 +106,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
       return;
     }
 
-    // hand over form data to parent
+    // ✅ Include auto_renew in submitted data
     if (onSave) onSave(form);
   };
 
@@ -112,7 +118,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
             {selectedUser ? "Edit User" : "Add New User"}
           </h3>
 
-          {/* Name & Role */}
+          {/* Name & Role & Credits Type */}
           <div className="form-row">
             <div className="form-column">
               <div className="form-group">
@@ -161,40 +167,56 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
             </div>
           </div>
 
-          {/* Email & Company */}
-          <div className="form-row">
-            <div className="form-column">
-              <div className="form-group">
-                <label>Email:</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
+          {/* ✅ Email, Company & Auto Renewal Row */}
+<div className="form-row">
+  <div className="form-column">
+    <div className="form-group">
+      <label>Email:</label>
+      <input
+        type="email"
+        name="email"
+        value={form.email}
+        onChange={handleChange}
+        required
+      />
+    </div>
+  </div>
 
-            <div className="form-column">
-              <div className="form-group">
-                <label>Company:</label>
-                <select
-                  name="company_id"
-                  value={form.company_id}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Select Company</option>
-                  {companies.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
+  <div className="form-column">
+    <div className="form-group">
+      <label>Company:</label>
+      <select
+        name="company_id"
+        value={form.company_id}
+        onChange={handleChange}
+        required
+      >
+        <option value="">Select Company</option>
+        {companies.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  </div>
+
+  {/* ✅ Auto Renewal (inline design) */}
+  <div className="form-column">
+    <div className="form-group checkbox-inline">
+      <label htmlFor="auto_renew" className="checkbox-label">
+        <input
+          type="checkbox"
+          id="auto_renew"
+          name="auto_renew"
+          checked={form.auto_renew}
+          onChange={handleChange}
+        />
+        <span>Auto Renew Credits</span>
+      </label>
+    </div>
+  </div>
+</div>
 
           {/* Phone & Password */}
           <div className="form-row">
@@ -219,7 +241,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
                   name="password"
                   value={form.password}
                   onChange={handleChange}
-                  required={!selectedUser} // only required for new users
+                  required={!selectedUser}
                 />
               </div>
             </div>
