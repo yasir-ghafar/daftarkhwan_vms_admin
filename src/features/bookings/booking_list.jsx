@@ -70,7 +70,7 @@ const BookingsList = ({ bookings, search, onCancelClick }) => {
               <tr key={index}>
                 <td>{booking.date}</td>
                 <td>{booking.Room?.name}</td>
-                <td>{booking.Room.location.name}</td>
+                <td>{booking.Room?.location?.name}</td>
                 <td>
                   {to12HourFormat(booking.startTime)} -{" "}
                   {to12HourFormat(booking.endTime)}

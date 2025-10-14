@@ -41,32 +41,40 @@ const Users = () => {
 
 const handleAddUser = async (userData) => {
   setIsLoading(true);
-  setModalOpen(false);
 
   try {
+    let updatedUsers;
+
     if (selectedUser) {
-      // Call backend update API
+      // Update existing user
       const updatedUser = await editUser(selectedUser.id, userData);
 
-      // Update local state
-      setUsers((prev) =>
-        prev.map((u) => (u.id === selectedUser.id ? updatedUser : u))
-      );
+      updatedUsers = (prevUsers) =>
+        prevUsers.map((u) =>
+          u.id === selectedUser.id ? updatedUser : u
+        );
+
       setSuccessMessage("User updated successfully!");
     } else {
-      // Call backend create API
+      // Create new user
       const newUser = await addNewUser(userData);
 
-      // Add to local state
-      setUsers((prev) => [...prev, newUser]);
+      updatedUsers = (prevUsers) => [...prevUsers, newUser];
       setSuccessMessage("User created successfully!");
     }
+
+    // Update users AFTER success
+    setUsers(updatedUsers);
+
+    // Close modal after success
+    setModalOpen(false);
   } catch (error) {
     console.error("Error in handleAddUser:", error);
     setError("Something went wrong!");
   } finally {
-    setSelectedUser(null);
+    // Reset loading and selected user AFTER state is stable
     setIsLoading(false);
+    setSelectedUser(null);
   }
 };
 

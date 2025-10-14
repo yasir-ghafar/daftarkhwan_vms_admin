@@ -22,7 +22,8 @@ export const addNewUser = async (data) => {
 
 export const editUser = async (id, data) => {
   try {
-    const response = await daftarkhwanApi.put(`/auth/users/edit/${id}`);
+    console.log(data);
+    const response = await daftarkhwanApi.put(`/auth/users/edit/${id}`, data);
     return response.data;
   } catch (error) {
     console.error("Error fetching users:", error);
