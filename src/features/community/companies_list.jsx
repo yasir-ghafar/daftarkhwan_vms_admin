@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from "react";
 import "./companies_list.css";
 
+import { useUser } from "../../context/UserContext";
+
 const CompaniesList = ({ companies, onEdit, search }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const companiesPerPage = 10;
+
+  const { role } = useUser();
+  
 
   useEffect(() => {
     setCurrentPage(1); // reset when search changes
@@ -33,6 +38,27 @@ const CompaniesList = ({ companies, onEdit, search }) => {
   const indexOfLast = currentPage * companiesPerPage;
   const indexOfFirst = indexOfLast - companiesPerPage;
   const currentCompanies = filtered.slice(indexOfFirst, indexOfLast);
+
+
+  const handleEditClick = (company) => {
+    if (role === 'admin') {
+        onEdit(company);
+    } else {
+      alert("You are not authorized for this action.");
+    }
+  }
+
+  const handleDeleteClick = (company) => {
+
+    if (role === 'admin') {
+        const confirmDelete = window.confirm("Are you sure you want to delete?");
+      if (confirmDelete) {
+      onDelete(company.id);
+    }
+    } else {
+      alert("You are not authorized for this action.");
+    }
+  };
 
   const handleNext = () => {
     if (currentPage < totalPages) setCurrentPage((p) => p + 1);
@@ -66,8 +92,8 @@ const CompaniesList = ({ companies, onEdit, search }) => {
                     "N/A"}
                 </td>
                 <td>{company.status ?? "active"}</td>
-                <td className="edit-icon" onClick={() => onEdit(company)}>✏️</td>
-                <td className="edit-icon">🗑️</td>
+                <td className="edit-icon" onClick={() => handleEditClick(company)}>✏️</td>
+                <td className="edit-icon" onClick={() => handleDeleteClick(company)}>🗑️</td>
               </tr>
             ))}
             {currentCompanies.length === 0 && (

@@ -1,6 +1,5 @@
 import daftarkhwanApi from "./api";
 
-
 export const getCompanies = async () => {
     const response = await daftarkhwanApi.get("/company");
     return response.data;
@@ -23,8 +22,14 @@ export const updateWalletBalance = async (id, data) => {
     return response;
 }
 
-
 export const getWalletTransactions = async (id) => {
     const response = await daftarkhwanApi.get(`/company/wallet/transactions/${id}`)
+    return response.data;
+}
+
+export const getWalletReport = async (data) => {
+    console.log("Data", data);
+    const response = await daftarkhwanApi.post("/company/wallet/report", data);
+    console.log("Response", response.data);
     return response.data;
 }

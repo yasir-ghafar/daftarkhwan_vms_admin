@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from "react";
 import "./locations_list.css";
 
+import { useUser } from "../../context/UserContext";
+
 const LocationList = ({ locations, onDelete, onEdit, loading, search }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const locationsPerPage = 10;
+
+  const { role } = useUser();
+
 
   // 🔄 Reset to first page when search changes
   useEffect(() => {
@@ -17,14 +22,25 @@ const LocationList = ({ locations, onDelete, onEdit, loading, search }) => {
   const totalPages = Math.ceil(locations.length / locationsPerPage);
 
   const handleDeleteClick = (locationId) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this location?");
-    if (confirmDelete) {
+
+    if (role === 'admin') {
+        const confirmDelete = window.confirm("Are you sure you want to delete this location?");
+      if (confirmDelete) {
       onDelete(locationId);
     }
+    } else {
+      alert("You are not authorized for this action.");
+    }
+
   };
 
   const handleEditClick = (location) => {
-    onEdit(location);
+    if (role === 'admin') {
+        onEdit(location);
+    } else {
+      alert("You are not authorized for this action.");
+    }
+    
   };
 
   const handleNext = () => {

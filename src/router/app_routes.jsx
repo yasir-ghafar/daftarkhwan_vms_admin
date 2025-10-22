@@ -8,6 +8,7 @@ import Bookings from "../features/bookings/bookings";
 import Companies from "../features/community/companies";
 import Users from "../features/user/user";
 import Transactions from "../features/wallet/transaction_list";
+import WalletTransactionReport from "../features/wallet/wallet_transaction_report";
 
 const AppRoutes = () => (
     <Routes>
@@ -18,6 +19,7 @@ const AppRoutes = () => (
             <Route path="bookings" element={<Bookings />}/>
             <Route path="community" element={<Companies/>}/>
             <Route path="users" element={<Users/>}/>
+            <Route path="reports" element={<WalletTransactionReport/>}/>
         </Route>
 
         <Route path="/transactions/:id" element={<Transactions/>}/>

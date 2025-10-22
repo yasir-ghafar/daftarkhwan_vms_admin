@@ -18,6 +18,7 @@ const Bookings = () => {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState("");
+  const [selectedRoom, setSelectedRoom] = useState("");
 
   // new state for delete modal
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -140,6 +141,9 @@ const Bookings = () => {
       ? String(booking.location_id) === String(selectedLocation)
       : true;
 
+    // const matchesRoom = selectedRoom 
+    // ? String(booking.Room.id) === String(selectedRoom) : true;
+    
     return matchesSearch && matchesLocation;
   });
 
@@ -164,8 +168,7 @@ const Bookings = () => {
         <select
           value={selectedLocation}
           onChange={(e) => setSelectedLocation(e.target.value)}
-          className="filter-dropdown"
-        >
+          className="filter-dropdown">
           <option value="">All Locations</option>
           {[
             ...new Map(
@@ -177,7 +180,26 @@ const Bookings = () => {
             </option>
           ))}
         </select>
+
+               {/* <select
+          value={selectedLocation}
+          onChange={(e) => setSelectedRoom(e.target.value)}
+          className="filter-dropdown">
+          <option value="">All Rooms</option>
+          {[
+            ...new Map(
+              bookings.map((b) => [b.location_id, b.Room?.name])
+            ),
+          ].map(([id, name]) => (
+            <option key={id} value={id}>
+              {name}
+            </option>
+          ))}
+        </select> */}
+
+
       </div>
+
 
       {loading && (
         <div className="loading-overlay">

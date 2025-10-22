@@ -32,6 +32,7 @@ const Sidebar = () => {
           <li><NavLink to="/home/bookings" activeclassname="active">Bookings</NavLink></li>
           <li><NavLink to="/home/users" activeclassname="active">Users</NavLink></li>
           <li><NavLink to="/home/community" activeclassname="active">Company</NavLink></li>
+          <li><NavLink to="/home/reports" activeclassname="active">Report</NavLink></li>
           <li>
             <a href="/" onClick={handleLogout}>
               Logout

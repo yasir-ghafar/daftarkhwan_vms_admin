@@ -13,6 +13,9 @@ import DeleteDialog from "../../components/DeleteDialog";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import app from "../../firebase/firebase";
 
+import { useUser } from "../../context/UserContext";
+
+
 const floors = [
   "Ground Floor",
   "1st Floor",
@@ -39,6 +42,8 @@ const MeetingRooms = () => {
   const [deleteMesssage, setDeleteMessage] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedFloor, setSelectedFloor] = useState("");
+
+  const { role } = useUser();
 
   const fetchRooms = async () => {
     setLoading(true);
@@ -115,7 +120,8 @@ const MeetingRooms = () => {
   };
 
   const openAddNewRoom = async () => {
-    setLoading(true);
+    if (role === 'admin') {
+      setLoading(true);
     try {
       const [locationRes, amenitiesRes] = await Promise.all([
         getLocations(),
@@ -130,6 +136,10 @@ const MeetingRooms = () => {
     } finally {
       setLoading(false);
     }
+    } else {
+      alert("You are not authorized for this action.");
+    }
+    
   };
 
   const handleEdit = async (room) => {

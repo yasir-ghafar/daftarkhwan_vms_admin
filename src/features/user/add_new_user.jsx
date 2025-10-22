@@ -5,9 +5,9 @@ import SuccessPopup from "../../components/confirmation_popup";
 import { getCompanies } from "../../api/company_api";
 
 const roles = [
-  { value: "admin", label: "admin" },
+  { value: "admin", label: "Admin" },
+  { value: "manager", label: "Manager"},
   { value: "member", label: "Member" },
-  { value: "poc", label: "POC" },
 ];
 
 const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {

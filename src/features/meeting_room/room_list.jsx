@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from "react";
 import "./room_list.css";
 
+import { useUser } from "../../context/UserContext";
+
 const RoomsList = ({ rooms, onDelete, onEdit, search }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const roomsPerPage = 10;
+
+    const { role } = useUser();
 
   // 🔄 Reset to first page when search changes
   useEffect(() => {
@@ -17,11 +21,21 @@ const RoomsList = ({ rooms, onDelete, onEdit, search }) => {
   const totalPages = Math.ceil(rooms.length / roomsPerPage);
 
   const handleEdit = (room) => {
-    onEdit(room);
+    if (role === 'admin') {
+      onEdit(room);
+    } else {
+      alert("You are not authorized for this action.");
+    }
+    
   };
 
   const handleDelete = (room) => {
-    onDelete(room);
+    if (role === 'admin') {
+      onDelete(room);
+    } else {
+      alert("You are not authorized for this action.");
+    }
+    
   };
 
   const handleNext = () => {

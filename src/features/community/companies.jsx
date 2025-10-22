@@ -4,6 +4,8 @@ import CompaniesList from "./companies_list";
 import CompanyModal from "./add_company";
 import { getLocations } from "../../api/locations_api";
 
+import { useUser } from "../../context/UserContext";
+
 const Companies = () => {
   const [search, setSearch] = useState("");
   const [companies, setCompanies] = useState([]);
@@ -12,8 +14,8 @@ const Companies = () => {
   const [error, setError] = useState(null);
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
-   const [selectedLocation, setSelectedLocation] = useState("");
-
+  const [selectedLocation, setSelectedLocation] = useState("");
+  const { role } = useUser();
 
   const fetchCompanies = async () => {
     setLoading(true);
@@ -45,7 +47,7 @@ const Companies = () => {
     : true;
 
   return matchesSearch && matchesLocation;
-});
+  });
 
   const handleAddCompany = async (newCompany) => {
     setLoading(true)
@@ -64,7 +66,9 @@ const Companies = () => {
   };
 
   const openAddCompanyDialog = async () => {
-    setLoading(true);
+
+    if (role === 'admin') {
+      setLoading(true);
     try{
       const data = await getLocations();
       setLocations(data.data);
@@ -75,9 +79,19 @@ const Companies = () => {
     } finally {
       setLoading(false)
     }
+    } else {
+      alert("You are not authorized for this action.");
+    }
+
+
+
+    
   }
 
   const handleEditCompany = async (company) => {
+    if (!locations) {
+      const data = await fetchLoca
+    }
     setSelectedCompany(company);
     setModalOpen(true);
   }
@@ -89,7 +103,6 @@ const Companies = () => {
           Add New
         </button>
       </div>
-
       
       <div className="filters-bar">
         <input

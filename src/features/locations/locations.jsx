@@ -6,6 +6,9 @@ import AddLocationModal from "./add_location_modal";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import app from "../../firebase/firebase";
 
+import { useUser } from "../../context/UserContext";
+
+
 const Locations = () => {
   const [search, setSearch] = useState("");
   const [isModalOpen, setModalOpen] = useState(false);
@@ -13,6 +16,7 @@ const Locations = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editLocation, setEditLocation] = useState(null);
+  const { role } = useUser();
 
   const fetchLocations = async () => {
     try {
@@ -116,8 +120,13 @@ const Locations = () => {
         <button
           className="add-btn"
           onClick={() => {
-            setEditLocation(null);
-            setModalOpen(true);
+            if (role === 'admin') {
+              setEditLocation(null);
+              setModalOpen(true);
+            } else {
+              alert("You are not authorized for this action.");
+            }
+
           }}
         >
           Add New

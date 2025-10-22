@@ -2,11 +2,16 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { login } from "../../api/authApi";
 import "./login_page.css";
+import { useUser } from "../../context/UserContext";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const { setUserData } = useUser();
+
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -16,11 +21,15 @@ const LoginPage = () => {
     try {
       console.log(`Email: ${email} and Password: ${password}`);
 
-      const data = await login(email, password);
-      console.log("Login Response:", data);
+      const response = await login(email, password);
+      console.log("Login Response:", response);
+
+      if (response.success) {
+        setUserData(response.data);
+      }
 
       // ✅ Check if backend returned role
-      if (!data || data.data.role !== "admin") {
+      if (!response || (response.data.role !== "admin" && response.data.role !== "manager"))  {
         setLoading(false);
         alert("Access Denied: You are not an admin.");
         return;
