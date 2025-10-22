@@ -127,58 +127,60 @@ const WalletTransactionReport = () => {
 
       {/* 🔹 Show table if we have data */}
       {/* 🔹 Show table if we have data */}
-{!loading && !error && transactions.length > 0 && (
-  <table
-    style={{
-      width: "100%",
-      borderCollapse: "collapse",
-      marginTop: "20px",
-    }}
-  >
-    <thead>
-      <tr style={{ background: "#f0f0f0" }}>
-        <th style={cellStyle}>Sr #</th>
-        <th style={cellStyle}>Created By</th>
-        <th style={cellStyle}>Created For</th>
-        <th style={cellStyle}>Company</th>
-        <th style={cellStyle}>Booking Date</th>
-        <th style={cellStyle}>Meeting Room</th>
-        <th style={cellStyle}>Site</th>
-        <th style={cellStyle}>Slots</th>
-        <th style={cellStyle}>Total Credits</th>
-        <th style={cellStyle}>Time</th>
-      </tr>
-    </thead>
-    <tbody>
-      {transactions.map((txn, index) => {
-        // ✅ Safely parse metadata JSON
-        let metadata = {};
-        try {
-          metadata = JSON.parse(txn.metadata || "{}");
-        } catch (e) {
-          console.error("Invalid metadata:", e);
-        }
+      {!loading && !error && transactions.length > 0 && (
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            marginTop: "20px",
+          }}
+        >
+          <thead>
+            <tr style={{ background: "#f0f0f0" }}>
+              <th style={cellStyle}>Sr #</th>
+              <th style={cellStyle}>Created By</th>
+              <th style={cellStyle}>Created For</th>
+              <th style={cellStyle}>Company</th>
+              <th style={cellStyle}>Booking Date</th>
+              <th style={cellStyle}>Meeting Room</th>
+              <th style={cellStyle}>Site</th>
+              <th style={cellStyle}>Slots</th>
+              <th style={cellStyle}>Total Credits</th>
+              <th style={cellStyle}>Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {transactions.map((txn, index) => {
+              // ✅ Safely parse metadata JSON
+              let metadata = {};
+              try {
+                if (txn.metadata && txn.metadata !== "undefined" && txn.metadata !== "null") {
+                  metadata = JSON.parse(txn.metadata);
+                }
+              } catch (e) {
+                console.error("Invalid metadata JSON:", txn.metadata, e);
+              }
 
-        return (
-          <tr key={txn.id}>
-            <td style={cellStyle}>{index + 1}</td>
-            <td style={cellStyle}>{txn.performedByUser?.name || "N/A"}</td>
-            <td style={cellStyle}>{txn.user?.name || "N/A"}</td>
-            <td style={cellStyle}>{metadata.company ?? ""}</td>
-            <td style={cellStyle}>{metadata.date ?? ""} </td>
-            <td style={cellStyle}>{metadata.roomName}</td>
-            <td style={cellStyle}>{metadata.location}</td>
-            <td style={cellStyle}>{metadata.slots ?? "-"}</td>
-            <td style={cellStyle}>{metadata.totalCredits ?? "-"}</td>
-            <td style={cellStyle}>
-              {new Date(txn.createdAt).toLocaleString()}
-            </td>
-          </tr>
-        );
-      })}
-    </tbody>
-  </table>
-)}
+              return (
+                <tr key={txn.id}>
+                  <td style={cellStyle}>{index + 1}</td>
+                  <td style={cellStyle}>{txn.performedByUser?.name || "N/A"}</td>
+                  <td style={cellStyle}>{txn.user?.name || "N/A"}</td>
+                  <td style={cellStyle}>{metadata.company ?? ""}</td>
+                  <td style={cellStyle}>{metadata.date ?? ""} </td>
+                  <td style={cellStyle}>{metadata.roomName}</td>
+                  <td style={cellStyle}>{metadata.location}</td>
+                  <td style={cellStyle}>{metadata.slots ?? "-"}</td>
+                  <td style={cellStyle}>{metadata.totalCredits ?? "-"}</td>
+                  <td style={cellStyle}>
+                    {new Date(txn.createdAt).toLocaleString()}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
 
 
       {/* 🔹 Show no results */}
