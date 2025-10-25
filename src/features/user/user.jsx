@@ -9,6 +9,8 @@ import Loadder from "../../components/loadding"; // Unified loader component
 import AddCreditDialog from "./add_credits_dialog";
 import { updateWalletBalance } from "../../api/company_api";
 
+import { useUser } from "../../context/UserContext";
+
 const Users = () => {
   const [search, setSearch] = useState("");
   const [users, setUsers] = useState([]);
@@ -21,6 +23,8 @@ const Users = () => {
   const [deleteMessage, setDeleteMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const { role } = useUser();
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -80,7 +84,8 @@ const handleAddUser = async (userData) => {
 
 
   const openAddNewUser = async () => {
-    setIsLoading(true);
+    if (role === 'admin') {
+      setIsLoading(true);
     try {
       const userRes = await getUsers();
       setUsers(userRes.data);
@@ -90,6 +95,9 @@ const handleAddUser = async (userData) => {
       setError("Failed to open modal.");
     } finally {
       setIsLoading(false);
+    }
+    } else {
+      alert("You are not authorized for this action.");
     }
   };
 

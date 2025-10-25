@@ -1,9 +1,13 @@
 import React, { useState, useEffect, use } from "react";
 import "./user_list.css"; // shared pagination styling
+import { useUser } from "../../context/UserContext";
+
 
 const UsersList = ({ users, onDelete, onEdit, search, onUpdateWallet }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 10;
+
+  const { role } = useUser();
 
   // 🔄 Reset to first page when search changes
   useEffect(() => {
@@ -17,11 +21,19 @@ const UsersList = ({ users, onDelete, onEdit, search, onUpdateWallet }) => {
   const totalPages = Math.ceil(users.length / usersPerPage);
 
   const handleEdit = (user) => {
-    onEdit(user);
+    if (role === 'admin') {
+      onEdit(user);
+    } else {
+      alert("You are not authorized for this action.");
+    }
   };
 
   const handleDelete = (user) => {
-    onDelete(user);
+    if (role === 'admin') {
+      onDelete(user);
+    } else {
+      alert("You are not authorized for this action.");
+    }
   };
 
   const handleNext = () => {
