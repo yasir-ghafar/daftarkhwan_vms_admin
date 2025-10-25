@@ -5,6 +5,16 @@ import { useParams } from "react-router";
 import Loadder from "../../components/loadding";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { meta } from "@eslint/js";
+
+
+const to12HourFormat = (time24) => {
+  const [hourStr, minute] = time24.split(":");
+  let hour = parseInt(hourStr, 10);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12 || 12;
+  return `${hour.toString().padStart(2, "0")}:${minute} ${ampm}`;
+};
 
 const WalletTransactionReport = () => {
   const { id } = useParams();
@@ -76,6 +86,7 @@ const WalletTransactionReport = () => {
       "Created For": txn.user?.name || "N/A",
       Company: metadata.company || "",
       "Booking Date": metadata.date || "",
+      "Booking Time": new Date(metadata.startTime).toLocaleString(),
       "Meeting Room": metadata.roomName || "",
       Site: metadata.location || "",
       Slots: metadata.slots || "-",
@@ -223,7 +234,7 @@ const WalletTransactionReport = () => {
               <th style={cellStyle}>Created By</th>
               <th style={cellStyle}>Created For</th>
               <th style={cellStyle}>Company</th>
-              <th style={cellStyle}>Booking Date</th>
+              <th style={cellStyle}>Booking Time</th>
               <th style={cellStyle}>Meeting Room</th>
               <th style={cellStyle}>Site</th>
               <th style={cellStyle}>Slots</th>
@@ -240,7 +251,7 @@ const WalletTransactionReport = () => {
                   <td style={cellStyle}>{t["Created By"]}</td>
                   <td style={cellStyle}>{t["Created For"]}</td>
                   <td style={cellStyle}>{t.Company}</td>
-                  <td style={cellStyle}>{t["Booking Date"]}</td>
+                  <td style={cellStyle}>{t["Booking Time"]}</td>
                   <td style={cellStyle}>{t["Meeting Room"]}</td>
                   <td style={cellStyle}>{t.Site}</td>
                   <td style={cellStyle}>{t.Slots}</td>
