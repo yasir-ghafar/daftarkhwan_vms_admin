@@ -73,7 +73,7 @@ const Companies = () => {
       const data = await getLocations();
       setLocations(data.data);
       setModalOpen(true);
-    }catch(err) {
+    } catch(err) {
       console.error("Error opening modal:", err);
       setError("Failed to open modal.");
     } finally {
@@ -89,11 +89,21 @@ const Companies = () => {
   }
 
   const handleEditCompany = async (company) => {
-    if (!locations) {
-      const data = await fetchLoca
+    setLoading(true);
+    try {
+      if (!locations || locations.length === 0) {
+      const data = await getLocations();
+      setLocations(data.data);
     }
     setSelectedCompany(company);
     setModalOpen(true);
+    } catch(err) {
+      console.error("Error opening modal:", err);
+      setError("Failed to open modal.");
+    } finally {
+      setLoading(false);
+    }
+    
   }
   return (
     <>
