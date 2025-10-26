@@ -66,7 +66,7 @@ const Companies = () => {
   };
 
   const openAddCompanyDialog = async () => {
-
+    setSelectedCompany(null);
     if (role === 'admin') {
       setLoading(true);
     try{
