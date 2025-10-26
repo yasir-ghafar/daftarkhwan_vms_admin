@@ -9,14 +9,28 @@ export const UserProvider = ({ children }) => {
   const [role, setRole] = useState(null);
 
   // Optionally restore user from localStorage
+  // useEffect(() => {
+  //   const savedUser = localStorage.getItem("user");
+  //   if (savedUser) {
+  //     const parsedUser = JSON.parse(savedUser);
+  //     setUser(parsedUser);
+  //     setRole(parsedUser.role);
+  //   }
+  // }, []);
+
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
+  const savedUser = localStorage.getItem("user");
+  if (savedUser && savedUser !== "undefined" && savedUser !== "null") {
+    try {
       const parsedUser = JSON.parse(savedUser);
       setUser(parsedUser);
-      setRole(parsedUser.role);
+      setRole(parsedUser?.role || null);
+    } catch (err) {
+      console.error("Invalid JSON in localStorage:", err);
+      localStorage.removeItem("user"); // reset corrupted data
     }
-  }, []);
+  }
+}, []);
 
   // Helper to update user globally
   const setUserData = (userData) => {
