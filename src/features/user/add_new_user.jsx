@@ -6,7 +6,7 @@ import { getCompanies } from "../../api/company_api";
 
 const roles = [
   { value: "admin", label: "Admin" },
-  { value: "manager", label: "Manager"},
+  { value: "manager", label: "Manager" },
   { value: "member", label: "Member" },
 ];
 
@@ -21,7 +21,9 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
     phoneNumber: "",
     password: "",
     credit_types: "prepaid",
-    auto_renew: false, // ✅ NEW FIELD
+    auto_renew: false,
+    status: "Active"
+    
   });
 
   // fetch companies when modal opens
@@ -56,6 +58,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
         password: "", // never pre-fill passwords
         credit_types: selectedUser.credit_types || "prepaid",
         auto_renew: selectedUser.auto_renew || false, // ✅ prefill if editing
+        status: selectedUser.status || "Active"
       });
     } else {
       setForm({
@@ -67,6 +70,7 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
         password: "",
         credit_types: "postpaid",
         auto_renew: false, // ✅ default false for new users
+        status: "Active"
       });
     }
   }, [selectedUser]);
@@ -168,55 +172,57 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
           </div>
 
           {/* ✅ Email, Company & Auto Renewal Row */}
-<div className="form-row">
-  <div className="form-column">
-    <div className="form-group">
-      <label>Email:</label>
-      <input
-        type="email"
-        name="email"
-        value={form.email}
-        onChange={handleChange}
-        required
-      />
-    </div>
-  </div>
+          <div className="form-row">
+            <div className="form-column">
+              <div className="form-group">
+                <label>Email:</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
 
-  <div className="form-column">
-    <div className="form-group">
-      <label>Company:</label>
-      <select
-        name="company_id"
-        value={form.company_id}
-        onChange={handleChange}
-        required
-      >
-        <option value="">Select Company</option>
-        {companies.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.name}
-          </option>
-        ))}
-      </select>
-    </div>
-  </div>
+            <div className="form-column">
+              <div className="form-group">
+                <label>Company:</label>
+                <select
+                  name="company_id"
+                  value={form.company_id}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select Company</option>
+                  {companies.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
-  {/* ✅ Auto Renewal (inline design) */}
-  <div className="form-column">
-    <div className="form-group checkbox-inline">
-      <label htmlFor="auto_renew" className="checkbox-label">
-        <input
-          type="checkbox"
-          id="auto_renew"
-          name="auto_renew"
-          checked={form.auto_renew}
-          onChange={handleChange}
-        />
-        <span>Auto Renew Credits</span>
-      </label>
-    </div>
-  </div>
-</div>
+            <div className="form-column">
+              <div className="form-group">
+                <label>Status:</label>
+                <select
+                  name="status"
+                  value={form.status}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+
+            {/* ✅ Auto Renewal (inline design) */}
+
+          </div>
 
           {/* Phone & Password */}
           <div className="form-row">
@@ -243,6 +249,21 @@ const AddUserModal = ({ isOpen, onClose, onSave, selectedUser }) => {
                   onChange={handleChange}
                   required={!selectedUser}
                 />
+              </div>
+            </div>
+
+            <div className="form-column">
+              <div className="form-group checkbox-inline">
+                <label htmlFor="auto_renew" className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    id="auto_renew"
+                    name="auto_renew"
+                    checked={form.auto_renew}
+                    onChange={handleChange}
+                  />
+                  <span>Auto Renew Credits</span>
+                </label>
               </div>
             </div>
           </div>

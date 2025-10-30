@@ -60,6 +60,7 @@ const UsersList = ({ users, onDelete, onEdit, search, onUpdateWallet }) => {
             <tr>
               <th>Name</th>
               <th>Email</th>
+              <th>Status</th>
               <th>Role</th>
               <th>Company</th>
               <th>Location</th>
@@ -73,6 +74,7 @@ const UsersList = ({ users, onDelete, onEdit, search, onUpdateWallet }) => {
               <tr key={index}>
                 <td>{user.name}</td>
                 <td>{user.email}</td>
+                <td>{user.status}</td>
                 <td>{user.role}</td>
                 <td>{user.Company.name || "N/A"}</td>
                 <td>{user.Company.locationName}</td>

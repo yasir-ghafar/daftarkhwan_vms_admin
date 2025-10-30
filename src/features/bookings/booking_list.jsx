@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./booking_list.css";// new CSS for cancel button
+import "./booking_list.css";
 
 const to12HourFormat = (time24) => {
   const [hourStr, minute] = time24.split(":");
@@ -11,6 +11,7 @@ const to12HourFormat = (time24) => {
 
 const BookingsList = ({ bookings, search, onCancelClick }) => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" }); // 🆕
   const bookingsPerPage = 10;
 
   useEffect(() => {
@@ -36,10 +37,32 @@ const BookingsList = ({ bookings, search, onCancelClick }) => {
 
   const filtered = bookings.filter(matchesSearch);
 
-  const totalPages = Math.ceil(filtered.length / bookingsPerPage) || 1;
+  // 🆕 Sorting logic
+  const sortedBookings = React.useMemo(() => {
+    if (!sortConfig.key) return filtered;
+
+    const sorted = [...filtered].sort((a, b) => {
+      let aValue = a[sortConfig.key];
+      let bValue = b[sortConfig.key];
+
+      // Handle date sorting (convert to Date objects)
+      if (sortConfig.key === "date") {
+        aValue = new Date(aValue);
+        bValue = new Date(bValue);
+      }
+
+      if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return sorted;
+  }, [filtered, sortConfig]);
+
+  const totalPages = Math.ceil(sortedBookings.length / bookingsPerPage) || 1;
   const indexOfLastBooking = currentPage * bookingsPerPage;
   const indexOfFirstBooking = indexOfLastBooking - bookingsPerPage;
-  const currentBookings = filtered.slice(indexOfFirstBooking, indexOfLastBooking);
+  const currentBookings = sortedBookings.slice(indexOfFirstBooking, indexOfLastBooking);
 
   const handleNext = () => {
     if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
@@ -49,13 +72,34 @@ const BookingsList = ({ bookings, search, onCancelClick }) => {
     if (currentPage > 1) setCurrentPage((prev) => prev - 1);
   };
 
+  // 🆕 Handle sorting on header click
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        // toggle direction
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+      } else {
+        // default to ascending
+        return { key, direction: "asc" };
+      }
+    });
+  };
+
+  // 🆕 Visual indicator for sorting
+  const getSortIndicator = (key) => {
+    if (sortConfig.key !== key) return "⇅";
+    return sortConfig.direction === "asc" ? "↑" : "↓";
+  };
+
   return (
     <div>
       <div className="table-container">
         <table className="location-table">
           <thead>
             <tr>
-              <th>Date</th>
+              <th onClick={() => handleSort("date")} style={{ cursor: "pointer" }}>
+                Date {getSortIndicator("date")}
+              </th>
               <th>Meeting Room</th>
               <th>Location</th>
               <th>Start - End Timings</th>
@@ -90,7 +134,7 @@ const BookingsList = ({ bookings, search, onCancelClick }) => {
             ))}
             {currentBookings.length === 0 && (
               <tr>
-                <td colSpan="6" style={{ textAlign: "center", padding: "1rem" }}>
+                <td colSpan="8" style={{ textAlign: "center", padding: "1rem" }}>
                   No bookings found.
                 </td>
               </tr>

@@ -10,6 +10,11 @@ export const createCompany = async (data) => {
     return response;
 }
 
+export const editCompany = async (id, data) => {
+    const response = await daftarkhwanApi.put(`/company/${id}`, data);
+    return response;
+}
+
 export const getCompaniesByLocationId = async (id) => {
     const response = await daftarkhwanApi.get(`/company/location-id/${id}`);
     return response;

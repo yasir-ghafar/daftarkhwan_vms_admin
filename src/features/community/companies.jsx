@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getCompanies, createCompany } from "../../api/company_api";
+import { getCompanies, createCompany, editCompany } from "../../api/company_api";
 import CompaniesList from "./companies_list";
 import CompanyModal from "./add_company";
 import { getLocations } from "../../api/locations_api";
@@ -53,16 +53,27 @@ const Companies = () => {
     setLoading(true)
     console.log(newCompany);
     try {
-      const data = await createCompany(newCompany);
-      console.log(data);
-
-      await fetchCompanies();
-    } catch (error) {
-      console.error("Save failed:", err.response?.data || err.message);
-      alert("Unable to save meeting room");
-    } finally {
-      setLoading(false)
+    if (selectedCompany) {
+      // Edit existing company
+      const updatedCompany = { ...selectedCompany, ...newCompany };
+      const res = await editCompany(updatedCompany.id, updatedCompany);
+      console.log("Company updated:", res.data);
+    } else {
+      // Create new company
+      const res = await createCompany(newCompany);
+      console.log("Company created:", res.data);
     }
+
+    // Refresh list after action
+    await fetchCompanies();
+    setModalOpen(false);
+    setSelectedCompany(null);
+  } catch (err) {
+    console.error("Save failed:", err.response?.data || err.message);
+    alert("Unable to save company");
+  } finally {
+    setLoading(false);
+  }
   };
 
   const openAddCompanyDialog = async () => {
@@ -95,6 +106,7 @@ const Companies = () => {
       const data = await getLocations();
       setLocations(data.data);
     }
+    console.log(company);
     setSelectedCompany(company);
     setModalOpen(true);
     } catch(err) {

@@ -28,7 +28,7 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany, locations }) =
         businessType: selectedCompany.businessType || "",
         webURL: selectedCompany.websiteUrl || "",
         locationName: selectedCompany.location?.name || "",
-        locationId: selectedCompany.location?.id || "",
+        locationId: selectedCompany.location?.id || selectedCompany.LocationId ||  "",
         reference: selectedCompany.reference || "",
         billingEmail: selectedCompany.billingEmail || "",
         gstNumber: selectedCompany.gstNumber || "",
@@ -165,7 +165,6 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany, locations }) =
                   name="webURL"
                   value={formData.webURL}
                   onChange={handleChange}
-                  required
                 />
               </div>
             </div>
@@ -240,7 +239,6 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany, locations }) =
                   name="billingEmail"
                   value={formData.billingEmail}
                   onChange={handleChange}
-                  required
                 />
               </div>
             </div>
@@ -258,7 +256,6 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany, locations }) =
                   name="gstNumber"
                   value={formData.gstNumber}
                   onChange={handleChange}
-                  required
                 />
               </div>
             </div>
