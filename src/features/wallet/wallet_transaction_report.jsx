@@ -6,12 +6,24 @@ import Loadder from "../../components/loadding";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
-const to12HourFormat = (time24) => {
-  const [hourStr, minute] = time24.split(":");
+const to12HourFormat = (dateTime) => {
+  if (!dateTime || typeof dateTime !== "string") return "";
+
+  // Extract time part if date is included
+  const parts = dateTime.trim().split(" ");
+  const timePart = parts.length > 1 ? parts[1] : parts[0];
+
+  if (!timePart || !timePart.includes(":")) return "";
+
+  const [hourStr, minute] = timePart.split(":");
   let hour = parseInt(hourStr, 10);
+
+  if (isNaN(hour) || minute === undefined) return "";
+
   const ampm = hour >= 12 ? "PM" : "AM";
-  hour = hour % 12 || 12;
-  return `${hour.toString().padStart(2, "0")}:${minute} ${ampm}`;
+  hour = hour % 12 || 12; // convert 0 → 12
+
+  return `${String(hour).padStart(2, "0")}:${minute.padStart(2, "0")} ${ampm}`;
 };
 
 const WalletTransactionReport = () => {

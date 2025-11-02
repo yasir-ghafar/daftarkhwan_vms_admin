@@ -87,9 +87,11 @@ const BookingsList = ({ bookings, search, onCancelClick }) => {
 
   // 🆕 Visual indicator for sorting
   const getSortIndicator = (key) => {
-    if (sortConfig.key !== key) return "⇅";
-    return sortConfig.direction === "asc" ? "↑" : "↓";
-  };
+  if (sortConfig.key !== key) return <strong>⇅</strong>;
+  return (
+    <strong>{sortConfig.direction === "asc" ? "↑" : "↓"}</strong>
+  );
+};
 
   return (
     <div>
