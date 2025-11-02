@@ -232,49 +232,59 @@ const WalletTransactionReport = () => {
 
       {/* 🔹 Data Table */}
       {!loading && !error && transactions.length > 0 && (
-        <table
+        <div
           style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            marginTop: "20px",
+            maxHeight: "calc(100vh - 180px)", // Adjust based on header/filter height
+            overflowY: "auto",
+            marginBottom: "2px", // bottom margin from screen
+            border: "1px solid #ddd",
+            borderRadius: "8px",
+            background: "#fff",
           }}
         >
-          <thead>
-            <tr style={{ background: "#f0f0f0" }}>
-              <th style={cellStyle}>Sr #</th>
-              <th style={cellStyle}>Created By</th>
-              <th style={cellStyle}>Created For</th>
-              <th style={cellStyle}>Company</th>
-              <th style={cellStyle}>Booking Date</th>
-              <th style={cellStyle}>Booking Time</th>
-              <th style={cellStyle}>Meeting Room</th>
-              <th style={cellStyle}>Site</th>
-              <th style={cellStyle}>Slots</th>
-              <th style={cellStyle}>Total Credits</th>
-              <th style={cellStyle}>Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            {transactions.map((txn, index) => {
-              const t = transformTransaction(txn, index);
-              return (
-                <tr key={txn.id}>
-                  <td style={cellStyle}>{t["Sr #"]}</td>
-                  <td style={cellStyle}>{t["Created By"]}</td>
-                  <td style={cellStyle}>{t["Created For"]}</td>
-                  <td style={cellStyle}>{t.Company}</td>
-                  <td style={cellStyle}>{t["Booking Date"]}</td>
-                  <td style={cellStyle}>{t["Booking Time"]}</td>
-                  <td style={cellStyle}>{t["Meeting Room"]}</td>
-                  <td style={cellStyle}>{t.Site}</td>
-                  <td style={cellStyle}>{t.Slots}</td>
-                  <td style={cellStyle}>{t["Total Credits"]}</td>
-                  <td style={cellStyle}>{t.Time}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+            }}
+          >
+            <thead>
+              <tr style={{ background: "#f0f0f0", position: "sticky", top: 0, zIndex: 1 }}>
+                <th style={cellStyle}>Sr #</th>
+                <th style={cellStyle}>Created By</th>
+                <th style={cellStyle}>Created For</th>
+                <th style={cellStyle}>Company</th>
+                <th style={cellStyle}>Booking Date</th>
+                <th style={cellStyle}>Booking Time</th>
+                <th style={cellStyle}>Meeting Room</th>
+                <th style={cellStyle}>Site</th>
+                <th style={cellStyle}>Slots</th>
+                <th style={cellStyle}>Total Credits</th>
+                <th style={cellStyle}>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {transactions.map((txn, index) => {
+                const t = transformTransaction(txn, index);
+                return (
+                  <tr key={txn.id}>
+                    <td style={cellStyle}>{t["Sr #"]}</td>
+                    <td style={cellStyle}>{t["Created By"]}</td>
+                    <td style={cellStyle}>{t["Created For"]}</td>
+                    <td style={cellStyle}>{t.Company}</td>
+                    <td style={cellStyle}>{t["Booking Date"]}</td>
+                    <td style={cellStyle}>{t["Booking Time"]}</td>
+                    <td style={cellStyle}>{t["Meeting Room"]}</td>
+                    <td style={cellStyle}>{t.Site}</td>
+                    <td style={cellStyle}>{t.Slots}</td>
+                    <td style={cellStyle}>{t["Total Credits"]}</td>
+                    <td style={cellStyle}>{t.Time}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {/* 🔹 No results */}
