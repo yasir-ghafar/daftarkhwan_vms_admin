@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { login } from "../../api/authApi";
-import "./login_page.css";
+//import "./login_page.css";
 import { useUser } from "../../context/UserContext";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
 
   const { setUserData } = useUser();
 
@@ -45,41 +48,79 @@ const LoginPage = () => {
     }
   };
 
+
+
   return (
-    <div className="login-container">
-      <div className="login-box">
-        <h1>Welcome to Admin Panel</h1>
-        <form onSubmit={handleSubmit}>
-          <h2>Login</h2>
+    <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold text-center text-indigo-700 mb-6">
+        Sign In
+      </h2>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Email */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Email
+          </label>
           <input
+            type="email"
+            required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
-            required
+            className="mt-1 w-5/6 rounded border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
+        </div>
+
+        {/* Password */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Password
+          </label>
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
+            required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            required
+            className="mt-1 w-sx rounded border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
-          <button type="submit" disabled={loading}>
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </form>
-      </div>
-
-      {loading && (
-        <div className="loading-overlay">
-          <div className="loading-dialog">
-            <div className="loader"></div>
-            <p>Logging in, please wait....</p>
-          </div>
         </div>
+
+        {/* Show Password */}
+        <div className="flex items-center">
+          <input
+            id="showPassword"
+            type="checkbox"
+            checked={showPassword}
+            onChange={() => setShowPassword(!showPassword)}
+            className="h-4 w-4 text-indigo-600 rounded border-gray-300"
+          />
+          <label
+            htmlFor="showPassword"
+            className="ml-2 text-sm text-gray-600"
+          >
+            Show password
+          </label>
+        </div>
+
+        {/* Button */}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded bg-indigo-600 py-2 font-semibold text-white hover:bg-indigo-700 transition disabled:opacity-50"
+        >
+          {loading ? "Signing in..." : "Sign In"}
+        </button>
+      </form>
+
+      {/* Error / Status */}
+      {errorMessage && (
+        <p className="mt-4 text-center text-sm text-red-600">
+          {errorMessage}
+        </p>
       )}
     </div>
   );
+
 };
 
 export default LoginPage;

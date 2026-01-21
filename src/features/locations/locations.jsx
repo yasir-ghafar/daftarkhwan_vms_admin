@@ -113,63 +113,133 @@ const Locations = () => {
     );
   });
 
+  // return (
+  //   <>
+  //     <div className="top-bar">
+  //       <h2>Locations</h2>
+  //       <button
+  //         className="add-btn"
+  //         onClick={() => {
+  //           if (role === 'admin') {
+  //             setEditLocation(null);
+  //             setModalOpen(true);
+  //           } else {
+  //             alert("You are not authorized for this action.");
+  //           }
+
+  //         }}
+  //       >
+  //         Add New
+  //       </button>
+  //     </div>
+
+  //     <input
+  //       type="text"
+  //       placeholder="Search locations..."
+  //       value={search}
+  //       onChange={(e) => setSearch(e.target.value)}
+  //       className="search-input"
+  //     />
+
+  //     {loading && (
+  //       <div className="loading-overlay">
+  //         <div className="loading-dialog">
+  //           <div className="loader"></div>
+  //           <p>Loading please wait....</p>
+  //         </div>
+  //       </div>
+  //     )}
+
+  //     {error && <div className="error-popup"><p>{error}</p></div>}
+
+  //     {!loading && !error && (
+  //       <LocationList
+  //         locations={filteredLocations}
+  //         onDelete={handleDeleteClick}
+  //         onEdit={handleEditClick}
+  //         loading={loading}
+  //         search={search} // 🔍 pass search term for page reset
+  //       />
+  //     )}
+
+  //     <AddLocationModal
+  //       isOpen={isModalOpen}
+  //       onClose={() => setModalOpen(false)}
+  //       onSave={handleAddLocation}
+  //       editData={editLocation}
+  //     />
+  //   </>
+  // );
+
   return (
-    <>
-      <div className="top-bar">
-        <h2>Locations</h2>
-        <button
-          className="add-btn"
+    <div className="container mx-auto px-4 py-6 space-y-4">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-semibold text-gray-800">Locations</h2>
+
+        <button 
           onClick={() => {
-            if (role === 'admin') {
+            if (role === "admin") {
               setEditLocation(null);
               setModalOpen(true);
             } else {
               alert("You are not authorized for this action.");
             }
-
           }}
+          className="bg-blue-600 text-white font-medium px-4 py-2 rounded hover:bg-blue-700 transition"
         >
           Add New
         </button>
       </div>
 
-      <input
-        type="text"
-        placeholder="Search locations..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="search-input"
-      />
+      {/* Search */}
+      <div className="flex justify-center">
+        <input
+          type="text"
+          placeholder="Search locations..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full max-w-md border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+        />
+      </div>
 
+      {/* Loading Overlay */}
       {loading && (
-        <div className="loading-overlay">
-          <div className="loading-dialog">
-            <div className="loader"></div>
-            <p>Loading please wait....</p>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="bg-white p-6 rounded-lg shadow-md text-center">
+            <div className="loader mb-2"></div>
+            <p className="text-gray-600 font-medium">Loading please wait...</p>
           </div>
         </div>
       )}
 
-      {error && <div className="error-popup"><p>{error}</p></div>}
+      {/* Error */}
+      {error && (
+        <div className="bg-red-100 border border-red-300 text-red-800 px-4 py-2 rounded">
+          <p>{error}</p>
+        </div>
+      )}
 
+      {/* List */}
       {!loading && !error && (
         <LocationList
           locations={filteredLocations}
           onDelete={handleDeleteClick}
           onEdit={handleEditClick}
-          loading={loading}
-          search={search} // 🔍 pass search term for page reset
         />
       )}
 
+      {/* Modal */}
       <AddLocationModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
         onSave={handleAddLocation}
         editData={editLocation}
       />
-    </>
+    </div>
   );
+  
 };
 
 export default Locations;
