@@ -1,3 +1,14 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+
+@theme {
+  --color-brand-blue:       #1d4ed8;
+  --color-brand-blue-light: #3b82f6;
+  --color-brand-blue-bg:    #eff6ff;
+  --color-brand-white:      #ffffff;
+  --color-brand-white-dim:  #f8fafc;
+  --color-brand-dark:       #1e3a8a;
+  --color-brand-cta:        #1d4ed8;
+
+  --font-sans: Inter, system-ui, sans-serif;
+}
