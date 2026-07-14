@@ -29,6 +29,7 @@ const Sidebar = () => {
         <ul>
           <li><NavLink to="/home/locations" activeclassname="active">Space</NavLink></li>
           <li><NavLink to="/home/meeting-rooms" activeclassname="active">Meeting Rooms</NavLink></li>
+          <li><NavLink to="/home/meeting-room-status" activeclassname="active">Meeting Room Status</NavLink></li>
           <li><NavLink to="/home/bookings" activeclassname="active">Bookings</NavLink></li>
           <li><NavLink to="/home/users" activeclassname="active">Users</NavLink></li>
           <li><NavLink to="/home/community" activeclassname="active">Company</NavLink></li>
