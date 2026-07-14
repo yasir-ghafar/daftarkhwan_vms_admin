@@ -28,7 +28,73 @@ const timeSlots = Array.from({ length: 25 }, (_, i) => {
   return `${hour}:${minute}`;
 });
 
-const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
+const getTodayDate = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const hhmmToMinutes = (time) => {
+  const [hour, minute] = time.split(":").map(Number);
+  return hour * 60 + minute;
+};
+
+const minutesToHHmm = (minutes) => {
+  const hour = Math.floor(minutes / 60);
+  const minute = minutes % 60;
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+};
+
+const getMinStartMinutesForDate = (date) => {
+  if (date !== getTodayDate()) return 0;
+
+  const now = new Date();
+  let current = now.getHours() * 60 + now.getMinutes();
+
+  if (current % 30 === 0) {
+    current += 30;
+  } else {
+    current += 30 - (current % 30);
+  }
+
+  return current;
+};
+
+const getEndTimeOptions = (startTime, roomSlots) => {
+  if (!startTime || !roomSlots?.length) return [];
+
+  const startMinutes = hhmmToMinutes(startTime);
+
+  const endBoundaries = new Set(
+    roomSlots.map((slot) => slot.endMinutes).filter((end) => end > startMinutes)
+  );
+
+  return [...endBoundaries]
+    .sort((a, b) => a - b)
+    .filter((endMinutes) => {
+      const overlapsBooked = roomSlots.some(
+        (slot) =>
+          slot.isBooked &&
+          startMinutes < slot.endMinutes &&
+          endMinutes > slot.startMinutes
+      );
+      return !overlapsBooked;
+    })
+    .map(minutesToHHmm);
+};
+
+const BookingForm = ({
+  isOpen,
+  onClose,
+  onSave,
+  locations,
+  companies,
+  presetValues = null,
+  roomSlots = null,
+  lockPresetFields = false,
+}) => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -43,9 +109,25 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
 
   const [meetingRooms, setMeetingRooms] = useState([]);
   const [users, setUsers] = useState([]);
-  const [bookedSlots, setBookedSlots] = useState([]);
+  const [bookedSlots] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    setFormData({
+      title: "",
+      description: "",
+      date: presetValues?.date || "",
+      location: presetValues?.location || "",
+      meetingRoom: presetValues?.meetingRoom || "",
+      companyId: "",
+      customerId: "",
+      startTime: presetValues?.startTime || "",
+      endTime: presetValues?.endTime || "",
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   // Fetch users when company changes
   useEffect(() => {
@@ -84,10 +166,14 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
   }, [formData.location]);
 
   const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+    const { name, value } = e.target;
+    setFormData((prev) => {
+      const next = { ...prev, [name]: value };
+      if (name === "startTime") {
+        next.endTime = "";
+      }
+      return next;
+    });
   };
 
   const getDisabledTimes = () => {
@@ -155,6 +241,22 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
 
   const disabledTimes = getDisabledTimes();
   const isDateSelected = !!formData.date;
+  const useRestrictedSlots = Boolean(roomSlots?.length);
+
+  const availableStartTimes = useRestrictedSlots
+    ? roomSlots
+        .filter((slot) => !slot.isBooked)
+        .filter((slot) => {
+          if (formData.date !== getTodayDate()) return true;
+          return slot.startMinutes >= getMinStartMinutesForDate(formData.date);
+        })
+        .map((slot) => minutesToHHmm(slot.startMinutes))
+    : timeSlots.filter((time) => !disabledTimes.includes(time));
+
+  const availableEndTimes = useRestrictedSlots
+    ? getEndTimeOptions(formData.startTime, roomSlots)
+    : timeSlots.filter((time) => !disabledTimes.includes(time));
+
   if (!isOpen) return null;
 
   return (
@@ -171,6 +273,7 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
                   value={formData.location}
                   onChange={handleChange}
                   required
+                  disabled={lockPresetFields}
                 >
                   <option value="">Select Location</option>
                   {locations.map((loc) => (
@@ -188,6 +291,7 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
                   value={formData.meetingRoom}
                   onChange={handleChange}
                   required
+                  disabled={lockPresetFields}
                 >
                   <option value="">Select Room</option>
                   {meetingRooms.map((room) => (
@@ -253,6 +357,7 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
                   value={formData.date}
                   onChange={handleChange}
                   required
+                  disabled={lockPresetFields}
                   style={{
                     width: "100%",
                     padding: "8px",
@@ -272,14 +377,9 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
                       required
                     >
                       <option value="">Select Time</option>
-                      {timeSlots.map((time) => (
-                        <option
-                          key={time}
-                          value={time}
-                          disabled={disabledTimes.includes(time)}
-                        >
-                          {to12HourFormat(time)}{" "}
-                          {disabledTimes.includes(time) ? "(Booked)" : ""}
+                      {availableStartTimes.map((time) => (
+                        <option key={time} value={time}>
+                          {to12HourFormat(time)}
                         </option>
                       ))}
                     </select>
@@ -292,16 +392,12 @@ const BookingForm = ({ isOpen, onClose, onSave, locations, companies }) => {
                       value={formData.endTime}
                       onChange={handleChange}
                       required
+                      disabled={!formData.startTime}
                     >
                       <option value="">Select Time</option>
-                      {timeSlots.map((time) => (
-                        <option
-                          key={time}
-                          value={time}
-                          disabled={disabledTimes.includes(time)}
-                        >
-                          {to12HourFormat(time)}{" "}
-                          {disabledTimes.includes(time) ? "(Booked)" : ""}
+                      {availableEndTimes.map((time) => (
+                        <option key={time} value={time}>
+                          {to12HourFormat(time)}
                         </option>
                       ))}
                     </select>

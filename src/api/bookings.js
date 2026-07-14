@@ -17,3 +17,10 @@ export const cancelBooking = async (id) => {
     const response = await daftarkhwanApi.post(`/bookings/cancel/${id}`);
     return response;
 }
+
+export const getBookingsByRoomAndDate = async (roomId, date) => {
+    const response = await daftarkhwanApi.get("/bookings/by-room-and-date", {
+        params: { room_id: roomId, date },
+    });
+    return response.data;
+}

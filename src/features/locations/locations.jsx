@@ -8,7 +8,6 @@ import app from "../../firebase/firebase";
 
 import { useUser } from "../../context/UserContext";
 
-
 const Locations = () => {
   const [search, setSearch] = useState("");
   const [isModalOpen, setModalOpen] = useState(false);
@@ -118,7 +117,7 @@ const Locations = () => {
     <div className="container mx-auto px-4 py-6 space-y-4">
 
   {/* Header */}
-  <div className="flex items-center justify-between">
+  <div className="flex items-center justify-between ">
     <h2 className="text-2xl font-semibold text-brand-dark">Locations</h2>
 
     <button
