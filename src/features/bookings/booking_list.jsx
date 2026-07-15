@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import "./booking_list.css";
 
 const to12HourFormat = (time24) => {
@@ -9,43 +9,22 @@ const to12HourFormat = (time24) => {
   return `${hour.toString().padStart(2, "0")}:${minute} ${ampm}`;
 };
 
-const BookingsList = ({ bookings, search, onCancelClick }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" }); // 🆕
-  const bookingsPerPage = 10;
+const BookingsList = ({
+  bookings,
+  currentPage,
+  totalPages,
+  onPageChange,
+  onCancelClick,
+}) => {
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search]);
+  const sortedBookings = useMemo(() => {
+    if (!sortConfig.key) return bookings;
 
-  const normalize = (v) =>
-    v === null || v === undefined ? "" : String(v).toLowerCase();
-  const searchTerm = normalize(search).trim();
-
-  const matchesSearch = (booking) => {
-    if (!searchTerm) return true;
-    return [
-      booking.date,
-      booking.Room?.name,
-      booking.Room.location.name,
-      booking.User?.name,
-      booking.User?.Company?.name,
-      booking.startTime,
-      booking.endTime,
-    ].some((field) => normalize(field).includes(searchTerm));
-  };
-
-  const filtered = bookings.filter(matchesSearch);
-
-  // 🆕 Sorting logic
-  const sortedBookings = React.useMemo(() => {
-    if (!sortConfig.key) return filtered;
-
-    const sorted = [...filtered].sort((a, b) => {
+    return [...bookings].sort((a, b) => {
       let aValue = a[sortConfig.key];
       let bValue = b[sortConfig.key];
 
-      // Handle date sorting (convert to Date objects)
       if (sortConfig.key === "date") {
         aValue = new Date(aValue);
         bValue = new Date(bValue);
@@ -55,48 +34,34 @@ const BookingsList = ({ bookings, search, onCancelClick }) => {
       if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
       return 0;
     });
-
-    return sorted;
-  }, [filtered, sortConfig]);
-
-  const totalPages = Math.ceil(sortedBookings.length / bookingsPerPage) || 1;
-  const indexOfLastBooking = currentPage * bookingsPerPage;
-  const indexOfFirstBooking = indexOfLastBooking - bookingsPerPage;
-  const currentBookings = sortedBookings.slice(indexOfFirstBooking, indexOfLastBooking);
+  }, [bookings, sortConfig]);
 
   const handleNext = () => {
-    if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+    if (currentPage < totalPages) onPageChange(currentPage + 1);
   };
 
   const handlePrev = () => {
-    if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+    if (currentPage > 1) onPageChange(currentPage - 1);
   };
 
-  // 🆕 Handle sorting on header click
   const handleSort = (key) => {
     setSortConfig((prev) => {
       if (prev.key === key) {
-        // toggle direction
         return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
-      } else {
-        // default to ascending
-        return { key, direction: "asc" };
       }
+      return { key, direction: "asc" };
     });
   };
 
-  // 🆕 Visual indicator for sorting
   const getSortIndicator = (key) => {
-  if (sortConfig.key !== key) return <strong>⇅</strong>;
-  return (
-    <strong>{sortConfig.direction === "asc" ? "↑" : "↓"}</strong>
-  );
-};
+    if (sortConfig.key !== key) return <strong>⇅</strong>;
+    return <strong>{sortConfig.direction === "asc" ? "↑" : "↓"}</strong>;
+  };
 
   return (
-    <div>
+    <div className="bookings-list">
       <div className="table-container">
-        <table className="location-table">
+        <table className="location-table bookings-table">
           <thead>
             <tr>
               <th onClick={() => handleSort("date")} style={{ cursor: "pointer" }}>
@@ -112,8 +77,8 @@ const BookingsList = ({ bookings, search, onCancelClick }) => {
             </tr>
           </thead>
           <tbody>
-            {currentBookings.map((booking, index) => (
-              <tr key={index}>
+            {sortedBookings.map((booking) => (
+              <tr key={booking.id}>
                 <td>{booking.date}</td>
                 <td>{booking.Room?.name}</td>
                 <td>{booking.Room?.location?.name}</td>
@@ -134,9 +99,9 @@ const BookingsList = ({ bookings, search, onCancelClick }) => {
                 </td>
               </tr>
             ))}
-            {currentBookings.length === 0 && (
+            {sortedBookings.length === 0 && (
               <tr>
-                <td colSpan="8" style={{ textAlign: "center", padding: "1rem" }}>
+                <td colSpan="8" className="bookings-empty-state">
                   No bookings found.
                 </td>
               </tr>
@@ -149,17 +114,17 @@ const BookingsList = ({ bookings, search, onCancelClick }) => {
         <button
           className="pagination-btn"
           onClick={handlePrev}
-          disabled={currentPage === 1}
+          disabled={currentPage <= 1}
         >
           &lt;
         </button>
         <span className="pagination-info">
-          {currentPage} / {totalPages}
+          {currentPage} / {totalPages || 1}
         </span>
         <button
           className="pagination-btn"
           onClick={handleNext}
-          disabled={currentPage === totalPages}
+          disabled={currentPage >= totalPages}
         >
           &gt;
         </button>
