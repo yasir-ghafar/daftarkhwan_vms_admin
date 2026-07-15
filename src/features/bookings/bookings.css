@@ -1,3 +1,22 @@
+.bookings-page h2 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.bookings-page .search-input {
+  margin: 8px 0;
+  padding: 6px 8px;
+}
+
+.bookings-page .filters-bar {
+  margin: 4px 0 6px;
+}
+
+.bookings-page .filter-dropdown {
+  margin: 0;
+  padding: 5px 6px;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
