@@ -13,6 +13,8 @@ const BookingsList = ({
   bookings,
   currentPage,
   totalPages,
+  totalItems,
+  loading,
   onPageChange,
   onCancelClick,
 }) => {
@@ -58,6 +60,8 @@ const BookingsList = ({
     return <strong>{sortConfig.direction === "asc" ? "↑" : "↓"}</strong>;
   };
 
+  const showEmptyState = !loading && sortedBookings.length === 0;
+
   return (
     <div className="bookings-list">
       <div className="table-container">
@@ -99,7 +103,7 @@ const BookingsList = ({
                 </td>
               </tr>
             ))}
-            {sortedBookings.length === 0 && (
+            {showEmptyState && (
               <tr>
                 <td colSpan="8" className="bookings-empty-state">
                   No bookings found.
@@ -112,19 +116,22 @@ const BookingsList = ({
 
       <div className="pagination-container">
         <button
+          type="button"
           className="pagination-btn"
           onClick={handlePrev}
-          disabled={currentPage <= 1}
+          disabled={loading || currentPage <= 1}
         >
           &lt;
         </button>
         <span className="pagination-info">
-          {currentPage} / {totalPages || 1}
+          Page {currentPage} of {totalPages}
+          {totalItems > 0 ? ` (${totalItems} total)` : ""}
         </span>
         <button
+          type="button"
           className="pagination-btn"
           onClick={handleNext}
-          disabled={currentPage >= totalPages}
+          disabled={loading || currentPage >= totalPages}
         >
           &gt;
         </button>
