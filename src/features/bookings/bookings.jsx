@@ -22,6 +22,7 @@ const Bookings = () => {
   const [selectedLocation, setSelectedLocation] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState(null);
@@ -34,15 +35,16 @@ const Bookings = () => {
     return "An error occurred.";
   };
 
-  const fetchBookings = async (page = 1) => {
+  const fetchBookings = async (page) => {
     setLoading(true);
     try {
       const response = await getBookings({ page, page_size: PAGE_SIZE });
-      const payload = response.data || {};
+      const payload = response?.data ?? {};
 
-      setBookings(payload.bookings || []);
-      setCurrentPage(payload.current_page || page);
-      setTotalPages(payload.total_pages || 1);
+      setBookings(payload.bookings ?? []);
+      setCurrentPage(page);
+      setTotalPages(Math.max(1, Number(payload.total_pages) || 1));
+      setTotalItems(Number(payload.total_items) || 0);
     } catch {
       setError("Failed to load bookings.");
     } finally {
@@ -91,10 +93,10 @@ const Bookings = () => {
       if (response.status === 201) {
         setModalOpen(false);
         setSuccessMessage(response.data.message);
-        if (currentPage === 1) {
-          fetchBookings(1);
-        } else {
+        if (currentPage !== 1) {
           setCurrentPage(1);
+        } else {
+          fetchBookings(1);
         }
       } else if (response.status === 403) {
         throw new Error("Insufficient wallet balance");
@@ -165,8 +167,9 @@ const Bookings = () => {
   });
 
   const handlePageChange = (page) => {
-    if (page !== currentPage) {
-      setCurrentPage(page);
+    const nextPage = Math.min(Math.max(1, page), totalPages);
+    if (nextPage !== currentPage) {
+      setCurrentPage(nextPage);
     }
   };
 
@@ -219,15 +222,15 @@ const Bookings = () => {
         />
       )}
 
-      {!loading && (
-        <BookingsList
-          bookings={filteredBookings}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-          onCancelClick={handleCancelClick}
-        />
-      )}
+      <BookingsList
+        bookings={filteredBookings}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        loading={loading}
+        onPageChange={handlePageChange}
+        onCancelClick={handleCancelClick}
+      />
 
       {modalOpen && (
         <BookingForm
