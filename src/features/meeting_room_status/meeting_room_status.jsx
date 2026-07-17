@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { getLocations } from "../../api/locations_api";
 import { getRooms } from "../../api/rooms_api";
-import { getBookingsByRoomAndDate, addNewBooking } from "../../api/bookings";
+import {
+  getBookingsByRoomAndDate,
+  addNewBooking,
+  cancelBooking,
+} from "../../api/bookings";
 import { getCompanies } from "../../api/company_api";
 import BookingForm from "../bookings/add_new_booking";
+import DeleteDialog from "../../components/DeleteDialog";
 import ErrorPopup from "../../components/error_popup";
 import SuccessPopup from "../../components/confirmation_popup";
 
@@ -98,7 +103,7 @@ const getBookingCompanyName = (booking) =>
 
 const getSlotBookingInfo = (slot, bookings) => {
   if (!bookings.length) {
-    return { isBooked: false, companyName: null };
+    return { isBooked: false, companyName: null, bookingId: null };
   }
 
   const matchingBooking = bookings.find((booking) => {
@@ -111,12 +116,13 @@ const getSlotBookingInfo = (slot, bookings) => {
   });
 
   if (!matchingBooking) {
-    return { isBooked: false, companyName: null };
+    return { isBooked: false, companyName: null, bookingId: null };
   }
 
   return {
     isBooked: true,
     companyName: getBookingCompanyName(matchingBooking),
+    bookingId: matchingBooking.id ?? null,
   };
 };
 
@@ -165,6 +171,8 @@ const MeetingRoomStatus = () => {
   const [bookingPreset, setBookingPreset] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [submittingBooking, setSubmittingBooking] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedBookedSlot, setSelectedBookedSlot] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -322,10 +330,63 @@ const MeetingRoomStatus = () => {
     });
   };
 
+  const handleBookedSlotClick = (slot) => {
+    if (!slot.bookingId) {
+      setError("Unable to cancel this booking.");
+      return;
+    }
+
+    setSelectedBookedSlot(slot);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleSlotClick = (slot, bookable) => {
+    if (slot.isBooked) {
+      handleBookedSlotClick(slot);
+      return;
+    }
+
+    if (bookable) {
+      handleFreeSlotClick(slot);
+    }
+  };
+
+  const closeDeleteDialog = () => {
+    setIsDeleteDialogOpen(false);
+    setSelectedBookedSlot(null);
+  };
+
+  const handleConfirmDeleteBooking = async () => {
+    if (!selectedBookedSlot?.bookingId) {
+      closeDeleteDialog();
+      return;
+    }
+
+    setSubmittingBooking(true);
+    try {
+      await cancelBooking(selectedBookedSlot.bookingId);
+      closeDeleteDialog();
+      setSuccessMessage("Booking cancelled successfully.");
+      await refreshStatus();
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    } finally {
+      setSubmittingBooking(false);
+    }
+  };
+
   const closeBookingDialog = () => {
     setBookingModalOpen(false);
     setBookingPreset(null);
   };
+
+  const deleteDialogMessage = selectedBookedSlot
+    ? `Do you want to cancel the booking for ${selectedBookedSlot.label}${
+        selectedBookedSlot.companyName
+          ? ` (${selectedBookedSlot.companyName})`
+          : ""
+      }?`
+    : "Do you want to cancel this booking?";
 
   const handleAddBooking = async (newBooking) => {
     setSubmittingBooking(true);
@@ -466,7 +527,8 @@ const MeetingRoomStatus = () => {
                 </span>
               </p>
               <p className="text-xs text-gray-500">
-                Click an Available slot to create a booking.
+                Click a free slot to create a booking, or a booked slot to cancel
+                it.
               </p>
             </div>
           )}
@@ -475,16 +537,17 @@ const MeetingRoomStatus = () => {
             <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3">
               {slots.map((slot) => {
                 const bookable = isSlotBookable(slot, selectedDate);
+                const isClickable = slot.isBooked || bookable;
 
                 return (
                   <button
                     key={slot.label}
                     type="button"
-                    onClick={() => bookable && handleFreeSlotClick(slot)}
-                    disabled={!bookable}
+                    onClick={() => handleSlotClick(slot, bookable)}
+                    disabled={!isClickable}
                     className={`flex flex-col gap-1 rounded-lg border px-3 py-3 text-left transition ${
                       slot.isBooked
-                        ? "cursor-not-allowed border-red-500 bg-red-100 text-red-900"
+                        ? "cursor-pointer border-red-500 bg-red-100 text-red-900 hover:bg-red-200 hover:shadow-sm"
                         : bookable
                           ? "cursor-pointer border-green-500 bg-green-100 text-green-900 hover:bg-green-200 hover:shadow-sm"
                           : "cursor-not-allowed border-gray-300 bg-gray-100 text-gray-500"
@@ -538,6 +601,13 @@ const MeetingRoomStatus = () => {
           lockPresetFields
         />
       )}
+
+      <DeleteDialog
+        isOpen={isDeleteDialogOpen}
+        message={deleteDialogMessage}
+        onConfirm={handleConfirmDeleteBooking}
+        onCancel={closeDeleteDialog}
+      />
 
       {(loading || checkingStatus || submittingBooking) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
