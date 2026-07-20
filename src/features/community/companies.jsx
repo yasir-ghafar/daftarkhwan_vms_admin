@@ -30,8 +30,18 @@ const Companies = () => {
     }
   }
 
+  const fetchLocations = async () => {
+    try {
+      const data = await getLocations();
+      setLocations(data.data);
+    } catch (err) {
+      console.error("Error fetching locations:", err);
+    }
+  };
+
   useEffect(() => {
     fetchCompanies();
+    fetchLocations();
   }, []);
 
   const filteredCompanies = companies.filter((company) => {
@@ -142,13 +152,9 @@ const Companies = () => {
           className="filter-dropdown"
         >
           <option value="">All Locations</option>
-          {[
-            ...new Map(
-              companies.map((company) => [company.LocationId, company.locationName])
-            ),
-          ].map(([id, name]) => (
-            <option key={id} value={id}>
-              {name}
+          {locations.map((loc) => (
+            <option key={loc.id} value={loc.id}>
+              {loc.name}
             </option>
           ))}
         </select>

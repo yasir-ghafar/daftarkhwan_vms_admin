@@ -85,8 +85,8 @@ const CompaniesList = ({ companies, onEdit, search }) => {
               <tr key={index}>
                 <td>{company.name ?? company.companyName ?? "—"}</td>
                 <td>
-                  {company.locationName ??
-                    company.location?.name ??
+                  {company.location?.name ??
+                    company.locationName ??
                     company.city ??
                     company.location ??
                     "N/A"}

@@ -60,7 +60,8 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany, locations }) =
       setFormData((prev) => ({
         ...prev,
         locationId: value,
-        locationName: selectedLoc ? selectedLoc.legalBusinessName : "",
+        // Use location display name (e.g. "Alpha"), not legalBusinessName
+        locationName: selectedLoc ? selectedLoc.name : "",
       }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
