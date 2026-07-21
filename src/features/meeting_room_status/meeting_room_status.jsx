@@ -89,10 +89,19 @@ const normalizeBookings = (response) => {
   return [];
 };
 
-const isSlotBooked = (slot, bookings) => {
-  if (!bookings.length) return false;
+const getBookingCompanyName = (booking) =>
+  booking?.User?.Company?.name ||
+  booking?.Company?.name ||
+  booking?.company?.name ||
+  booking?.companyName ||
+  null;
 
-  return bookings.some((booking) => {
+const getSlotBookingInfo = (slot, bookings) => {
+  if (!bookings.length) {
+    return { isBooked: false, companyName: null };
+  }
+
+  const matchingBooking = bookings.find((booking) => {
     const bookingStart = parseTimeToMinutes(booking.startTime);
     const bookingEnd = parseTimeToMinutes(booking.endTime);
 
@@ -100,6 +109,15 @@ const isSlotBooked = (slot, bookings) => {
 
     return bookingStart < slot.endMinutes && bookingEnd > slot.startMinutes;
   });
+
+  if (!matchingBooking) {
+    return { isBooked: false, companyName: null };
+  }
+
+  return {
+    isBooked: true,
+    companyName: getBookingCompanyName(matchingBooking),
+  };
 };
 
 const getMinStartMinutesForDate = (date) => {
@@ -217,7 +235,7 @@ const MeetingRoomStatus = () => {
     setSlots(
       timeSlots.map((slot) => ({
         ...slot,
-        isBooked: isSlotBooked(slot, bookings),
+        ...getSlotBookingInfo(slot, bookings),
       }))
     );
     setHasCheckedStatus(true);
@@ -480,6 +498,11 @@ const MeetingRoomStatus = () => {
                           ? "Free"
                           : "Past"}
                     </span>
+                    {slot.isBooked && slot.companyName && (
+                      <span className="truncate text-xs font-medium normal-case tracking-normal">
+                        {slot.companyName}
+                      </span>
+                    )}
                   </button>
                 );
               })}

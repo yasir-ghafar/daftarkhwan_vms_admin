@@ -37,7 +37,8 @@
 
 .main-content {
   flex: 1;
-  padding: 20px;
+  padding: 28px 32px;
+  min-width: 0;
 }
 
 .top-bar {
