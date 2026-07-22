@@ -1,8 +1,10 @@
 import daftarkhwanApi from "./api";
 
 
-export const getBookings = async () => {
-    const response = await daftarkhwanApi.get("/bookings");
+export const getBookings = async ({ page = 1, page_size = 10 } = {}) => {
+    const response = await daftarkhwanApi.get("/bookings", {
+        params: { page, page_size },
+    });
     return response.data;
 }
 

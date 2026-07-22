@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-    base: './',   // works from multiple domains/URLs
+    base: '/',   // works from multiple domains/URLs
   server: {
     host: '0.0.0.0',
     allowedHosts: [

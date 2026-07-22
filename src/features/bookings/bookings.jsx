@@ -8,6 +8,8 @@ import ErrorPopup from "../../components/error_popup";
 import SuccessPopup from "../../components/confirmation_popup";
 import "./bookings.css";
 
+const PAGE_SIZE = 10;
+
 const Bookings = () => {
   const [search, setSearch] = useState("");
   const [bookings, setBookings] = useState([]);
@@ -18,9 +20,10 @@ const Bookings = () => {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState("");
-  const [selectedRoom, setSelectedRoom] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
 
-  // new state for delete modal
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState(null);
 
@@ -32,11 +35,16 @@ const Bookings = () => {
     return "An error occurred.";
   };
 
-  const fetchBookings = async () => {
+  const fetchBookings = async (page) => {
     setLoading(true);
     try {
-      const data = await getBookings();
-      setBookings(data.data);
+      const response = await getBookings({ page, page_size: PAGE_SIZE });
+      const payload = response?.data ?? {};
+
+      setBookings(payload.bookings ?? []);
+      setCurrentPage(page);
+      setTotalPages(Math.max(1, Number(payload.total_pages) || 1));
+      setTotalItems(Number(payload.total_items) || 0);
     } catch {
       setError("Failed to load bookings.");
     } finally {
@@ -45,7 +53,20 @@ const Bookings = () => {
   };
 
   useEffect(() => {
-    fetchBookings();
+    fetchBookings(currentPage);
+  }, [currentPage]);
+
+  useEffect(() => {
+    const loadLocations = async () => {
+      try {
+        const locationsRes = await getLocations();
+        setLocations(locationsRes.data || []);
+      } catch {
+        // Keep the page usable even if locations fail to load for the filter.
+      }
+    };
+
+    loadLocations();
   }, []);
 
   const openAddNewBooking = async () => {
@@ -72,7 +93,11 @@ const Bookings = () => {
       if (response.status === 201) {
         setModalOpen(false);
         setSuccessMessage(response.data.message);
-        fetchBookings();
+        if (currentPage !== 1) {
+          setCurrentPage(1);
+        } else {
+          fetchBookings(1);
+        }
       } else if (response.status === 403) {
         throw new Error("Insufficient wallet balance");
       } else {
@@ -93,33 +118,30 @@ const Bookings = () => {
     }
   };
 
-  // open delete confirmation modal
   const handleCancelClick = (id) => {
     setSelectedBookingId(id);
     setIsDeleteModalOpen(true);
   };
 
   const handleProceedDelete = async () => {
-  setLoading(true);
-  try {
-    await cancelBooking(selectedBookingId);
+    setLoading(true);
+    try {
+      await cancelBooking(selectedBookingId);
 
-    // Update status instead of removing
-    setBookings((prev) =>
-      prev.map((b) =>
-        b.id === selectedBookingId ? { ...b, status: "cancelled" } : b
-      )
-    );
-  } catch (err) {
-    setError(extractErrorMessage(err));
-  } finally {
-    setLoading(false);
-    setIsDeleteModalOpen(false);
-    setSelectedBookingId(null);
-  }
-};
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.id === selectedBookingId ? { ...b, status: "cancelled" } : b
+        )
+      );
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    } finally {
+      setLoading(false);
+      setIsDeleteModalOpen(false);
+      setSelectedBookingId(null);
+    }
+  };
 
-  // ✅ Search & filter logic here (instead of child)
   const normalize = (v) =>
     v === null || v === undefined ? "" : String(v).toLowerCase();
   const searchTerm = normalize(search).trim();
@@ -141,14 +163,18 @@ const Bookings = () => {
       ? String(booking.location_id) === String(selectedLocation)
       : true;
 
-    // const matchesRoom = selectedRoom 
-    // ? String(booking.Room.id) === String(selectedRoom) : true;
-    
     return matchesSearch && matchesLocation;
   });
 
+  const handlePageChange = (page) => {
+    const nextPage = Math.min(Math.max(1, page), totalPages);
+    if (nextPage !== currentPage) {
+      setCurrentPage(nextPage);
+    }
+  };
+
   return (
-    <>
+    <div className="bookings-page">
       <div className="top-bar">
         <h2>Bookings</h2>
         <button className="add-btn" onClick={openAddNewBooking}>
@@ -168,38 +194,16 @@ const Bookings = () => {
         <select
           value={selectedLocation}
           onChange={(e) => setSelectedLocation(e.target.value)}
-          className="filter-dropdown">
+          className="filter-dropdown"
+        >
           <option value="">All Locations</option>
-          {[
-            ...new Map(
-              bookings.map((b) => [b.location_id, b.Room?.location?.name])
-            ),
-          ].map(([id, name]) => (
-            <option key={id} value={id}>
-              {name}
+          {locations.map((location) => (
+            <option key={location.id} value={location.id}>
+              {location.name}
             </option>
           ))}
         </select>
-
-               {/* <select
-          value={selectedLocation}
-          onChange={(e) => setSelectedRoom(e.target.value)}
-          className="filter-dropdown">
-          <option value="">All Rooms</option>
-          {[
-            ...new Map(
-              bookings.map((b) => [b.location_id, b.Room?.name])
-            ),
-          ].map(([id, name]) => (
-            <option key={id} value={id}>
-              {name}
-            </option>
-          ))}
-        </select> */}
-
-
       </div>
-
 
       {loading && (
         <div className="loading-overlay">
@@ -218,9 +222,15 @@ const Bookings = () => {
         />
       )}
 
-      {!loading && !error && (
-        <BookingsList bookings={filteredBookings} onCancelClick={handleCancelClick} />
-      )}
+      <BookingsList
+        bookings={filteredBookings}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        loading={loading}
+        onPageChange={handlePageChange}
+        onCancelClick={handleCancelClick}
+      />
 
       {modalOpen && (
         <BookingForm
@@ -232,7 +242,6 @@ const Bookings = () => {
         />
       )}
 
-      {/* Delete confirmation modal */}
       {isDeleteModalOpen && (
         <div className="modal-overlay">
           <div className="modal-box">
@@ -251,7 +260,7 @@ const Bookings = () => {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 
