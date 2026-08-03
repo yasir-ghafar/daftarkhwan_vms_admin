@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+scripts/
+ENGAGE_Lounge_Studio_Module_Documentation.docx
