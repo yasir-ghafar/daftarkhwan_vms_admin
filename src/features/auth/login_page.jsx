@@ -38,7 +38,7 @@ const LoginPage = () => {
 
       // ✅ Proceed if admin
       setLoading(false);
-      navigate("/home/locations");
+      navigate("/home/dashboard");
     } catch (error) {
       console.log(error);
       setLoading(false);
