@@ -15,6 +15,7 @@ const Companies = () => {
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
   const { role } = useUser();
 
   const fetchCompanies = async () => {
@@ -56,34 +57,47 @@ const Companies = () => {
     ? String(company.LocationId) === String(selectedLocation)
     : true;
 
-  return matchesSearch && matchesLocation;
+  const matchesStatus = selectedStatus
+    ? (company.status || "active").toLowerCase() === selectedStatus.toLowerCase()
+    : true;
+
+  return matchesSearch && matchesLocation && matchesStatus;
   });
 
   const handleAddCompany = async (newCompany) => {
-    setLoading(true)
+    setLoading(true);
     console.log(newCompany);
     try {
-    if (selectedCompany) {
-      // Edit existing company
-      const updatedCompany = { ...selectedCompany, ...newCompany };
-      const res = await editCompany(updatedCompany.id, updatedCompany);
-      console.log("Company updated:", res.data);
-    } else {
-      // Create new company
-      const res = await createCompany(newCompany);
-      console.log("Company created:", res.data);
-    }
+      // Ensure LocationId + location display name (not legalBusinessName) are sent
+      const locationId =
+        newCompany.LocationId ?? newCompany.locationId ?? "";
+      const matchedLocation = locations.find(
+        (loc) => String(loc.id) === String(locationId)
+      );
 
-    // Refresh list after action
-    await fetchCompanies();
-    setModalOpen(false);
-    setSelectedCompany(null);
-  } catch (err) {
-    console.error("Save failed:", err.response?.data || err.message);
-    alert("Unable to save company");
-  } finally {
-    setLoading(false);
-  }
+      const payload = {
+        ...newCompany,
+        LocationId: locationId,
+        locationName: matchedLocation?.name || newCompany.locationName || "",
+      };
+
+      if (selectedCompany) {
+        const res = await editCompany(selectedCompany.id, payload);
+        console.log("Company updated:", res.data);
+      } else {
+        const res = await createCompany(payload);
+        console.log("Company created:", res.data);
+      }
+
+      await fetchCompanies();
+      setModalOpen(false);
+      setSelectedCompany(null);
+    } catch (err) {
+      console.error("Save failed:", err.response?.data || err.message);
+      alert("Unable to save company");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const openAddCompanyDialog = async () => {
@@ -158,6 +172,17 @@ const Companies = () => {
             </option>
           ))}
         </select>
+
+        {/* Status Filter */}
+        <select
+          value={selectedStatus}
+          onChange={(e) => setSelectedStatus(e.target.value)}
+          className="filter-dropdown"
+        >
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
       </div>
 
       {loading && (
@@ -181,7 +206,10 @@ const Companies = () => {
 
       <CompanyModal
         isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => {
+          setModalOpen(false);
+          setSelectedCompany(null);
+        }}
         onSave={handleAddCompany}
         locations={locations}
         selectedCompany={selectedCompany}

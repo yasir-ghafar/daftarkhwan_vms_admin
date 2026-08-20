@@ -2,54 +2,87 @@ import React, { useState, useEffect } from "react";
 import "./add_company.css"; // should match the same styles as add_meeting_room.css for consistency
 import ErrorPopup from "../../components/error_popup";
 
-const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany, locations }) => {
+const emptyForm = {
+  name: "",
+  email: "",
+  contactNumber: "",
+  businessType: "",
+  webURL: "",
+  locationName: "",
+  locationId: "",
+  reference: "",
+  billingEmail: "",
+  gstNumber: "",
+  status: "active",
+};
+
+const resolveLocationId = (company) => {
+  const id =
+    company?.LocationId ??
+    company?.locationId ??
+    company?.location_id ??
+    company?.location?.id ??
+    "";
+  return id === null || id === undefined || id === "" ? "" : String(id);
+};
+
+const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany, locations = [] }) => {
   const [errorMessage, setErrorMessage] = useState("");
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    contactNumber: "",
-    businessType: "",
-    websiteUrl: "",
-    locationName: "",
-    locationId: 0,
-    reference: "",
-    billingEmail: "",
-    gstNumber: "",
-    status: "Active"
-  });
+  const [formData, setFormData] = useState(emptyForm);
 
   useEffect(() => {
+    if (!isOpen) return;
+
     if (selectedCompany) {
+      const locationId = resolveLocationId(selectedCompany);
+      const matchedLocation = locations.find(
+        (loc) => String(loc.id) === locationId
+      );
+
       setFormData({
         name: selectedCompany.name || "",
         email: selectedCompany.email || "",
         contactNumber: selectedCompany.contactNumber || "",
         businessType: selectedCompany.businessType || "",
-        webURL: selectedCompany.websiteUrl || "",
-        locationName: selectedCompany.location?.name || "",
-        locationId: selectedCompany.location?.id || selectedCompany.LocationId ||  "",
+        webURL: selectedCompany.websiteUrl || selectedCompany.webURL || "",
+        locationName:
+          matchedLocation?.name ||
+          selectedCompany.location?.name ||
+          selectedCompany.locationName ||
+          "",
+        locationId,
         reference: selectedCompany.reference || "",
         billingEmail: selectedCompany.billingEmail || "",
-        gstNumber: selectedCompany.gstNumber || "",
-        status: selectedCompany.status || "Active"
+        gstNumber: selectedCompany.gstNumber || selectedCompany.gstn || "",
+        status: (selectedCompany.status || "active").toLowerCase(),
       });
     } else {
-      setFormData({
-        name: "",
-        email: "",
-        contactNumber: "",
-        businessType: "",
-        webURL: "",
-        locationName: "",
-        locationId: 0,
-        reference: "",
-        billingEmail: "",
-        gstNumber: "",
-        status: "Active"
-      });
+      setFormData(emptyForm);
     }
-  }, [selectedCompany]);
+    // Only reset when modal opens or the selected company changes —
+    // not when the locations list reference updates mid-edit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, selectedCompany]);
+
+  // Once locations load, fill the correct display name for edit mode.
+  useEffect(() => {
+    if (!isOpen || !selectedCompany || !locations.length) return;
+
+    const locationId = resolveLocationId(selectedCompany);
+    if (!locationId) return;
+
+    const matchedLocation = locations.find(
+      (loc) => String(loc.id) === locationId
+    );
+    if (!matchedLocation) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      locationId,
+      locationName: matchedLocation.name,
+    }));
+  }, [isOpen, selectedCompany, locations]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -82,12 +115,28 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany, locations }) =
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // if (!isFormValid()) {
-    //   setErrorMessage("Please fill all required fields before saving.");
-    //   return;
-    // }
     try {
-      onSave(formData);
+      const selectedLoc = locations.find(
+        (loc) => String(loc.id) === String(formData.locationId)
+      );
+
+      // Always resolve display name from location.name — never legalBusinessName.
+      // API expects LocationId (capital L), not locationId.
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        contactNumber: formData.contactNumber,
+        businessType: formData.businessType,
+        websiteUrl: formData.webURL || formData.websiteUrl || "",
+        reference: formData.reference,
+        billingEmail: formData.billingEmail,
+        gstn: formData.gstNumber || formData.gstn || "",
+        LocationId: formData.locationId,
+        locationName: selectedLoc?.name || formData.locationName || "",
+        status: formData.status,
+      };
+
+      onSave(payload);
     } catch (err) {
       setErrorMessage(err.message || "Failed to save company.");
     }
@@ -181,7 +230,7 @@ const CompanyModal = ({ isOpen, onClose, onSave, selectedCompany, locations }) =
                 >
                   <option value="">Select Location</option>
                   {locations.map((loc) => (
-                    <option key={loc.id} value={loc.id}>
+                    <option key={loc.id} value={String(loc.id)}>
                       {loc.name}
                     </option>
                   ))}

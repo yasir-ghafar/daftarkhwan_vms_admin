@@ -26,3 +26,8 @@ export const getBookingsByRoomAndDate = async (roomId, date) => {
     });
     return response.data;
 }
+
+export const getBookingById = async (id) => {
+    const response = await daftarkhwanApi.get(`/bookings/${id}`);
+    return response.data;
+}

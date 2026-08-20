@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { getLocations } from "../../api/locations_api";
 import { getRooms } from "../../api/rooms_api";
-import { getBookingsByRoomAndDate, addNewBooking } from "../../api/bookings";
+import {
+  getBookingsByRoomAndDate,
+  addNewBooking,
+  cancelBooking,
+  getBookingById,
+} from "../../api/bookings";
 import { getCompanies } from "../../api/company_api";
 import BookingForm from "../bookings/add_new_booking";
 import ErrorPopup from "../../components/error_popup";
@@ -96,9 +101,42 @@ const getBookingCompanyName = (booking) =>
   booking?.companyName ||
   null;
 
+const getBookingUserName = (booking) =>
+  booking?.User?.name ||
+  booking?.user?.name ||
+  booking?.userName ||
+  null;
+
+const formatBookingTimeRange = (booking) => {
+  const start = booking?.startTime;
+  const end = booking?.endTime;
+  if (!start || !end) return "—";
+
+  const startMinutes = parseTimeToMinutes(start);
+  const endMinutes = parseTimeToMinutes(end);
+  if (startMinutes === null || endMinutes === null) return `${start} - ${end}`;
+
+  return `${formatMinutesTo12Hour(startMinutes)} - ${formatMinutesTo12Hour(endMinutes)}`;
+};
+
+const normalizeBookingDetails = (response) => {
+  const booking = response?.data ?? response;
+  if (!booking || typeof booking !== "object") return null;
+
+  return {
+    id: booking.id ?? null,
+    title: booking.title || "—",
+    description: booking.description || "—",
+    companyName: getBookingCompanyName(booking) || "—",
+    userName: getBookingUserName(booking) || "—",
+    date: booking.date || "—",
+    time: formatBookingTimeRange(booking),
+  };
+};
+
 const getSlotBookingInfo = (slot, bookings) => {
   if (!bookings.length) {
-    return { isBooked: false, companyName: null };
+    return { isBooked: false, companyName: null, bookingId: null };
   }
 
   const matchingBooking = bookings.find((booking) => {
@@ -111,12 +149,13 @@ const getSlotBookingInfo = (slot, bookings) => {
   });
 
   if (!matchingBooking) {
-    return { isBooked: false, companyName: null };
+    return { isBooked: false, companyName: null, bookingId: null };
   }
 
   return {
     isBooked: true,
     companyName: getBookingCompanyName(matchingBooking),
+    bookingId: matchingBooking.id ?? null,
   };
 };
 
@@ -165,6 +204,9 @@ const MeetingRoomStatus = () => {
   const [bookingPreset, setBookingPreset] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [submittingBooking, setSubmittingBooking] = useState(false);
+  const [isBookingDetailsOpen, setIsBookingDetailsOpen] = useState(false);
+  const [bookingDetails, setBookingDetails] = useState(null);
+  const [loadingBookingDetails, setLoadingBookingDetails] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -322,6 +364,67 @@ const MeetingRoomStatus = () => {
     });
   };
 
+  const handleBookedSlotClick = async (slot) => {
+    if (!slot.bookingId) {
+      setError("Unable to load this booking.");
+      return;
+    }
+
+    setLoadingBookingDetails(true);
+    setError(null);
+
+    try {
+      const response = await getBookingById(slot.bookingId);
+      const details = normalizeBookingDetails(response);
+
+      if (!details?.id) {
+        throw new Error("Booking details not found.");
+      }
+
+      setBookingDetails(details);
+      setIsBookingDetailsOpen(true);
+    } catch (err) {
+      setError(extractErrorMessage(err) || "Failed to load booking details.");
+    } finally {
+      setLoadingBookingDetails(false);
+    }
+  };
+
+  const handleSlotClick = (slot, bookable) => {
+    if (slot.isBooked) {
+      handleBookedSlotClick(slot);
+      return;
+    }
+
+    if (bookable) {
+      handleFreeSlotClick(slot);
+    }
+  };
+
+  const closeBookingDetailsDialog = () => {
+    setIsBookingDetailsOpen(false);
+    setBookingDetails(null);
+  };
+
+  const handleCancelBookingFromDetails = async () => {
+    if (!bookingDetails?.id) {
+      closeBookingDetailsDialog();
+      return;
+    }
+
+    setSubmittingBooking(true);
+    try {
+      await cancelBooking(bookingDetails.id);
+      closeBookingDetailsDialog();
+      setSuccessMessage("Booking cancelled successfully.");
+      await refreshStatus();
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    } finally {
+      setSubmittingBooking(false);
+    }
+  };
+
   const closeBookingDialog = () => {
     setBookingModalOpen(false);
     setBookingPreset(null);
@@ -466,7 +569,8 @@ const MeetingRoomStatus = () => {
                 </span>
               </p>
               <p className="text-xs text-gray-500">
-                Click an Available slot to create a booking.
+                Click a free slot to create a booking, or a booked slot to view
+                details.
               </p>
             </div>
           )}
@@ -475,16 +579,17 @@ const MeetingRoomStatus = () => {
             <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3">
               {slots.map((slot) => {
                 const bookable = isSlotBookable(slot, selectedDate);
+                const isClickable = slot.isBooked || bookable;
 
                 return (
                   <button
                     key={slot.label}
                     type="button"
-                    onClick={() => bookable && handleFreeSlotClick(slot)}
-                    disabled={!bookable}
+                    onClick={() => handleSlotClick(slot, bookable)}
+                    disabled={!isClickable}
                     className={`flex flex-col gap-1 rounded-lg border px-3 py-3 text-left transition ${
                       slot.isBooked
-                        ? "cursor-not-allowed border-red-500 bg-red-100 text-red-900"
+                        ? "cursor-pointer border-red-500 bg-red-100 text-red-900 hover:bg-red-200 hover:shadow-sm"
                         : bookable
                           ? "cursor-pointer border-green-500 bg-green-100 text-green-900 hover:bg-green-200 hover:shadow-sm"
                           : "cursor-not-allowed border-gray-300 bg-gray-100 text-gray-500"
@@ -539,7 +644,67 @@ const MeetingRoomStatus = () => {
         />
       )}
 
-      {(loading || checkingStatus || submittingBooking) && (
+      {isBookingDetailsOpen && bookingDetails && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-brand-dark">
+              Booking Details
+            </h3>
+
+            <div className="mt-4 space-y-3 text-sm">
+              <div>
+                <p className="font-semibold text-gray-700">Title</p>
+                <p className="text-gray-600">{bookingDetails.title}</p>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-700">Description</p>
+                <p className="whitespace-pre-wrap text-gray-600">
+                  {bookingDetails.description}
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-700">Company</p>
+                <p className="text-gray-600">{bookingDetails.companyName}</p>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-700">User</p>
+                <p className="text-gray-600">{bookingDetails.userName}</p>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-700">Date</p>
+                <p className="text-gray-600">{bookingDetails.date}</p>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-700">Time</p>
+                <p className="text-gray-600">{bookingDetails.time}</p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={closeBookingDetailsDialog}
+                className="h-10 rounded-md border border-gray-300 px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={handleCancelBookingFromDetails}
+                disabled={submittingBooking}
+                className="h-10 rounded-md bg-red-600 px-4 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Cancel Booking
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {(loading ||
+        checkingStatus ||
+        submittingBooking ||
+        loadingBookingDetails) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
           <div className="rounded-lg bg-white p-6 text-center shadow-lg">
             <div className="loader mb-2" />

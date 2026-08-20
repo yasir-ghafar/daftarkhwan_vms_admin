@@ -8,7 +8,8 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-    base: '/',   // works from multiple domains/URLs
+    base: '/',    // absolute paths so nested routes still load /assets/* correctly
+
   server: {
     host: '0.0.0.0',
     allowedHosts: [
