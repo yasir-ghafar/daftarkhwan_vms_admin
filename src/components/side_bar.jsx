@@ -48,13 +48,13 @@ const Sidebar = () => {
       <nav className="sidebar-nav">
         <ul>
           <li>
-            <NavLink to="/home/dashboard" className={navLinkClass} end>
+            {/* <NavLink to="/home/dashboard" className={navLinkClass} end>
               Dashboard
-            </NavLink>
+            </NavLink> */}
           </li>
           <li>
             <NavLink to="/home/locations" className={navLinkClass}>
-              Space
+              Locations
             </NavLink>
           </li>
           <li>
@@ -63,8 +63,8 @@ const Sidebar = () => {
             </NavLink>
           </li>
           <li>
-            <NavLink to="/home/meeting-room-status" className={navLinkClass}>
-              Meeting Room Status
+            <NavLink to="/home/slots-availability" className={navLinkClass}>
+              Availability Status
             </NavLink>
           </li>
           <li>

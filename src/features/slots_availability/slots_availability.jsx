@@ -11,10 +11,83 @@ import { getCompanies } from "../../api/company_api";
 import BookingForm from "../bookings/add_new_booking";
 import ErrorPopup from "../../components/error_popup";
 import SuccessPopup from "../../components/confirmation_popup";
+import SegmentControl from "../../components/segment_control";
 
 const SLOT_INTERVAL_MINUTES = 30;
 const DEFAULT_OPENING_MINUTES = 9 * 60;
 const DEFAULT_CLOSING_MINUTES = 21 * 60 + 30;
+
+const RESOURCE_TYPES = {
+  MEETING_ROOMS: "meeting_rooms",
+  LOUNGES: "lounges",
+  //STUDIO: "studio"
+};
+
+const DoorIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <rect x="6" y="3" width="12" height="18" rx="1.5" />
+    <circle cx="14.5" cy="12" r="1" fill="currentColor" stroke="none" />
+  </svg>
+);
+
+const SofaIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M7 10V8a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2" />
+    <path d="M4 13a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3H4v-3Z" />
+    <path d="M4 16v2M20 16v2M12 11v5" />
+  </svg>
+);
+
+// const StudioIcon = () => (
+//   <svg
+//   viewBox="0 0 24 24"
+//   fill="none"
+//   stroke="currentColor"
+//   strokeWidth="1.8"
+//   strokeLinecap="round"
+//   strokeLinejoin="round"
+//   aria-hidden="true"
+// >
+//   <rect x="7" y="3" width="10" height="7" rx="1.2" />
+//   <path d="M9 4.5l6 4M15 4.5l-6 4" />
+//   <path d="M12 10v6" />
+//   <path d="M12 16l-4 5M12 16l4 5" />
+// </svg>
+// )
+
+const RESOURCE_TYPE_OPTIONS = [
+  {
+    value: RESOURCE_TYPES.MEETING_ROOMS,
+    label: "Meeting rooms",
+    icon: <DoorIcon />,
+  },
+  {
+    value: RESOURCE_TYPES.LOUNGES,
+    label: "Lounges",
+    icon: <SofaIcon />,
+  },
+  // {
+  //   value: RESOURCE_TYPES.STUDIO,
+  //   label: "Studio",
+  //   icon: <StudioIcon />,
+  // },
+];
 
 const fieldClassName =
   "h-10 w-full min-w-[220px] border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-blue focus:border-brand-blue disabled:bg-gray-100 disabled:cursor-not-allowed";
@@ -188,9 +261,10 @@ const extractErrorMessage = (err) => {
   return "An error occurred.";
 };
 
-const MeetingRoomStatus = () => {
+const SlotsAvailability = () => {
   const [locations, setLocations] = useState([]);
   const [meetingRooms, setMeetingRooms] = useState([]);
+  const [resourceType, setResourceType] = useState(RESOURCE_TYPES.MEETING_ROOMS);
   const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedMeetingRoom, setSelectedMeetingRoom] = useState("");
   const [selectedDate, setSelectedDate] = useState(getTodayDate());
@@ -244,6 +318,12 @@ const MeetingRoomStatus = () => {
   const resetStatus = () => {
     setSlots([]);
     setHasCheckedStatus(false);
+  };
+
+  const handleResourceTypeChange = (nextType) => {
+    setResourceType(nextType);
+    setSelectedMeetingRoom("");
+    resetStatus();
   };
 
   const handleLocationChange = (e) => {
@@ -309,7 +389,7 @@ const MeetingRoomStatus = () => {
       if (err.response?.status === 404) {
         buildSlotsWithStatus([]);
       } else {
-        setError("Failed to fetch meeting room status.");
+        setError("Failed to fetch slots availability.");
       }
     } finally {
       setCheckingStatus(false);
@@ -468,9 +548,17 @@ const MeetingRoomStatus = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold text-brand-dark">
-          Meeting Room Status
+          Slots Availability
         </h2>
       </div>
+
+      <SegmentControl
+        name="resource-type"
+        label="Resource type"
+        value={resourceType}
+        onChange={handleResourceTypeChange}
+        options={RESOURCE_TYPE_OPTIONS}
+      />
 
       <div className="flex flex-wrap items-end gap-4">
         <div className="flex flex-col gap-1.5">
@@ -494,7 +582,7 @@ const MeetingRoomStatus = () => {
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="meetingRoom" className="text-sm font-semibold text-gray-700">
-            Meeting Room
+            {resourceType === RESOURCE_TYPES.LOUNGES ? "Lounge" : "Meeting Room"}
           </label>
           <select
             id="meetingRoom"
@@ -503,7 +591,11 @@ const MeetingRoomStatus = () => {
             className={fieldClassName}
             disabled={!selectedLocation}
           >
-            <option value="">Select Meeting Room</option>
+            <option value="">
+              {resourceType === RESOURCE_TYPES.LOUNGES
+                ? "Select Lounge"
+                : "Select Meeting Room"}
+            </option>
             {filteredMeetingRooms.map((room) => (
               <option key={room.id} value={room.id}>
                 {room.name}
@@ -724,4 +816,4 @@ const MeetingRoomStatus = () => {
   );
 };
 
-export default MeetingRoomStatus;
+export default SlotsAvailability;
