@@ -404,6 +404,10 @@ const Dashboard = () => {
     fetchDashboard();
   }, [selectedLocation]);
 
+  const visibleStats = selectedLocation
+    ? summary.stats.filter((stat) => stat.key !== "locations")
+    : summary.stats;
+
   return (
     <div className="min-h-full space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -458,8 +462,12 @@ const Dashboard = () => {
 
       {!loading && (
         <>
-          <div className="grid grid-cols-2 gap-3 xl:grid-cols-6">
-            {summary.stats.map((stat) => (
+          <div
+            className={`grid grid-cols-2 gap-3 ${
+              visibleStats.length === 6 ? "xl:grid-cols-6" : "xl:grid-cols-5"
+            }`}
+          >
+            {visibleStats.map((stat) => (
               <div
                 key={stat.key}
                 className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm"
