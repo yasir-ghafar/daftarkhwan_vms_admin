@@ -7,6 +7,7 @@ import {
   getWalletAlerts,
   getRecentCompanies,
 } from "../../api/dashboard_api";
+import { getLocations } from "../../api/locations_api";
 import ErrorPopup from "../../components/error_popup";
 
 const STATUS_STYLES = {
@@ -293,8 +294,27 @@ const Dashboard = () => {
     lowBalance: [],
     recentCompanies: [],
   });
+  const [locations, setLocations] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const selectedLocationName = locations.find(
+    (location) => String(location.id) === String(selectedLocation)
+  )?.name;
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await getLocations();
+        setLocations(response.data || []);
+      } catch {
+        // Keep the dashboard usable even if locations fail to load.
+      }
+    };
+
+    fetchLocations();
+  }, []);
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -304,10 +324,10 @@ const Dashboard = () => {
       try {
         const [summaryResult, bookingsResult, alertsResult, companiesResult] =
           await Promise.allSettled([
-            getDashboardSummary(),
-            getTodaysBookings(),
-            getWalletAlerts(),
-            getRecentCompanies(),
+            getDashboardSummary(selectedLocation),
+            getTodaysBookings(selectedLocation),
+            getWalletAlerts(selectedLocation),
+            getRecentCompanies(selectedLocation),
           ]);
 
         const nextSummary = {
@@ -382,7 +402,7 @@ const Dashboard = () => {
     };
 
     fetchDashboard();
-  }, []);
+  }, [selectedLocation]);
 
   return (
     <div className="min-h-full space-y-6">
@@ -392,15 +412,35 @@ const Dashboard = () => {
             Dashboard
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Welcome back, {firstName} — here&apos;s what&apos;s happening across
-            your locations today.
+            Welcome back, {firstName} — here&apos;s what&apos;s happening{" "}
+            {selectedLocationName
+              ? `at ${selectedLocationName}`
+              : "across your locations"}{" "}
+            today.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <span className="text-sm text-slate-500">{formatToday()}</span>
+          <label htmlFor="dashboard-location" className="sr-only">
+            Location
+          </label>
+          <select
+            id="dashboard-location"
+            value={selectedLocation}
+            onChange={(e) => setSelectedLocation(e.target.value)}
+            className="h-10 min-w-[180px] rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-sm focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
+          >
+            <option value="">All Locations</option>
+            {locations.map((location) => (
+              <option key={location.id} value={location.id}>
+                {location.name}
+              </option>
+            ))}
+          </select>
+          
           <Link
             to="/home/bookings"
-            className="inline-flex items-center rounded-lg bg-brand-cta px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-dark"
+            className="h-10 inline-flex items-center rounded-lg bg-brand-cta px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-dark"
           >
             + New Booking
           </Link>
