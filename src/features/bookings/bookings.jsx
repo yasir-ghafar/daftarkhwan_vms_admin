@@ -86,6 +86,10 @@ const Bookings = () => {
     }
   };
 
+  const showMessage = async () => {
+    setSuccessMessage("Use Availabilty Status page to create new bookings.")
+  };
+
   const handleAddOrEditBooking = async (newBooking) => {
     setLoading(true);
     try {
@@ -177,7 +181,7 @@ const Bookings = () => {
     <div className="bookings-page">
       <div className="top-bar">
         <h2>Bookings</h2>
-        <button className="add-btn" onClick={openAddNewBooking}>
+        <button className="add-btn" onClick={showMessage}>
           Add New
         </button>
       </div>
