@@ -4,8 +4,8 @@ import { useUser } from "../../context/UserContext";
 import {
   getDashboardSummary,
   getTodaysBookings,
-  getWalletAlerts,
-  getRecentCompanies,
+  // getWalletAlerts,
+  // getRecentCompanies,
 } from "../../api/dashboard_api";
 import { getLocations } from "../../api/locations_api";
 import ErrorPopup from "../../components/error_popup";
@@ -176,6 +176,20 @@ const STAT_CARD_CONFIG = [
   },
 ];
 
+const normalizeOccupancyItems = (list) =>
+  (list || []).map((item, index) => ({
+    id: item.id ?? item.name ?? index,
+    name: pick(
+      item.name,
+      item.roomName,
+      item.locationName,
+      item.Room?.name,
+      item.location?.name,
+      "—"
+    ),
+    percent: Number(pick(item.percent, item.occupancy, item.occupancyPercent, 0)),
+  }));
+
 const normalizeSummary = (payload = {}) => {
   const data = payload?.data ?? payload ?? {};
   const stats = data.stats ?? data.summary ?? {};
@@ -194,23 +208,24 @@ const normalizeSummary = (payload = {}) => {
     };
   });
 
-  const occupancyList = pick(
-    data.occupancy_by_location,
-    data.occupancyByLocation,
-    data.locationOccupancy,
-    Array.isArray(data.occupancy) ? data.occupancy : null,
-    []
+  const occupancyByLocation = normalizeOccupancyItems(
+    pick(
+      data.occupancy_by_location,
+      data.occupancyByLocation,
+      data.locationOccupancy,
+      Array.isArray(data.occupancy) ? data.occupancy : null,
+      []
+    )
   );
 
-  const occupancy = (occupancyList || []).map((loc, index) => ({
-    id: loc.id ?? loc.name ?? index,
-    name: pick(loc.name, loc.locationName, loc.location?.name, "—"),
-    percent: Number(pick(loc.percent, loc.occupancy, loc.occupancyPercent, 0)),
-  }));
+  const occupancyByRoom = normalizeOccupancyItems(
+    pick(data.occupancy_by_room, data.occupancyByRoom, [])
+  );
 
   return {
     stats: statCards,
-    occupancy,
+    occupancyByLocation,
+    occupancyByRoom,
   };
 };
 
@@ -244,45 +259,45 @@ const normalizeTodayBookings = (payload) =>
     })
   );
 
-const normalizeWalletAlerts = (payload) =>
-  unwrapList(payload, [
-    "alerts",
-    "walletAlerts",
-    "lowWalletBalances",
-    "lowBalanceAlerts",
-  ]).map((item, index) => ({
-    id: item.user_id ?? item.id ?? item.name ?? index,
-    name: pick(item.name, item.userName, item.User?.name, "—"),
-    detail:
-      pick(item.detail, item.description, item.message) ||
-      [
-        pick(item.company, item.Company?.name, item.companyName),
-        item.meeting_room_credits !== undefined
-          ? `Meeting Room: ${Number(item.meeting_room_credits).toFixed(2)}`
-          : null,
-        item.printing_credits !== undefined
-          ? `Printing: ${Number(item.printing_credits).toFixed(2)}`
-          : null,
-      ]
-        .filter(Boolean)
-        .join(" · ") ||
-      "Low balance",
-  }));
+// const normalizeWalletAlerts = (payload) =>
+//   unwrapList(payload, [
+//     "alerts",
+//     "walletAlerts",
+//     "lowWalletBalances",
+//     "lowBalanceAlerts",
+//   ]).map((item, index) => ({
+//     id: item.user_id ?? item.id ?? item.name ?? index,
+//     name: pick(item.name, item.userName, item.User?.name, "—"),
+//     detail:
+//       pick(item.detail, item.description, item.message) ||
+//       [
+//         pick(item.company, item.Company?.name, item.companyName),
+//         item.meeting_room_credits !== undefined
+//           ? `Meeting Room: ${Number(item.meeting_room_credits).toFixed(2)}`
+//           : null,
+//         item.printing_credits !== undefined
+//           ? `Printing: ${Number(item.printing_credits).toFixed(2)}`
+//           : null,
+//       ]
+//         .filter(Boolean)
+//         .join(" · ") ||
+//       "Low balance",
+//   }));
 
-const normalizeRecentCompanies = (payload) =>
-  unwrapList(payload, ["companies", "recentCompanies", "latestCompanies"]).map(
-    (company, index) => ({
-      id: company.id ?? company.name ?? index,
-      name: pick(company.name, "—"),
-      location: pick(
-        company.location,
-        company.Location?.name,
-        company.locationName,
-        "—"
-      ),
-      status: capitalizeStatus(pick(company.status, "Active")),
-    })
-  );
+// const normalizeRecentCompanies = (payload) =>
+//   unwrapList(payload, ["companies", "recentCompanies", "latestCompanies"]).map(
+//     (company, index) => ({
+//       id: company.id ?? company.name ?? index,
+//       name: pick(company.name, "—"),
+//       location: pick(
+//         company.location,
+//         company.Location?.name,
+//         company.locationName,
+//         "—"
+//       ),
+//       status: capitalizeStatus(pick(company.status, "Active")),
+//     })
+//   );
 
 const Dashboard = () => {
   const { user } = useUser();
@@ -290,7 +305,8 @@ const Dashboard = () => {
   const [summary, setSummary] = useState({
     stats: [],
     todayBookings: [],
-    occupancy: [],
+    occupancyByLocation: [],
+    occupancyByRoom: [],
     lowBalance: [],
     recentCompanies: [],
   });
@@ -322,17 +338,18 @@ const Dashboard = () => {
       setError(null);
 
       try {
-        const [summaryResult, bookingsResult, alertsResult, companiesResult] =
+        const [summaryResult, bookingsResult] =
           await Promise.allSettled([
             getDashboardSummary(selectedLocation),
             getTodaysBookings(selectedLocation),
-            getWalletAlerts(selectedLocation),
-            getRecentCompanies(selectedLocation),
+            // getWalletAlerts(selectedLocation),
+            // getRecentCompanies(selectedLocation),
           ]);
 
         const nextSummary = {
           stats: [],
-          occupancy: [],
+          occupancyByLocation: [],
+          occupancyByRoom: [],
           todayBookings: [],
           lowBalance: [],
           recentCompanies: [],
@@ -343,7 +360,8 @@ const Dashboard = () => {
         if (summaryResult.status === "fulfilled") {
           const summaryData = normalizeSummary(summaryResult.value);
           nextSummary.stats = summaryData.stats;
-          nextSummary.occupancy = summaryData.occupancy;
+          nextSummary.occupancyByLocation = summaryData.occupancyByLocation;
+          nextSummary.occupancyByRoom = summaryData.occupancyByRoom;
         } else {
           errors.push(
             summaryResult.reason?.response?.data?.message ||
@@ -364,27 +382,27 @@ const Dashboard = () => {
           );
         }
 
-        if (alertsResult.status === "fulfilled") {
-          nextSummary.lowBalance = normalizeWalletAlerts(alertsResult.value);
-        } else {
-          errors.push(
-            alertsResult.reason?.response?.data?.message ||
-              alertsResult.reason?.message ||
-              "Failed to load wallet alerts."
-          );
-        }
+        // if (alertsResult.status === "fulfilled") {
+        //   nextSummary.lowBalance = normalizeWalletAlerts(alertsResult.value);
+        // } else {
+        //   errors.push(
+        //     alertsResult.reason?.response?.data?.message ||
+        //       alertsResult.reason?.message ||
+        //       "Failed to load wallet alerts."
+        //   );
+        // }
 
-        if (companiesResult.status === "fulfilled") {
-          nextSummary.recentCompanies = normalizeRecentCompanies(
-            companiesResult.value
-          );
-        } else {
-          errors.push(
-            companiesResult.reason?.response?.data?.message ||
-              companiesResult.reason?.message ||
-              "Failed to load recent companies."
-          );
-        }
+        // if (companiesResult.status === "fulfilled") {
+        //   nextSummary.recentCompanies = normalizeRecentCompanies(
+        //     companiesResult.value
+        //   );
+        // } else {
+        //   errors.push(
+        //     companiesResult.reason?.response?.data?.message ||
+        //       companiesResult.reason?.message ||
+        //       "Failed to load recent companies."
+        //   );
+        // }
 
         setSummary(nextSummary);
         if (errors.length > 0) {
@@ -407,6 +425,9 @@ const Dashboard = () => {
   const visibleStats = selectedLocation
     ? summary.stats.filter((stat) => stat.key !== "locations")
     : summary.stats;
+  const occupancyItems = selectedLocation
+    ? summary.occupancyByRoom
+    : summary.occupancyByLocation;
 
   return (
     <div className="min-h-full space-y-6">
@@ -553,23 +574,25 @@ const Dashboard = () => {
             <div className="flex flex-col gap-4">
               <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm">
                 <h2 className="mb-4 text-base font-semibold text-slate-900">
-                  Occupancy by Location
+                  {selectedLocation
+                    ? "Occupancy by Meeting Room"
+                    : "Occupancy by Location"}
                 </h2>
-                {summary.occupancy.length > 0 ? (
-                  <ul className="space-y-4">
-                    {summary.occupancy.map((loc) => (
-                      <li key={loc.id}>
+                {occupancyItems.length > 0 ? (
+                  <ul className="max-h-80 space-y-4 overflow-y-auto pr-1">
+                    {occupancyItems.map((item) => (
+                      <li key={item.id}>
                         <div className="mb-1.5 flex items-center justify-between text-sm">
                           <span className="font-medium text-slate-700">
-                            {loc.name}
+                            {item.name}
                           </span>
-                          <span className="text-slate-500">{loc.percent}%</span>
+                          <span className="text-slate-500">{item.percent}%</span>
                         </div>
                         <div className="h-2 overflow-hidden rounded-full bg-slate-100">
                           <div
                             className="h-full rounded-full bg-brand-blue-light"
                             style={{
-                              width: `${Math.min(Math.max(loc.percent, 0), 100)}%`,
+                              width: `${Math.min(Math.max(item.percent, 0), 100)}%`,
                             }}
                           />
                         </div>
@@ -578,7 +601,9 @@ const Dashboard = () => {
                   </ul>
                 ) : (
                   <p className="text-sm italic text-slate-500">
-                    No occupancy data available.
+                    {selectedLocation
+                      ? "No meeting room occupancy data available."
+                      : "No occupancy data available."}
                   </p>
                 )}
               </div>
@@ -591,7 +616,7 @@ const Dashboard = () => {
                   {[
                     { label: "+ Add Company", to: "/home/community" },
                     { label: "+ Add User", to: "/home/users" },
-                    { label: "+ Add Meeting Room", to: "/home/meeting-rooms" },
+                    // { label: "+ Add Meeting Room", to: "/home/meeting-rooms" },
                   ].map((action) => (
                     <Link
                       key={action.label}
@@ -607,6 +632,7 @@ const Dashboard = () => {
             </div>
           </div>
 
+          {/*
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm">
               <h2 className="mb-4 text-base font-semibold text-slate-900">
@@ -671,6 +697,7 @@ const Dashboard = () => {
               )}
             </div>
           </div>
+          */}
         </>
       )}
 
