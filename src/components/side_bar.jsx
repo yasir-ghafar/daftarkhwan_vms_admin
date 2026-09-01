@@ -48,9 +48,9 @@ const Sidebar = () => {
       <nav className="sidebar-nav">
         <ul>
           <li>
-            {/* <NavLink to="/home/dashboard" className={navLinkClass} end>
+            <NavLink to="/home/dashboard" className={navLinkClass} end>
               Dashboard
-            </NavLink> */}
+            </NavLink>
           </li>
           <li>
             <NavLink to="/home/locations" className={navLinkClass}>
