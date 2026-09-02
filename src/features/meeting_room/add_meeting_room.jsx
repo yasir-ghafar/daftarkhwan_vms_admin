@@ -152,8 +152,8 @@ const handleSubmit = (e) => {
 
   // ✅ Pure object for API (clean string arrays)
   const formObject = {
-    name: form.name,
-    creditsPerSlot: form.creditsPerSlot,
+    name: form.name, 
+    creditsPerSlot: form.creditsPerSlot, 
     pricePerCredit: form.pricePerCredit,
     seatingCapacity: form.seatingCapacity,
     openingTime: formatTimeToAMPM(form.openingTime),

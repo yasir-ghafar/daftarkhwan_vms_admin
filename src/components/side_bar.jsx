@@ -31,6 +31,7 @@ const Sidebar = () => {
           <li><NavLink to="/home/meeting-rooms" activeclassname="active">Meeting Rooms</NavLink></li>
           <li><NavLink to="/home/meeting-room-status" activeclassname="active">Meeting Room Status</NavLink></li>
           <li><NavLink to="/home/bookings" activeclassname="active">Bookings</NavLink></li>
+          <li><NavLink to="/home/lounges" activeclassname="active">Lounges</NavLink></li>
           <li><NavLink to="/home/users" activeclassname="active">Users</NavLink></li>
           <li><NavLink to="/home/community" activeclassname="active">Company</NavLink></li>
           <li><NavLink to="/home/reports" activeclassname="active">Report</NavLink></li>

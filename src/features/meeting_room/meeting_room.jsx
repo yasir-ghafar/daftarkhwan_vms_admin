@@ -224,7 +224,7 @@ const MeetingRooms = () => {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="search-input"
-      />
+        />
         {/* Location Filter */}
         <select
           value={selectedLocation}
