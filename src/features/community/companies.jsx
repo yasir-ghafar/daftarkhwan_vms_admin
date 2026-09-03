@@ -142,28 +142,31 @@ const Companies = () => {
     
   }
   return (
-    <>
-      <div className="top-bar">
-        <h2>Company</h2>
-        <button className="add-btn" onClick={openAddCompanyDialog}>
-          Add New
+    <div>
+      <div className="flex justify-between p-4 items-center">
+        <div className="flex flex-col">
+          <h2 className="text-4xl font-bold">Companies</h2>
+          <h3 className="text-[#84878d] mt-1">__ companies across __ locations - __ currently active</h3>
+        </div>
+        <button className="text-white font-medium bg-[#3642ee] py-3 px-10 rounded-lg" onClick={openAddCompanyDialog}>
+          + Add New Company
         </button>
       </div>
       
-      <div className="filters-bar">
+      <div className="flex g-2 my-2 mx-4 rounded-lg border-none">
         <input
         type="text"
         placeholder="Search locations..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="search-input"
+        className="my-5 mx-1 py-3 px-5 w-full border border-gray-300 rounded-lg bg-white"
       />
 
         {/* Location Filter */}
         <select
           value={selectedLocation}
           onChange={(e) => setSelectedLocation(e.target.value)}
-          className="filter-dropdown"
+          className="my-5 mx-1 py-3 px-5 border border-gray-300 rounded-lg bg-white"
         >
           <option value="">All Locations</option>
           {locations.map((loc) => (
@@ -177,7 +180,7 @@ const Companies = () => {
         <select
           value={selectedStatus}
           onChange={(e) => setSelectedStatus(e.target.value)}
-          className="filter-dropdown"
+          className="my-5 mx-1 py-3 px-5 border border-gray-300 rounded-lg bg-white"
         >
           <option value="">All Status</option>
           <option value="active">Active</option>
@@ -214,7 +217,7 @@ const Companies = () => {
         locations={locations}
         selectedCompany={selectedCompany}
       />
-    </>
+    </div>
   );
 };
 

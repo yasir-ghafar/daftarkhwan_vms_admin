@@ -52,9 +52,9 @@ const RoomsList = ({ rooms, onDelete, onEdit, search }) => {
 
   return (
     <div>
-      <div className="rounded-lg overflow-hidden border mx-4 border-gray-100 bg-white shadow-mist-300">
+      <div className="rounded-lg overflow-hidden border mx-4 border-gray-300 bg-white shadow-mist-300">
         <table className="w-full border-collapse font-sans">
-          <thead className="text-[#84878d] border-b border-b-gray-300">
+          <thead className="text-shadow-gray-900 border-b border-b-gray-300">
             <tr>
               <th className="p-4 text-left text-sm justify-start">NAME</th>
               <th className="p-2 text-left text-sm">LOCATION</th>
@@ -97,11 +97,10 @@ const RoomsList = ({ rooms, onDelete, onEdit, search }) => {
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex justify-between bottom-0 mt-20">
-        <div className="text-[#84878d]">Showing 1-10 of __ rooms</div>
-        <div>  
+      <div className="relative">
+        <div className="flex justify-end bottom-0 mt-20">  
           <button
-            className=" text-gray-800 font-medium py-2 px-4 rounded-lg cursor-pointer border border-gray-300 bg-gray-100"
+            className="text-gray-800 font-medium py-2 px-4 rounded-lg cursor-pointer border border-gray-300 bg-gray-100"
             onClick={handlePrev}
             disabled={currentPage === 1}
           >

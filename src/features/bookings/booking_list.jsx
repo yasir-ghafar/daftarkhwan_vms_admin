@@ -63,37 +63,37 @@ const BookingsList = ({
   const showEmptyState = !loading && sortedBookings.length === 0;
 
   return (
-    <div className="bookings-list">
-      <div className="table-container">
-        <table className="location-table bookings-table">
-          <thead>
+    <div>
+      <div className="rounded-lg overflow-hidden border mx-4 border-gray-300 bg-white shadow-mist-300">
+        <table className="w-full border-collapse font-sans">
+          <thead className="text-shadow-gray-900 border-b border-b-gray-300">
             <tr>
-              <th onClick={() => handleSort("date")} style={{ cursor: "pointer" }}>
+              <th className="p-4 text-left text-sm justify-start" onClick={() => handleSort("date")} style={{ cursor: "pointer" }}>
                 Date {getSortIndicator("date")}
               </th>
-              <th>Meeting Room</th>
-              <th>Location</th>
-              <th>Start - End Timings</th>
-              <th>Member</th>
-              <th>Company</th>
-              <th>Status</th>
-              <th>Cancel</th>
+              <th className="p-2 text-left text-sm">Meeting Room</th>
+              <th className="p-2 text-left text-sm">Location</th>
+              <th className="p-2 text-left text-sm">Start - End Timings</th>
+              <th className="p-2 text-left text-sm">Member</th>
+              <th className="p-2 text-left text-sm">Company</th>
+              <th className="p-2 text-left text-sm">Status</th>
+              <th className="p-2 text-left text-sm">Cancel</th>
             </tr>
           </thead>
           <tbody>
             {sortedBookings.map((booking) => (
-              <tr key={booking.id}>
-                <td>{booking.date}</td>
-                <td>{booking.Room?.name}</td>
-                <td>{booking.Room?.location?.name}</td>
-                <td>
+              <tr key={booking.id} className="even:bg-[#f9f9f9] hover:bg-[#f1f5ff]">
+                <td className="p-4 border-b border-b-gray-300 text-left text-md font-semibold text-[#3f4144]">{booking.date}</td>
+                <td className="p-2 border-b border-b-gray-300 text-left text-md font-semibold text-[#3f4144]">{booking.Room?.name}</td>
+                <td className="p-2 border-b border-b-gray-300 text-left text-md font-semibold text-[#84878d]">{booking.Room?.location?.name}</td>
+                <td className="p-2 border-b border-b-gray-300 text-left text-md font-semibold text-[#3f4144]">
                   {to12HourFormat(booking.startTime)} -{" "}
                   {to12HourFormat(booking.endTime)}
                 </td>
-                <td>{booking.User?.name}</td>
-                <td>{booking.User?.Company?.name}</td>
-                <td>{booking.status.toLowerCase()}</td>
-                <td style={{ textAlign: "center" }}>
+                <td className="p-2 border-b border-b-gray-300 text-left text-md font-semibold text-[#3f4144]">{booking.User?.name}</td>
+                <td className="p-2 border-b border-b-gray-300 text-left text-md font-semibold text-[#3f4144]">{booking.User?.Company?.name}</td>
+                <td className="p-2 border-b border-b-gray-300 text-left text-md font-semibold text-[#3f4144]">{booking.status.toLowerCase()}</td>
+                <td className="p-2 border-b border-b-gray-300 text-left text-md font-semibold text-[#3f4144]" style={{ textAlign: "left" }}>
                   <button
                     className="cancel-btn-2"
                     onClick={() => onCancelClick(booking.id)}
@@ -114,27 +114,29 @@ const BookingsList = ({
         </table>
       </div>
 
-      <div className="pagination-container">
-        <button
-          type="button"
-          className="pagination-btn"
-          onClick={handlePrev}
-          disabled={loading || currentPage <= 1}
-        >
-          &lt;
-        </button>
-        <span className="pagination-info">
-          Page {currentPage} of {totalPages}
-          {totalItems > 0 ? ` (${totalItems} total)` : ""}
-        </span>
-        <button
-          type="button"
-          className="pagination-btn"
-          onClick={handleNext}
-          disabled={loading || currentPage >= totalPages}
-        >
-          &gt;
-        </button>
+      <div className="relative">
+        <div className="flex justify-end bottom-0 mt-20">
+          <button
+            type="button"
+            className=" text-gray-800 font-medium py-2 px-4 rounded-lg cursor-pointer border border-gray-300 bg-gray-100"
+            onClick={handlePrev}
+            disabled={loading || currentPage <= 1}
+          >
+            &lt;
+          </button>
+          <span className="font-md p-2 font-bold text-[#696c70]">
+            Page {currentPage} of {totalPages}
+            {totalItems > 0 ? ` (${totalItems} total)` : ""}
+          </span>
+          <button
+            type="button"
+            className="bg-[#3642ee] text-white font-medium py-2 px-4 rounded-lg cursor-pointer"
+            onClick={handleNext}
+            disabled={loading || currentPage >= totalPages}
+          >
+            &gt;
+          </button>
+        </div>
       </div>
     </div>
   );

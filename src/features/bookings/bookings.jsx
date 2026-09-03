@@ -6,13 +6,14 @@ import BookingForm from "./add_new_booking";
 import BookingsList from "./booking_list";
 import ErrorPopup from "../../components/error_popup";
 import SuccessPopup from "../../components/confirmation_popup";
-import "./bookings.css";
+// import "./bookings.css";
 
 const PAGE_SIZE = 10;
 
 const Bookings = () => {
   const [search, setSearch] = useState("");
   const [bookings, setBookings] = useState([]);
+  const [rooms, setRooms] = useState([]);
   const [locations, setLocations] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -26,6 +27,11 @@ const Bookings = () => {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState(null);
+
+  const activeBookings = bookings.filter((booking) => booking.status === "active");
+  const inactiveRooms = rooms.filter((room) => room.status === "inactive");
+  const totalRooms = rooms.length;
+  const availableRooms = totalRooms - inactiveRooms.length;
 
   const extractErrorMessage = (err) => {
     if (!err) return "An unknown error occurred.";
@@ -174,35 +180,40 @@ const Bookings = () => {
   };
 
   return (
-    <div className="bookings-page">
-      <div className="top-bar">
-        <h2>Bookings</h2>
-        <button className="add-btn" onClick={openAddNewBooking}>
-          Add New
+    <div>
+      <div className="flex justify-between p-4 items-center">
+        <div className="flex flex-col">
+          <h2 className="text-4xl font-bold">Bookings</h2>
+          <h3 className="text-[#84878d] mt-1">{activeBookings.length} bookings across {totalRooms} rooms - {availableRooms} rooms currently available</h3>
+        </div>
+        <button className="text-white font-medium bg-[#3642ee] py-3 px-10 rounded-lg" onClick={openAddNewBooking}>
+          + Add New Booking
         </button>
       </div>
 
-      <input
-        type="text"
-        placeholder="Search bookings..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="search-input"
-      />
+      <div className="flex g-2 my-2 mx-4 rounded-lg border-none">
+        <input
+          type="text"
+          placeholder="Search bookings..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="my-5 mx-1 py-3 px-5 w-full border border-gray-300 rounded-lg bg-white"
+        />
 
-      <div className="filters-bar">
-        <select
-          value={selectedLocation}
-          onChange={(e) => setSelectedLocation(e.target.value)}
-          className="filter-dropdown"
-        >
-          <option value="">All Locations</option>
-          {locations.map((location) => (
-            <option key={location.id} value={location.id}>
-              {location.name}
-            </option>
-          ))}
-        </select>
+        <div className="filters-bar">
+          <select
+            value={selectedLocation}
+            onChange={(e) => setSelectedLocation(e.target.value)}
+            className="my-5 mx-1 py-3 px-5 border border-gray-300 rounded-lg bg-white"
+          >
+            <option value="">All Locations</option>
+            {locations.map((location) => (
+              <option key={location.id} value={location.id}>
+                {location.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {loading && (

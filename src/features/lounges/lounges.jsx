@@ -46,6 +46,9 @@ const Lounges = () => {
     const { role } = useUser();
 
     const navigate = useNavigate();
+    const activeLounges = lounges.filter((lounge) => lounge.status === "active");
+    const inactiveLounges = lounges.filter((lounge) => lounge.status === "inactive");
+
 
     const fetchLoungesData = async () => {
         setLoading(true);
@@ -299,16 +302,19 @@ const Lounges = () => {
     };
 
     return (
-        <div className="w-full px-1 py-1">
-            <div className="flex items-center justify-between w-full">
-                <h1 className="text-xl font-normal">Lounges</h1>
-                <button className="bg-[#3366ff] text-white px-3 py-2 border-0 rounded cursor-pointer" onClick={openAddNewLounges}>Add New</button>
+        <div>
+            <div className="flex justify-between p-4 items-center">
+                <div className="flex flex-col">
+                    <h2 className="text-4xl font-bold">Lounges</h2>
+                    <h3 className="text-[#84878d] mt-1">{activeLounges.length} lounges across {new Set(lounges.map((lounge) => lounge.location?.id ?? lounge.location ?? '')).size} locations - {activeLounges.length} currently active</h3>
+                </div>
+                <button className="text-white font-medium bg-[#3642ee] py-3 px-10 rounded-lg" onClick={openAddNewLounges}>+ Add New Lounge</button>
             </div>
 
-            <div className="flex items-center gap-4 w-full px-1">
-                <input type="text" placeholder="Search Lounges..." value={search} onChange={(e) => setSearch(e.target.value)} className="my-1 p-1 w-full max-w-xs border border-[#ccc] rounded" />
+            <div className="flex g-2 my-2 mx-4 rounded-lg border-none">
+                <input type="text" placeholder="Search Lounges..." value={search} onChange={(e) => setSearch(e.target.value)} className="my-5 mx-1 py-3 px-5 w-full border border-gray-300 rounded-lg bg-white" />
                 
-                <select value={selectedLocation} onChange={(e) => setSelectedLocation(e.target.value)} className="my-5 p-1.5 rounded border border-[#ccc]">
+                <select value={selectedLocation} onChange={(e) => setSelectedLocation(e.target.value)} className="my-5 mx-1 py-3 px-5 border border-gray-300 rounded-lg bg-white">
                     <option value="">All Locations</option>
                     {[...new Map(lounges.map((item) => [String(item.location?.id ?? item.location ?? ''), item.location?.name ?? (typeof item.location === 'string' ? item.location : '')])).entries()]
                         .filter(([id]) => id)
@@ -317,65 +323,69 @@ const Lounges = () => {
                     ))}
                 </select>
 
-                <select value={selectedFloor} onChange={(e) => setSelectedFloor(e.target.value)} className="my-5 p-1.5 rounded border border-[#ccc]">
+                <select value={selectedFloor} onChange={(e) => setSelectedFloor(e.target.value)} className="my-5 mx-1 py-3 px-5 border border-gray-300 rounded-lg bg-white">
                     <option value="">All Floors</option>
                     {floors.map((floor, idx) => (
                         <option key={idx} value={floor}>{floor}</option>
                     ))}
                 </select>
             </div>
-            
-            <div className="rounded-[10px] overflow-hidden border border-[#e0e0e0] shadow-[0_4px_12px_rgba(0,0,0,0.04)] bg-white p-0 mt-5">
-                <table className="w-full text-center border-collapse font-sans">
-                    <thead>
-                        <tr>
-                            <th className="p-3">Name</th>
-                            <th className="p-3">Capacity</th>
-                            <th className="p-3">Opening Time</th>
-                            <th className="p-3">Closing Time</th>
-                            <th className="p-3">Floor</th>
-                            <th className="p-3">Available Days</th>
-                            <th className="p-3">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                        {currentLounges.map((item, index) => (
-                            <tr key={item.id || index}>
-                                <td className="p-3">{item.name || item.__raw?.name || item.__raw?.lounge_name || item.__raw?.roomName || "N/A"}</td>
-                                <td className="p-3">{item.capacity ?? "N/A"}</td>
-                                <td className="p-3">{item.openingTime ? formatTimeToAMPM(item.openingTime) : "N/A"}</td>
-                                <td className="p-3">{item.closingTime ? formatTimeToAMPM(item.closingTime) : "N/A"}</td>
-                                <td className="p-3">{item.floor ?? item.__raw?.floor ?? item.__raw?.floorName ?? item.__raw?.floor_no ?? "N/A"}</td>
-                                <td className="p-3">{formatAvailableDays(item.availableDays)}</td>
-                                <td className="p-3">{item.status ? item.status : "Active"}</td>
-                            </tr>
-                        ))}
-                        {currentLounges.length === 0 && !loading && (
-                            <tr>
-                                <td colSpan="7" className="p-4 text-gray-500">No lounges found.</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
-            
-            <div className="flex justify-end items-center mt-3 gap-2">
-                <button type="button" className="bg-[#007bff] text-white border-none px-3 py-1 rounded-md text-[13px] cursor-pointer disabled:opacity-50" onClick={handlePrev} disabled={loading || currentPage <= 1}>&lt;</button>
-                <span className="text-sm text-gray-800 mx-1">
-                    Page {currentPage} of {totalPages}
-                </span>
-                <button type="button" className="bg-[#007bff] text-white border-none px-3 py-1 rounded-md text-[13px] cursor-pointer disabled:opacity-50" onClick={handleNext} disabled={loading || currentPage >= totalPages}>&gt;</button>
-            </div>
 
-            <LoungesForm
-                isOpen={modalOpen}
-                onClose={() => setModalOpen(false)}
-                onSave={handleAddLounge}
-                locations={locations}
-                selectedlounges={selectedLounge}
-                amenities={amenities}
-            />
-        </div>   
+            <div>
+                <div className="rounded-lg overflow-hidden border mx-4 border-gray-300 bg-white shadow-mist-300">
+                    <table className="w-full border-collapse font-sans">
+                        <thead className="text-shadow-gray-900 border-b border-b-gray-300">
+                            <tr>
+                                <th className="p-4 text-left text-sm justify-start">Name</th>
+                                <th className="p-2 text-left text-sm">Capacity</th>
+                                <th className="p-2 text-left text-sm">Opening Time</th>
+                                <th className="p-2 text-left text-sm">Closing Time</th>
+                                <th className="p-2 text-left text-sm">Floor</th>
+                                <th className="p-2 text-left text-sm">Available Days</th>
+                                <th className="p-2 text-left text-sm">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                            {currentLounges.map((item, index) => (
+                                <tr key={index}  className="even:bg-[#f9f9f9] hover:bg-[#f1f5ff]">
+                                    <td className="p-4 border-b border-b-gray-300 text-left text-md font-semibold text-[#3f4144]">{item.name || item.__raw?.name || item.__raw?.lounge_name || item.__raw?.roomName || "N/A"}</td>
+                                    <td className="p-2 border-b border-b-gray-300 text-left text-md font-semibold text-[#3f4144]">{item.capacity ?? "N/A"}</td>
+                                    <td className="p-2 border-b border-b-gray-300 text-left text-md font-semibold text-[#3f4144]">{item.openingTime ? formatTimeToAMPM(item.openingTime) : "N/A"}</td>
+                                    <td className="p-2 border-b border-b-gray-300 text-left text-md font-semibold text-[#3f4144]">{item.closingTime ? formatTimeToAMPM(item.closingTime) : "N/A"}</td>
+                                    <td className="p-2 border-b border-b-gray-300 text-left text-md font-semibold text-[#3f4144]">{item.floor ?? item.__raw?.floor ?? item.__raw?.floorName ?? item.__raw?.floor_no ?? "N/A"}</td>
+                                    <td className="p-2 border-b border-b-gray-300 text-left text-md font-semibold text-[#3f4144]">{formatAvailableDays(item.availableDays)}</td>
+                                    <td className="p-2 border-b border-b-gray-300 text-left text-md font-semibold text-[#3f4144]">{item.status ? item.status : "Active"}</td>
+                                </tr>
+                            ))}
+                            {currentLounges.length === 0 && !loading && (
+                                <tr>
+                                    <td colSpan="7" className="p-4 text-gray-500">No lounges found.</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div className="relative">
+                    <div className="flex justify-end bottom-0 mt-20">
+                        <button type="button" className="text-gray-800 font-medium py-2 px-4 rounded-lg cursor-pointer border border-gray-300 bg-gray-100" onClick={handlePrev} disabled={loading || currentPage <= 1}>&lt;</button>
+                        <span className="font-md p-2 font-bold text-[#696c70]">
+                            Page {currentPage} of {totalPages}
+                        </span>
+                        <button type="button" className="bg-[#3642ee] text-white font-medium py-2 px-4 rounded-lg cursor-pointer" onClick={handleNext} disabled={loading || currentPage >= totalPages}>&gt;</button>
+                    </div>
+                </div>
+
+                <LoungesForm
+                    isOpen={modalOpen}
+                    onClose={() => setModalOpen(false)}
+                    onSave={handleAddLounge}
+                    locations={locations}
+                    selectedlounges={selectedLounge}
+                    amenities={amenities}
+                />
+            </div>   
+        </div>    
     );
 };
 

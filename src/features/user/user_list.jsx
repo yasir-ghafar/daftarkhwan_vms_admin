@@ -54,56 +54,59 @@ const UsersList = ({ users, onDelete, onEdit, search, onUpdateWallet }) => {
 
   return (
     <div>
-      <div className="table-container">
-        <table className="location-table">
-          <thead>
+      <div className="rounded-lg overflow-hidden border mx-4 border-gray-300 bg-white shadow-mist-300">
+        <table className="w-full border-collapse font-sans">
+          <thead className="text-[#84878d] border-b border-b-gray-300">
             <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Status</th>
-              <th>Role</th>
-              <th>Company</th>
-              <th>Location</th>
-              <th>Balance</th>
-              <th>Actions</th>
+              <th className="p-4 text-left text-sm justify-start">Name</th>
+              <th className="p-2 text-left text-sm">Email</th>
+              <th className="p-2 text-left text-sm">Status</th>
+              <th className="p-2 text-left text-sm">Role</th>
+              <th className="p-2 text-left text-sm">Company</th>
+              <th className="p-2 text-left text-sm">Location</th>
+              <th className="p-2 text-left text-sm">Balance</th>
+              <th className="p-2 text-left text-sm">Actions</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
             {currentUsers.map((user, index) => (
-              <tr key={index}>
-                <td>{user.name}</td>
-                <td>{user.email}</td>
-                <td>{user.status}</td>
-                <td>{user.role}</td>
-                <td>{user.Company.name || "N/A"}</td>
-                <td>{user.Company.locationName}</td>
-                <td>
+              <tr key={index} className="even:bg-[#f9f9f9] hover:bg-[#f1f5ff]">
+                <td className="p-4 border-b border-b-gray-300 text-left text-md font-semibold text-[#3f4144]">{user.name}</td>
+                <td className="p-2 border-b border-b-gray-300 text-left text-md font-semibold text-[#84878d]">{user.email}</td>
+                <td className="border-b border-b-gray-300">  
+                  <span class="inline-flex mt-2.5  items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-2 text-sm font-semibold text-emerald-700 ">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-600"></span>
+                    Active
+                  </span>
+                </td> 
+                <td className="p-2 border-b border-b-gray-300 text-left text-md font-semibold text-[#3f4144]">{user.role}</td>
+                <td className="p-2 border-b border-b-gray-300 text-left text-md font-semibold text-[#3f4144]">{user.Company.name || "N/A"}</td>
+                <td className="p-2 border-b border-b-gray-300 text-left text-md font-semibold text-[#84878d]">{user.Company.locationName}</td>
+                <td className="p-2 border-b border-b-gray-300 text-left text-md font-semibold text-[#3f4144]">
                   Meeting Room:{" "}
                   {user.Wallet
                     ? user.Wallet.meeting_room_credits ?? "N/A"
                     : "N/A"}
                   <br />
-                  Printing:{" "}
-                  {user.Wallet ? user.Wallet.printing_credits ?? "N/A" : "N/A"}
+                  {/* Printing:{" "}
+                  {user.Wallet ? user.Wallet.printing_credits ?? "N/A" : "N/A"} */}
                 </td>
-                <td style={{ textAlign: "center" }}>
+                <td style={{ textAlign: "left" }}>
                   <button
-                    className="btn-next"
+                    className="py-2 px-2 bg-[#3642ee] text-white rounded-lg"
                     onClick={() => handleWalletUpdate(user)}
                   >
                     Update Wallet
                   </button>
                 </td>
-                <td>
+                <td className="p-2 border-b border-b-gray-300 text-left text-md">
                   <span
                     style={{ cursor: "pointer" }}
                     onClick={() => handleEdit(user)}
                   >
                     ✏️
                   </span>
-                </td>
-                <td>
                   <span
                     style={{ cursor: "pointer" }}
                     onClick={() => handleDelete(user)}
@@ -118,24 +121,27 @@ const UsersList = ({ users, onDelete, onEdit, search, onUpdateWallet }) => {
       </div>
 
       {/* Pagination Controls */}
-      <div className="pagination-container">
-        <button
-          className="pagination-btn"
-          onClick={handlePrev}
-          disabled={currentPage === 1}
-        >
-          &lt;
-        </button>
-        <span className="pagination-info">
-          {currentPage} / {totalPages || 1}
-        </span>
-        <button
-          className="pagination-btn"
-          onClick={handleNext}
-          disabled={currentPage === totalPages || totalPages === 0}
-        >
-          &gt;
-        </button>
+      <div className="flex justify-between bottom-0 mt-20">
+        <div className="text-[#84878d]">Showing 1-__ of __ users</div>
+        <div>
+          <button
+            className=" text-gray-800 font-medium py-2 px-4 rounded-lg cursor-pointer border border-gray-300 bg-gray-100"
+            onClick={handlePrev}
+            disabled={currentPage === 1}
+          >
+            &lt;
+          </button>
+          <span className="font-md p-2 font-bold text-[#696c70]">
+            {currentPage} / {totalPages || 1}
+          </span>
+          <button
+            className="bg-[#3642ee] text-white font-medium py-2 px-4 rounded-lg cursor-pointer"
+            onClick={handleNext}
+            disabled={currentPage === totalPages || totalPages === 0}
+          >
+            &gt;
+          </button>
+        </div>  
       </div>
     </div>
 

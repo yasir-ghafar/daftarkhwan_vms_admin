@@ -174,21 +174,26 @@ const handleAddUser = async (userData) => {
         />
       )}
 
-      <div className="top-bar">
-        <h2>Users</h2>
-        <button className="add-btn" onClick={openAddNewUser}>
-          Add New
+      <div className="flex justify-between p-4 items-center">
+        <div className="flex flex-col">
+          <h2 className="text-4xl font-bold">Users</h2>
+          <h3 className="text-[#84878d] mt-1">__ users across __ locations - __ currently active</h3>
+        </div>
+        <button className="text-white font-medium bg-[#3642ee] py-3 px-10 rounded-lg" onClick={openAddNewUser}>
+          + Add New User
         </button>
-      </div>
+      </div>  
 
       {/* 🔍 Search bar */}
-      <input
-        type="text"
-        placeholder="Search users..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="search-input"
-      />
+      <div className="flex g-2 my-2 mx-4 rounded-lg border-none">
+        <input
+          type="text"
+          placeholder="Search users..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="my-5 mx-1 py-3 px-5 w-full border border-gray-300 rounded-lg bg-white"
+        />
+      </div>
 
       {error && (
         <div className="error-popup">

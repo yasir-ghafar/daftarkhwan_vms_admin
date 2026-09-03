@@ -112,76 +112,79 @@ const Locations = () => {
     );
   });
 
+  const totalLocations = new Set(locations.map((location) => location.id)).size;
+
+
   return (
+    <div>
+      {/* Header */}
+      <div className="flex justify-between p-4 items-center">
+        <div className="flex flex-col">
+          <h2 className="text-2xl font-semibold text-brand-dark">Locations</h2>
+          <h3 className="text-[#84878d] mt-1">{totalLocations} locations across 3 Cities - {totalLocations} currently active</h3>
+        </div>
 
-    <div className="container mx-auto px-4 py-6 space-y-4">
-
-  {/* Header */}
-  <div className="flex items-center justify-between ">
-    <h2 className="text-2xl font-semibold text-brand-dark">Locations</h2>
-
-    <button
-      onClick={() => {
-        if (role === "admin") {
-          setEditLocation(null);
-          setModalOpen(true);
-        } else {
-          alert("You are not authorized for this action.");
-        }
-      }}
-      className="bg-brand-cta text-white font-medium px-4 py-2 rounded hover:bg-brand-dark transition"
-    >
-      Add New
-    </button>
-  </div>
-
-  {/* Search */}
-  <div className="flex ">
-    <input
-      type="text"
-      placeholder="Search locations..."
-      value={search}
-      onChange={(e) => setSearch(e.target.value)}
-      className="w-full max-w-md border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-blue focus:border-brand-blue"
-    />
-  </div>
-
-  {/* Loading Overlay */}
-  {loading && (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/30">
-      <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-        <div className="loader mb-2"></div>
-        <p className="text-brand-dark font-medium">Loading please wait...</p>
+        <button
+          onClick={() => {
+            if (role === "admin") {
+              setEditLocation(null);
+              setModalOpen(true);
+            } else {
+              alert("You are not authorized for this action.");
+            }
+          }}
+          className="text-white font-medium bg-[#3642ee] py-3 px-10 rounded-lg"
+        >
+          + Add New Location
+        </button>
       </div>
+
+      {/* Search */}
+      <div className="flex g-2 my-2 mx-4 rounded-lg border-none ">
+        <input
+          type="text"
+          placeholder="Search locations..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="my-5 mx-1 py-3 px-5 w-full border border-gray-300 rounded-lg bg-white"
+        />
+      </div>
+
+      {/* Loading Overlay */}
+      {loading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/30">
+          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+            <div className="loader mb-2"></div>
+            <p className="text-brand-dark font-medium">Loading please wait...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error */}
+      {error && (
+        <div className="bg-red-100 border border-red-300 text-red-800 px-4 py-2 rounded">
+          <p>{error}</p>
+        </div>
+      )}
+
+      {/* List */}
+      {!loading && !error && (
+        <LocationList
+          locations={filteredLocations}
+          onDelete={handleDeleteClick}
+          onEdit={handleEditClick}
+        />
+      )}
+
+      {/* Modal */}
+      <AddLocationModal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+        onSave={handleAddLocation}
+        editData={editLocation}
+      />
     </div>
-  )}
-
-  {/* Error */}
-  {error && (
-    <div className="bg-red-100 border border-red-300 text-red-800 px-4 py-2 rounded">
-      <p>{error}</p>
-    </div>
-  )}
-
-  {/* List */}
-  {!loading && !error && (
-    <LocationList
-      locations={filteredLocations}
-      onDelete={handleDeleteClick}
-      onEdit={handleEditClick}
-    />
-  )}
-
-  {/* Modal */}
-  <AddLocationModal
-    isOpen={isModalOpen}
-    onClose={() => setModalOpen(false)}
-    onSave={handleAddLocation}
-    editData={editLocation}
-  />
-</div>
   );
-  
 };
 
 export default Locations;

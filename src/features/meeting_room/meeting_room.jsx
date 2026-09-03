@@ -32,6 +32,8 @@ const floors = [
 const MeetingRooms = () => {
   const [search, setSearch] = useState("");
   const [rooms, setRooms] = useState([]);
+  const activeRooms = rooms.filter((room) => room.status === "active");
+  const inactiveRooms = rooms.filter((room) => room.status === "inactive");
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [amenities, setAmenities] = useState([]);
@@ -213,7 +215,7 @@ const MeetingRooms = () => {
       <div className="flex justify-between p-4 items-center">
         <div className="flex flex-col">
           <h2 className="text-4xl font-bold">Meeting Rooms</h2>
-          <h3 className="text-[#84878d] mt-1">__ rooms across __ locations - __ currently active</h3>
+          <h3 className="text-[#84878d] mt-1">{activeRooms.length} rooms across {new Set(rooms.map((room) => room.LocationId)).size} locations - {activeRooms.length} currently active</h3>
         </div>
         <button className="text-white font-medium bg-[#3642ee] py-3 px-10 rounded-lg" onClick={openAddNewRoom}>
           + Add New Room

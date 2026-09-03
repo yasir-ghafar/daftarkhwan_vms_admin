@@ -9,7 +9,7 @@ const Home = () => {
   return (
     <div className="flex bg-gray-100">
       <Sidebar/>
-      <div className="flex-1 py-5 px-8 w-full">
+      <div className="flex-1 py-5 px-2 w-full">
         <Outlet />
       </div>
     </div>

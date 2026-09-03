@@ -69,36 +69,43 @@ const CompaniesList = ({ companies, onEdit, search }) => {
 
   return (
     <div>
-      <div className="table-container">
-        <table className="location-table">
-          <thead>
+      <div className="rounded-lg overflow-hidden border mx-4 border-gray-300 bg-white shadow-mist-300">
+        <table className="w-full border-collapse font-sans">
+          <thead className="text-shadow-gray-900 border-b border-b-gray-300">
             <tr>
-              <th>Company Name</th>
-              <th>Location</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th className="p-4 text-left text-sm justify-start">Company Name</th>
+              <th className="p-2 text-left text-sm">Location</th>
+              <th className="p-2 text-left text-sm">Status</th>
+              <th className="p-2 text-left text-sm">Actions</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
             {currentCompanies.map((company, index) => (
-              <tr key={index}>
-                <td>{company.name ?? company.companyName ?? "—"}</td>
-                <td>
+              <tr key={index} className="even:bg-[#f9f9f9] hover:bg-[#f1f5ff]">
+                <td className="p-4 border-b border-b-gray-300 text-left text-md font-semibold text-[#3f4144]">{company.name ?? company.companyName ?? "—"}</td>
+                <td className="p-2 border-b border-b-gray-300 text-left text-md font-semibold text-[#84878d]">
                   {company.location?.name ??
                     company.locationName ??
                     company.city ??
                     company.location ??
                     "N/A"}
                 </td>
-                <td>{company.status ?? "active"}</td>
-                <td className="edit-icon" onClick={() => handleEditClick(company)}>✏️</td>
-                <td className="edit-icon" onClick={() => handleDeleteClick(company)}>🗑️</td>
+                <td className="border-b border-b-gray-300">  
+                  <span class="inline-flex mt-2.5  items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-2 text-sm font-semibold text-emerald-700 ">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-600"></span>
+                    Active
+                  </span>
+                </td>
+                <td className="p-2 border-b border-b-gray-300 text-left text-md">  
+                  <td className="edit-icon" onClick={() => handleEditClick(company)}>✏️</td>
+                  <td className="edit-icon" onClick={() => handleDeleteClick(company)}>🗑️</td>
+                </td>
               </tr>
             ))}
             {currentCompanies.length === 0 && (
               <tr>
-                <td colSpan="5" style={{ textAlign: "center", padding: "1rem" }}>
+                <td colSpan="5" style={{ textAlign: "left", padding: "1rem" }}>
                   No companies found.
                 </td>
               </tr>
@@ -108,24 +115,26 @@ const CompaniesList = ({ companies, onEdit, search }) => {
       </div>
 
       {/* Pagination Controls */}
-      <div className="pagination-container">
-        <button
-          className="pagination-btn"
-          onClick={handlePrev}
-          disabled={currentPage === 1}
-        >
-          &lt;
-        </button>
-        <span className="pagination-info">
-          {currentPage} / {totalPages}
-        </span>
-        <button
-          className="pagination-btn"
-          onClick={handleNext}
-          disabled={currentPage === totalPages}
-        >
-          &gt;
-        </button>
+      <div className="relative">
+        <div className="flex justify-end bottom-0 mt-20">  
+          <button
+            className=" text-gray-800 font-medium py-2 px-4 rounded-lg cursor-pointer border border-gray-300 bg-gray-100"
+            onClick={handlePrev}
+            disabled={currentPage === 1}
+          >
+            &lt;
+          </button>
+          <span className="font-md p-2 font-bold text-[#696c70]">
+            {currentPage} / {totalPages || 1}
+          </span>
+          <button
+            className="bg-[#3642ee] text-white font-medium py-2 px-4 rounded-lg cursor-pointer"
+            onClick={handleNext}
+            disabled={currentPage === totalPages || totalPages === 0}
+          >
+            &gt;
+          </button>
+        </div>
       </div>
     </div>
   );
