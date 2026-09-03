@@ -52,7 +52,7 @@ const RoomsList = ({ rooms, onDelete, onEdit, search }) => {
 
   return (
     <div>
-      <div className="table-container">
+      <div className="rounded-sm overflow-hidden border border-gray-100 bg-white shadow-mist-300">
         <table className="location-table">
           <thead>
             <tr>

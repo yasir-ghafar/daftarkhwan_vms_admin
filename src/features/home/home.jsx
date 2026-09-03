@@ -7,9 +7,9 @@ import { Outlet } from "react-router";
 
 const Home = () => {
   return (
-    <div className="app-layout">
+    <div className="flex h-screen bg-brand-white-dim">
       <Sidebar/>
-      <div className="main-content ">
+      <div className="flex-1 p-4">
         <Outlet />
       </div>
     </div>
