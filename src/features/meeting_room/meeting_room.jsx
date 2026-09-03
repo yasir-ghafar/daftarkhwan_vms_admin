@@ -210,26 +210,29 @@ const MeetingRooms = () => {
 
   return (
     <div>
-      <div className="top-bar">
-        <h2>Meeting Rooms</h2>
-        <button className="add-btn" onClick={openAddNewRoom}>
-          Add New
+      <div className="flex justify-between p-4 items-center">
+        <div className="flex flex-col">
+          <h2 className="text-4xl font-bold">Meeting Rooms</h2>
+          <h3 className="text-[#84878d] mt-1">__ rooms across __ locations - __ currently active</h3>
+        </div>
+        <button className="text-white font-medium bg-[#3642ee] py-3 px-10 rounded-lg" onClick={openAddNewRoom}>
+          + Add New Room
         </button>
       </div>
 
-      <div className="filters-bar">
+      <div className="flex g-2 my-2 mx-4 rounded-lg border-none">
         <input
         type="text"
         placeholder="Search meeting rooms..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="search-input"
+        className="my-5 mx-1 py-3 px-5 w-full border border-gray-300 rounded-lg bg-white"
         />
         {/* Location Filter */}
         <select
           value={selectedLocation}
           onChange={(e) => setSelectedLocation(e.target.value)}
-          className="filter-dropdown"
+          className="my-5 mx-1 py-3 px-5 border border-gray-300 rounded-lg bg-white"
         >
           <option value="">All Locations</option>
           {[
@@ -247,7 +250,7 @@ const MeetingRooms = () => {
         <select
           value={selectedFloor}
           onChange={(e) => setSelectedFloor(e.target.value)}
-          className="filter-dropdown"
+          className="my-5 mx-1 py-3 px-5 border border-gray-300 rounded-lg bg-white"
         >
           <option value="">All Floors</option>
           {floors.map((floor, idx) => (

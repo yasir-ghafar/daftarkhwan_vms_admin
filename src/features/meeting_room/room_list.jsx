@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "./room_list.css";
+// import "./room_list.css";
 
 import { useUser } from "../../context/UserContext";
 
@@ -52,34 +52,37 @@ const RoomsList = ({ rooms, onDelete, onEdit, search }) => {
 
   return (
     <div>
-      <div className="rounded-sm overflow-hidden border border-gray-100 bg-white shadow-mist-300">
-        <table className="location-table">
-          <thead>
+      <div className="rounded-lg overflow-hidden border mx-4 border-gray-100 bg-white shadow-mist-300">
+        <table className="w-full border-collapse font-sans">
+          <thead className="text-[#84878d] border-b border-b-gray-300">
             <tr>
-              <th>Name</th>
-              <th>Location</th>
-              <th>Status</th>
-              <th>Available Slots</th>
-              <th>Actions</th>
+              <th className="p-4 text-left text-sm justify-start">NAME</th>
+              <th className="p-2 text-left text-sm">LOCATION</th>
+              <th className="p-2 text-left text-sm">STATUS</th>
+              <th className="p-2 text-left text-sm">AVAILABLE SLOTS</th>
+              <th className="p-2 text-left text-sm">ACTIONS</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
             {currentRooms.map((room, index) => (
-              <tr key={index}>
-                <td>{room.name}</td>
-                <td>{room.location?.name ?? "N/A"}</td>
-                <td>{room.status ?? "Active"}</td>
-                <td>{room.availableSlotsCount ?? "0"}</td>
-                <td>
+              <tr key={index} className="even:bg-[#f9f9f9] hover:bg-[#f1f5ff]">
+                <td className="p-4 border-b border-b-gray-300 text-left text-md font-semibold text-[#3f4144]">{room.name}</td>
+                <td className="p-2 border-b border-b-gray-300 text-left text-md font-semibold text-[#84878d]">{room.location?.name ?? "N/A"}</td>
+                <td className="border-b border-b-gray-300">  
+                  <span class="inline-flex mt-2.5  items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-2 text-sm font-semibold text-emerald-700 ">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-600"></span>
+                    Active
+                  </span>
+                </td>  
+                <td className="p-2 border-b border-b-gray-300 text-left text-md">{room.availableSlotsCount ?? "0"}</td>
+                <td className="p-2 border-b border-b-gray-300 text-left text-md">
                   <span
                     style={{ cursor: "pointer" }}
                     onClick={() => handleEdit(room)}
                   >
                     ✏️
                   </span>
-                </td>
-                <td>
                   <span
                     style={{ cursor: "pointer" }}
                     onClick={() => handleDelete(room)}
@@ -94,24 +97,27 @@ const RoomsList = ({ rooms, onDelete, onEdit, search }) => {
       </div>
 
       {/* Pagination Controls */}
-      <div className="pagination-container">
-        <button
-          className="pagination-btn"
-          onClick={handlePrev}
-          disabled={currentPage === 1}
-        >
-          &lt;
-        </button>
-        <span className="pagination-info">
-          {currentPage} / {totalPages || 1}
-        </span>
-        <button
-          className="pagination-btn"
-          onClick={handleNext}
-          disabled={currentPage === totalPages || totalPages === 0}
-        >
-          &gt;
-        </button>
+      <div className="flex justify-between bottom-0 mt-20">
+        <div className="text-[#84878d]">Showing 1-10 of __ rooms</div>
+        <div>  
+          <button
+            className=" text-gray-800 font-medium py-2 px-4 rounded-lg cursor-pointer border border-gray-300 bg-gray-100"
+            onClick={handlePrev}
+            disabled={currentPage === 1}
+          >
+            &lt;
+          </button>
+          <span className="font-md p-2 font-bold text-[#696c70]">
+            {currentPage} / {totalPages || 1}
+          </span>
+          <button
+            className="bg-[#3642ee] text-white font-medium py-2 px-4 rounded-lg cursor-pointer"
+            onClick={handleNext}
+            disabled={currentPage === totalPages || totalPages === 0}
+          >
+            &gt;
+          </button>
+        </div>
       </div>
     </div>
   );
